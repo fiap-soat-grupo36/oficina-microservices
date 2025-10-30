@@ -8,6 +8,7 @@ import br.com.fiap.oficina.auth.repository.UsuarioRepository;
 import br.com.fiap.oficina.auth.service.UsuarioService;
 import br.com.fiap.oficina.shared.exception.RecursoNaoEncontradoException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Autowired
     public UsuarioServiceImpl(UsuarioRepository usuarioRepository,
                               UsuarioMapper usuarioMapper,
-                              PasswordEncoder passwordEncoder) {
+                              @Lazy PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioMapper = usuarioMapper;
         this.passwordEncoder = passwordEncoder;

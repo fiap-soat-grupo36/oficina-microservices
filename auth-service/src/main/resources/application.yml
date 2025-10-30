@@ -18,12 +18,6 @@ spring:
     hibernate:
       ddl-auto: create
     show-sql: true
-    defer-datasource-initialization: true
-
-  sql:
-    init:
-      mode: always
-      data-locations: classpath:data.sql
 
 server:
   port: 8082
