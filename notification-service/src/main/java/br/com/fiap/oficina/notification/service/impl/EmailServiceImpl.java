@@ -47,7 +47,7 @@ public class EmailServiceImpl implements EmailService {
             mailSender.send(mensagem);
             log.info("Email enviado com sucesso para: {}", para);
         } catch (MessagingException e) {
-            throw new EmailNaoEnviadoException("Erro ao enviar o e-mail", e.getCause());
+            throw new EmailNaoEnviadoException("Erro ao enviar o e-mail", e);
         }
     }
 }
