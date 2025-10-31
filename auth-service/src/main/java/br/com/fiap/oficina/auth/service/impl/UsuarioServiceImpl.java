@@ -6,7 +6,9 @@ import br.com.fiap.oficina.auth.entity.Usuario;
 import br.com.fiap.oficina.auth.mapper.UsuarioMapper;
 import br.com.fiap.oficina.auth.repository.UsuarioRepository;
 import br.com.fiap.oficina.auth.service.UsuarioService;
+import br.com.fiap.oficina.shared.enums.Role;
 import br.com.fiap.oficina.shared.exception.RecursoNaoEncontradoException;
+import br.com.fiap.oficina.shared.exception.RoleInvalidaException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -87,5 +89,31 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         usuario.setAtivo(false);
         usuarioRepository.save(usuario);
+    }
+
+    @Override
+    public UsuarioResponseDTO buscarPorUsernameComExcecao(String username) {
+        Usuario usuario = usuarioRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Usuário não encontrado com username: " + username
+                ));
+
+        return usuarioMapper.toResponseDTO(usuario);
+    }
+
+    @Override
+    public List<UsuarioResponseDTO> buscarPorRole(String role) {
+        // Validar se role existe no enum
+        Role roleEnum;
+        try {
+            roleEnum = Role.valueOf(role.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RoleInvalidaException("Role inválida: " + role);
+        }
+
+        List<Usuario> usuarios = usuarioRepository.findByRole(roleEnum);
+        return usuarios.stream()
+                .map(usuarioMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 }

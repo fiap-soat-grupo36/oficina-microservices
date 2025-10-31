@@ -4,6 +4,7 @@ import br.com.fiap.oficina.auth.dto.request.UsuarioRequestDTO;
 import br.com.fiap.oficina.auth.dto.response.UsuarioResponseDTO;
 import br.com.fiap.oficina.auth.service.UsuarioService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -90,5 +91,35 @@ public class UsuarioController {
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         usuarioService.deletar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/buscar")
+    @Operation(
+            summary = "Buscar usuário por username ou role",
+            description = "Retorna usuário específico por username ou lista de usuários por role",
+            operationId = "buscarUsuario"
+    )
+    @ApiResponse(responseCode = "200", description = "Usuário(s) encontrado(s)")
+    @ApiResponse(responseCode = "204", description = "Nenhum usuário encontrado para a role")
+    @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
+    @ApiResponse(responseCode = "400", description = "Parâmetros inválidos")
+    public ResponseEntity<?> buscar(
+            @Parameter(description = "Username do usuário") @RequestParam(required = false) String username,
+            @Parameter(description = "Role do usuário (ADMIN, USER, MECANICO, ESTOQUISTA, ATENDENTE, CLIENTE)") @RequestParam(required = false) String role
+    ) {
+        if (username != null) {
+            UsuarioResponseDTO usuario = usuarioService.buscarPorUsernameComExcecao(username);
+            return ResponseEntity.ok(usuario);
+        }
+
+        if (role != null) {
+            List<UsuarioResponseDTO> usuarios = usuarioService.buscarPorRole(role);
+            if (usuarios.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(usuarios);
+        }
+
+        throw new IllegalArgumentException("Please provide either username or role parameter");
     }
 }
