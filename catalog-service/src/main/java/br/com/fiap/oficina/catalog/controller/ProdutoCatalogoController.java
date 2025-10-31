@@ -73,6 +73,22 @@ public class ProdutoCatalogoController {
         return ResponseEntity.ok(produtos);
     }
 
+    @GetMapping("/buscar")
+    @Operation(
+            summary = "Buscar produtos por termo.",
+            description = "Retorna lista de produtos ativos que contêm o termo no nome ou descrição.",
+            operationId = "buscarProdutosPorTermo"
+    )
+    @ApiResponse(responseCode = "200", description = "Produtos encontrados com sucesso.", content = @Content(mediaType = "application/json"))
+    public ResponseEntity<List<ProdutoCatalogoResponseDTO>> buscarPorTermo(
+            @RequestParam String termo) {
+        List<ProdutoCatalogoResponseDTO> produtos = produtoService.buscarPorTermo(termo);
+        if (produtos.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(produtos);
+    }
+
     @GetMapping("/{id}")
     @Operation(
             summary = "Buscar produto por ID.",
@@ -100,9 +116,10 @@ public class ProdutoCatalogoController {
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Deletar produto por ID.",
-            description = "Remove um produto do catálogo com base no ID informado (hard delete).",
+            description = "Remove um produto do catálogo com base no ID informado (inativação lógica).",
             operationId = "deletarProdutoCatalogo"
     )
+    @ApiResponse(responseCode = "204", description = "Produto deletado com sucesso")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         produtoService.deletar(id);
         return ResponseEntity.noContent().build();
