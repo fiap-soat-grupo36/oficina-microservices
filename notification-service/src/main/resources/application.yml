@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: notification-service
+    
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_USERNAME:oficina.fiap@gmail.com}
+    password: ${EMAIL_PASSWORD:senha-app}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+    test-connection: false
+
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+
+server:
+  port: 8087
+
+app:
+  notification:
+    email:
+      sender: oficina.fiap@gmail.com
+
+logging:
+  level:
+    br.com.fiap.oficina.notification: DEBUG
