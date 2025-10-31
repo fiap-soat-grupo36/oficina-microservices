@@ -99,7 +99,7 @@ public class ProdutoCatalogoController {
 
     @DeleteMapping("/{id}")
     @Operation(
-            summary = "Deletar produto por ID",
+            summary = "Deletar produto por ID.",
             description = "Remove um produto do catálogo com base no ID informado (hard delete).",
             operationId = "deletarProdutoCatalogo"
     )
