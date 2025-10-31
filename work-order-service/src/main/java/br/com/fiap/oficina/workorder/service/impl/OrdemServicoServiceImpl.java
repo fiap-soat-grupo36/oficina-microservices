@@ -181,7 +181,6 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
         // Valida se o usuário tem role MECANICO
         // Nota: Em produção, deve-se validar via Auth-Service
         os.setMecanicoId(mecanicoId);
-        os.setStatus(StatusOrdemServico.EM_DIAGNOSTICO);
         os = repository.save(os);
 
         return toResponseDTO(os);
