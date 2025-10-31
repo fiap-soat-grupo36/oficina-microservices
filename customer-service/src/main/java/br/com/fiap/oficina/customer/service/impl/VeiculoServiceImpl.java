@@ -63,9 +63,7 @@ public class VeiculoServiceImpl implements VeiculoService {
         // Validar se nova placa já não está em uso (se alterada)
         if (request.getPlaca() != null && !request.getPlaca().equals(veiculo.getPlaca())) {
             veiculoRepository.findByPlaca(request.getPlaca()).ifPresent(v -> {
-                if (!v.getId().equals(id)) {
-                    throw new IllegalArgumentException("Placa já cadastrada: " + request.getPlaca());
-                }
+                throw new IllegalArgumentException("Placa já cadastrada: " + request.getPlaca());
             });
         }
 
