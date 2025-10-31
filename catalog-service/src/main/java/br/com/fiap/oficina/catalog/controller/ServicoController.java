@@ -76,11 +76,12 @@ public class ServicoController {
     @GetMapping("/buscar")
     @Operation(
             summary = "Buscar serviços por termo.",
-            description = "Retorna uma lista de serviços que contêm o termo informado no nome ou descrição (case-insensitive).",
+            description = "Retorna uma lista de serviços ativos que contêm o termo informado no nome ou descrição (case-insensitive).",
             operationId = "buscarServicosPorTermo"
     )
     @ApiResponse(responseCode = "200", description = "Lista de serviços encontrados com sucesso.", content = @Content(mediaType = "application/json"))
-    public ResponseEntity<List<ServicoResponseDTO>> buscarPorTermo(@RequestParam String termo) {
+    public ResponseEntity<List<ServicoResponseDTO>> buscarPorTermo(
+            @RequestParam(required = true) String termo) {
         List<ServicoResponseDTO> servicos = servicoService.buscarPorTermo(termo);
         if (servicos.isEmpty()) {
             return ResponseEntity.noContent().build();

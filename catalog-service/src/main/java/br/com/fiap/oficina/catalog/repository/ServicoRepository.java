@@ -15,6 +15,6 @@ public interface ServicoRepository extends JpaRepository<Servico, Long> {
 
     List<Servico> findByAtivoFalse();
 
-    @Query("SELECT s FROM Servico s WHERE LOWER(s.nome) LIKE LOWER(CONCAT('%', :termo, '%')) OR LOWER(s.descricao) LIKE LOWER(CONCAT('%', :termo, '%'))")
+    @Query("SELECT s FROM Servico s WHERE s.ativo = true AND (LOWER(s.nome) LIKE LOWER(CONCAT('%', :termo, '%')) OR LOWER(s.descricao) LIKE LOWER(CONCAT('%', :termo, '%')))")
     List<Servico> buscarPorTermo(@Param("termo") String termo);
 }
