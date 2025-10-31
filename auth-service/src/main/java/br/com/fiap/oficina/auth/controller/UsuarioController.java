@@ -105,7 +105,7 @@ public class UsuarioController {
     @ApiResponse(responseCode = "400", description = "Parâmetros inválidos")
     public ResponseEntity<?> buscar(
             @Parameter(description = "Username do usuário") @RequestParam(required = false) String username,
-            @Parameter(description = "Role do usuário (ADMIN, ATENDENTE, MECANICO, ESTOQUISTA, CLIENTE)") @RequestParam(required = false) String role
+            @Parameter(description = "Role do usuário (ADMIN, USER, MECANICO, ESTOQUISTA, ATENDENTE, CLIENTE)") @RequestParam(required = false) String role
     ) {
         if (username != null) {
             UsuarioResponseDTO usuario = usuarioService.buscarPorUsernameComExcecao(username);

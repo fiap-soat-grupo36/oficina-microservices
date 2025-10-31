@@ -104,13 +104,14 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public List<UsuarioResponseDTO> buscarPorRole(String role) {
         // Validar se role existe no enum
+        Role roleEnum;
         try {
-            Role.valueOf(role.toUpperCase());
+            roleEnum = Role.valueOf(role.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new RoleInvalidaException("Role inválida: " + role);
         }
 
-        List<Usuario> usuarios = usuarioRepository.findByRole(Role.valueOf(role.toUpperCase()));
+        List<Usuario> usuarios = usuarioRepository.findByRole(roleEnum);
         return usuarios.stream()
                 .map(usuarioMapper::toResponseDTO)
                 .collect(Collectors.toList());
