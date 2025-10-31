@@ -177,7 +177,7 @@ public class OrdemServicoController {
     }
 
     @PutMapping("/{id}/finalizar")
-    @PreAuthorize("hasRole('MECANICO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
     @Operation(summary = "Finalizar ordem de serviço", description = "Finaliza a ordem de serviço e atualiza o status para FINALIZADA")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Ordem de serviço finalizada com sucesso"),
