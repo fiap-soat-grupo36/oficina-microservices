@@ -75,7 +75,7 @@ public class VeiculoServiceImpl implements VeiculoService {
         veiculo.setObservacoes(request.getObservacoes());
         
         // Validar se cliente existe (se alterado)
-        if (request.getClienteId() != null && !request.getClienteId().equals(veiculo.getCliente().getId())) {
+        if (request.getClienteId() != null && (veiculo.getCliente() == null || !request.getClienteId().equals(veiculo.getCliente().getId()))) {
             atualizarCliente(request.getClienteId(), veiculo);
         }
 
