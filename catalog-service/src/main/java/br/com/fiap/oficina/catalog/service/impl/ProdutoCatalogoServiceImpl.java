@@ -67,7 +67,8 @@ public class ProdutoCatalogoServiceImpl implements ProdutoCatalogoService {
     @Override
     public void deletar(Long id) {
         ProdutoCatalogo produto = getProduto(id);
-        produtoRepository.delete(produto);
+        produto.setAtivo(false);
+        produtoRepository.save(produto);
     }
 
     @Override
