@@ -31,7 +31,7 @@ public class NotificacaoEventListener {
                 "nomeCliente", event.ordemServico().getCliente().getNome(),
                 "orcamentoID", event.orcamento().getId(),
                 "valorTotal", event.orcamento().getValorTotal(),
-                "itensOrcamento",event.orcamento().getItensOrcamento());
+                "itensOrcamento", event.orcamento().getItensOrcamento());
 
         emailService.enviarEmail(
                 event.ordemServico().getCliente().getEmail(),
