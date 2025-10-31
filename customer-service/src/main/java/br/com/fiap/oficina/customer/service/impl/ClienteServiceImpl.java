@@ -89,6 +89,42 @@ public class ClienteServiceImpl implements ClienteService {
     }
 
     @Override
+    public ClienteResponseDTO buscarPorCpf(String cpf) {
+        if (cpf == null || cpf.isBlank()) {
+            throw new IllegalArgumentException("CPF não pode ser vazio");
+        }
+        
+        String cpfLimpo = cpf.replaceAll("[^\\d]", "");
+        
+        if (!ClienteValidator.cpfValido(cpfLimpo)) {
+            throw new IllegalArgumentException("CPF inválido: " + cpf);
+        }
+        
+        String cpfFormatado = ClienteValidator.formatarCpf(cpfLimpo);
+        
+        Cliente cliente = clienteRepository.findByCpf(cpfFormatado)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado com CPF: " + cpf));
+        
+        return clienteMapper.toDTO(cliente);
+    }
+    
+    @Override
+    public ClienteResponseDTO buscarPorEmail(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email não pode ser vazio");
+        }
+        
+        if (!ClienteValidator.emailValido(email)) {
+            throw new IllegalArgumentException("Email inválido: " + email);
+        }
+        
+        Cliente cliente = clienteRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado com email: " + email));
+        
+        return clienteMapper.toDTO(cliente);
+    }
+
+    @Override
     public Cliente getCliente(Long id) {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(String.format(CLIENTE_NAO_ENCONTRADO, id)));

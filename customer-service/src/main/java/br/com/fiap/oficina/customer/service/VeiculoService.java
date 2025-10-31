@@ -12,6 +12,7 @@ public interface VeiculoService {
     List<VeiculoResponseDTO> listarTodos();
     VeiculoResponseDTO buscarPorId(Long id);
     VeiculoResponseDTO buscarPorPlaca(String placa);
+    List<VeiculoResponseDTO> buscarPorCliente(Long clienteId);
     VeiculoResponseDTO atualizar(Long id, VeiculoRequesDTO dto);
     VeiculoResponseDTO transferirPropriedade(Long veiculoId, Long novoClienteId);
     Veiculo getVeiculo(Long id);

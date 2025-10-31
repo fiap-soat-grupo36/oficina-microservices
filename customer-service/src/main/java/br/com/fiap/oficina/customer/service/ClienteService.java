@@ -15,6 +15,10 @@ public interface ClienteService {
     ClienteResponseDTO buscarPorId(Long id);
 
     List<ClienteResponseDTO> buscarPorNome(String nome);
+    
+    ClienteResponseDTO buscarPorCpf(String cpf);
+    
+    ClienteResponseDTO buscarPorEmail(String email);
 
     List<ClienteResponseDTO> listarClientes();
 
