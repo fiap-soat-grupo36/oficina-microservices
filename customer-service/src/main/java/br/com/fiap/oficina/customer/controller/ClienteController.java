@@ -80,9 +80,6 @@ public class ClienteController {
             @RequestParam(required = false) String cpf,
             @RequestParam(required = false) String email
     ) {
-        if (cpf != null && email != null) {
-            throw new IllegalArgumentException("Informe apenas CPF ou email, não ambos");
-        }
         if (cpf != null) {
             return ResponseEntity.ok(clienteService.buscarPorCpf(cpf));
         }
