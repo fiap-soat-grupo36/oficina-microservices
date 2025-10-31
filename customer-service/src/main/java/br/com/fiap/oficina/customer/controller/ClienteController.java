@@ -72,17 +72,21 @@ public class ClienteController {
 
     @GetMapping("/buscar")
     @Operation(
-            summary = "Busca cliente por nome.",
-            description = "Retorna uma lista de todos os clientes cujo nome contém o termo informado informado (case-insensitive).",
-            operationId = "buscarClientePorNome"
+            summary = "Buscar cliente por CPF ou email",
+            description = "Retorna cliente específico baseado em CPF ou email informado"
     )
-    @ApiResponse(responseCode = "200", description = "Lista de clientes encontrados com sucesso.", content = @Content(mediaType = "application/json"))
-    public ResponseEntity<List<ClienteResponseDTO>> buscarPorNome(@RequestParam String nome) {
-        List<ClienteResponseDTO> clientes = clienteService.buscarPorNome(nome);
-        if (clientes.isEmpty()) {
-            return ResponseEntity.noContent().build();
+    @ApiResponse(responseCode = "200", description = "Cliente encontrado")
+    public ResponseEntity<ClienteResponseDTO> buscarPorCpfOuEmail(
+            @RequestParam(required = false) String cpf,
+            @RequestParam(required = false) String email
+    ) {
+        if (cpf != null) {
+            return ResponseEntity.ok(clienteService.buscarPorCpf(cpf));
         }
-        return ResponseEntity.ok(clientes);
+        if (email != null) {
+            return ResponseEntity.ok(clienteService.buscarPorEmail(email));
+        }
+        throw new IllegalArgumentException("Informe CPF ou email para busca");
     }
 
     @PutMapping("/{id}")

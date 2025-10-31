@@ -76,6 +76,22 @@ public class VeiculoController {
     public ResponseEntity<VeiculoResponseDTO> buscarPorPlaca(@PathVariable String placa) {
         return ResponseEntity.ok(veiculoService.buscarPorPlaca(placa));
     }
+    
+    @GetMapping("/cliente/{clienteId}")
+    @Operation(
+            summary = "Buscar veículos por cliente",
+            description = "Retorna todos os veículos de um cliente específico"
+    )
+    @ApiResponse(responseCode = "200", description = "Veículos encontrados")
+    public ResponseEntity<List<VeiculoResponseDTO>> buscarPorCliente(
+            @PathVariable Long clienteId
+    ) {
+        List<VeiculoResponseDTO> veiculos = veiculoService.buscarPorCliente(clienteId);
+        if (veiculos.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(veiculos);
+    }
 
     @PutMapping("/{id}")
     @Operation(

@@ -78,6 +78,15 @@ public class VeiculoServiceImpl implements VeiculoService {
                 .map(veiculoMapper::toDTO)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(String.format(VEICULO_PLACA_NAO_ENCONTRADO, placa)));
     }
+    
+    @Override
+    public List<VeiculoResponseDTO> buscarPorCliente(Long clienteId) {
+        // Valida se cliente existe
+        clienteService.getCliente(clienteId);
+        
+        List<Veiculo> veiculos = veiculoRepository.findByClienteId(clienteId);
+        return veiculoMapper.toDTOList(veiculos);
+    }
 
     @Override
     public VeiculoResponseDTO transferirPropriedade(Long id, Long novoClienteId) {
