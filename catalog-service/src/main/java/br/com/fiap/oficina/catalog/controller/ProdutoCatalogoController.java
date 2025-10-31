@@ -73,6 +73,21 @@ public class ProdutoCatalogoController {
         return ResponseEntity.ok(produtos);
     }
 
+    @GetMapping("/buscar")
+    @Operation(
+            summary = "Buscar produtos por termo.",
+            description = "Retorna lista de produtos que contêm o termo no nome ou descrição.",
+            operationId = "buscarProdutosPorTermo"
+    )
+    @ApiResponse(responseCode = "200", description = "Produtos encontrados com sucesso.", content = @Content(mediaType = "application/json"))
+    public ResponseEntity<List<ProdutoCatalogoResponseDTO>> buscarPorTermo(@RequestParam String termo) {
+        List<ProdutoCatalogoResponseDTO> produtos = produtoService.buscarPorTermo(termo);
+        if (produtos.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(produtos);
+    }
+
     @GetMapping("/{id}")
     @Operation(
             summary = "Buscar produto por ID.",

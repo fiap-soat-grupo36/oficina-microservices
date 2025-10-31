@@ -65,6 +65,11 @@ public class ProdutoCatalogoServiceImpl implements ProdutoCatalogoService {
     }
 
     @Override
+    public List<ProdutoCatalogoResponseDTO> buscarPorTermo(String termo) {
+        return produtoMapper.toDTO(produtoRepository.buscarPorTermo(termo));
+    }
+
+    @Override
     public void deletar(Long id) {
         ProdutoCatalogo produto = getProduto(id);
         produto.setAtivo(false);

@@ -20,6 +20,8 @@ public interface ProdutoCatalogoService {
 
     List<ProdutoCatalogoResponseDTO> listarInativos();
 
+    List<ProdutoCatalogoResponseDTO> buscarPorTermo(String termo);
+
     void deletar(Long id);
 
     ProdutoCatalogo getProduto(Long id);
