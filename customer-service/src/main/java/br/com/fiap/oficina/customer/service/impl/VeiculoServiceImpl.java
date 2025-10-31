@@ -33,6 +33,13 @@ public class VeiculoServiceImpl implements VeiculoService {
 
     @Override
     public VeiculoResponseDTO salvar(VeiculoRequesDTO dto) {
+        // Validar se placa já não está em uso
+        if (dto.getPlaca() != null) {
+            veiculoRepository.findByPlaca(dto.getPlaca()).ifPresent(v -> {
+                throw new IllegalArgumentException("Placa já cadastrada: " + dto.getPlaca());
+            });
+        }
+        
         Veiculo entity = veiculoMapper.toEntity(dto);
         atualizarCliente(dto.getClienteId(), entity);
         Veiculo salvo = veiculoRepository.save(entity);
@@ -53,12 +60,26 @@ public class VeiculoServiceImpl implements VeiculoService {
     public VeiculoResponseDTO atualizar(Long id, VeiculoRequesDTO request) {
         Veiculo veiculo = getVeiculo(id);
 
+        // Validar se nova placa já não está em uso (se alterada)
+        if (request.getPlaca() != null && !request.getPlaca().equals(veiculo.getPlaca())) {
+            veiculoRepository.findByPlaca(request.getPlaca()).ifPresent(v -> {
+                if (!v.getId().equals(id)) {
+                    throw new IllegalArgumentException("Placa já cadastrada: " + request.getPlaca());
+                }
+            });
+        }
+
         veiculo.setPlaca(request.getPlaca());
         veiculo.setMarca(request.getMarca());
         veiculo.setModelo(request.getModelo());
         veiculo.setAno(request.getAno());
         veiculo.setCor(request.getCor());
         veiculo.setObservacoes(request.getObservacoes());
+        
+        // Validar se cliente existe (se alterado)
+        if (request.getClienteId() != null && !request.getClienteId().equals(veiculo.getCliente().getId())) {
+            atualizarCliente(request.getClienteId(), veiculo);
+        }
 
         Veiculo atualizado = veiculoRepository.save(veiculo);
         return veiculoMapper.toDTO(atualizado);
