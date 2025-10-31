@@ -81,7 +81,7 @@ public class ProdutoCatalogoController {
     )
     @ApiResponse(responseCode = "200", description = "Produtos encontrados com sucesso.", content = @Content(mediaType = "application/json"))
     public ResponseEntity<List<ProdutoCatalogoResponseDTO>> buscarPorTermo(
-            @RequestParam(required = true) String termo) {
+            @RequestParam String termo) {
         List<ProdutoCatalogoResponseDTO> produtos = produtoService.buscarPorTermo(termo);
         if (produtos.isEmpty()) {
             return ResponseEntity.noContent().build();
