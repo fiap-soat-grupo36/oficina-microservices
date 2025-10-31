@@ -27,7 +27,7 @@ public class EmailServiceImpl implements EmailService {
     @Value("${app.notification.email.sender}")
     private String sender;
 
-    @Async
+    @Async("taskExecutor")
     public void enviarEmail(String para, String assunto, String template, Map<String, Object> variaveis) {
         log.info("Iniciando envio de email para: {}", para);
         try {
