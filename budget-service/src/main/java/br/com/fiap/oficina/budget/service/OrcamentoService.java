@@ -10,5 +10,6 @@ public interface OrcamentoService {
     List<OrcamentoResponseDTO> buscarTodos();
     OrcamentoResponseDTO buscarPorId(Long id);
     OrcamentoResponseDTO buscarPorOrdemServicoId(Long ordemServicoId);
+    void deletar(Long id);
     boolean processarResposta(String token, String resposta);
 }

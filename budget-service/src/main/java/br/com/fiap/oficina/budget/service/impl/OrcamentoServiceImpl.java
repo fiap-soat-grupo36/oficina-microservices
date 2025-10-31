@@ -84,6 +84,20 @@ public class OrcamentoServiceImpl implements OrcamentoService {
     }
 
     @Override
+    @Transactional
+    public void deletar(Long id) {
+        Orcamento orcamento = getOrcamento(id);
+        
+        if (orcamento.getStatusOrcamento() == StatusOrcamento.APROVADO) {
+            throw new br.com.fiap.oficina.shared.exception.OrcamentoJaAprovadoException(
+                    "Não é possível deletar um orçamento aprovado");
+        }
+        
+        orcamentoRepository.delete(orcamento);
+        log.info("Orçamento {} deletado com sucesso", id);
+    }
+
+    @Override
     public boolean processarResposta(String token, String resposta) {
         // TODO: Implementar lógica de processamento de resposta externa
         log.info("Processando resposta para token: {}, resposta: {}", token, resposta);
