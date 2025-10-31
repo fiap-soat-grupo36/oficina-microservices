@@ -164,7 +164,7 @@ public class OrdemServicoController {
     }
 
     @PutMapping("/{id}/executar")
-    @PreAuthorize("hasRole('MECANICO')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MECANICO')")
     @Operation(summary = "Iniciar execução da ordem de serviço", description = "Inicia a execução da ordem de serviço e atualiza o status para EM_EXECUCAO")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Execução iniciada com sucesso"),
