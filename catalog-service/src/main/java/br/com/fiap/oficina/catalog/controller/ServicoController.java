@@ -114,7 +114,7 @@ public class ServicoController {
 
     @DeleteMapping("/{id}")
     @Operation(
-            summary = "Deletar serviço por ID",
+            summary = "Deletar serviço por ID.",
             description = "Remove um serviço com base no ID informado (soft delete).",
             operationId = "deletarServico"
     )
