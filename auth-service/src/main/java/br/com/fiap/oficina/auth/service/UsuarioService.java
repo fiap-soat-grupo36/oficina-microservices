@@ -22,4 +22,8 @@ public interface UsuarioService {
     UsuarioResponseDTO atualizar(Long id, UsuarioRequestDTO dto);
 
     void deletar(Long id);
+
+    UsuarioResponseDTO buscarPorUsernameComExcecao(String username);
+
+    List<UsuarioResponseDTO> buscarPorRole(String role);
 }
