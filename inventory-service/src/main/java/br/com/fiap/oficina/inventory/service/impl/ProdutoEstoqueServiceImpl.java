@@ -11,6 +11,7 @@ import br.com.fiap.oficina.inventory.service.ProdutoEstoqueService;
 import br.com.fiap.oficina.shared.enums.TipoMovimentacao;
 import br.com.fiap.oficina.shared.exception.RecursoNaoEncontradoException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProdutoEstoqueServiceImpl implements ProdutoEstoqueService {
 
     private final ProdutoEstoqueRepository produtoEstoqueRepository;
@@ -119,5 +121,60 @@ public class ProdutoEstoqueServiceImpl implements ProdutoEstoqueService {
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado no estoque"));
         
         return produtoEstoqueMapper.toResponseDTO(saldo);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProdutoEstoqueResponseDTO> listarTodos() {
+        return produtoEstoqueRepository.findAll()
+                .stream()
+                .map(produtoEstoqueMapper::toResponseDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProdutoEstoqueResponseDTO buscarPorId(Long id) {
+        ProdutoEstoque produto = produtoEstoqueRepository
+                .findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado no estoque"));
+        return produtoEstoqueMapper.toResponseDTO(produto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProdutoEstoqueResponseDTO buscarPorProdutoCatalogo(Long produtoCatalogoId) {
+        return getSaldoConsolidado(produtoCatalogoId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProdutoEstoqueResponseDTO> buscarPorTermo(String termo) {
+        // Product name is not stored in inventory, requires catalog service integration
+        // For now, return empty list - this endpoint requires catalog service client
+        log.warn("buscarPorTermo called but product names not available in inventory service");
+        return List.of();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProdutoEstoqueResponseDTO> listarBaixoEstoque() {
+        return produtoEstoqueRepository.findBaixoEstoque()
+                .stream()
+                .map(produtoEstoqueMapper::toResponseDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public ProdutoEstoqueResponseDTO atualizarEstoqueMinimo(Long id, Integer estoqueMinimo) {
+        ProdutoEstoque produto = produtoEstoqueRepository
+                .findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado no estoque"));
+        
+        produto.setEstoqueMinimo(estoqueMinimo);
+        produto = produtoEstoqueRepository.save(produto);
+        
+        return produtoEstoqueMapper.toResponseDTO(produto);
     }
 }

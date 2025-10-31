@@ -12,6 +12,8 @@ import java.util.List;
 public interface ReservaEstoqueRepository extends JpaRepository<ReservaEstoque, Long> {
 
     List<ReservaEstoque> findByOrdemServicoIdAndAtivaTrue(Long ordemServicoId);
+    
+    List<ReservaEstoque> findByProdutoCatalogoIdAndAtivaTrue(Long produtoCatalogoId);
 
     @Query("SELECT r FROM ReservaEstoque r WHERE r.ordemServicoId = :ordemServicoId")
     List<ReservaEstoque> listarReservasProdutosPorOS(@Param("ordemServicoId") Long ordemServicoId);

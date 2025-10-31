@@ -35,6 +35,9 @@ public class ProdutoEstoque {
     @Column(name = "preco_medio_sugerido", precision = 10, scale = 2)
     private BigDecimal precoMedioSugerido = BigDecimal.ZERO;
 
+    @Column(name = "estoque_minimo")
+    private Integer estoqueMinimo = 0;
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
