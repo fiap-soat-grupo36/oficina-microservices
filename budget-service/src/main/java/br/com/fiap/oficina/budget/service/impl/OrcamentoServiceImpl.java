@@ -84,13 +84,6 @@ public class OrcamentoServiceImpl implements OrcamentoService {
     }
 
     @Override
-    public OrcamentoResponseDTO buscarPorOrdemServicoId(Long ordemServicoId) {
-        // O ID do orçamento é o mesmo ID da ordem de serviço (PK = FK)
-        Orcamento orcamento = getOrcamento(ordemServicoId);
-        return orcamentoMapper.toDTO(orcamento);
-    }
-
-    @Override
     public boolean processarResposta(String token, String resposta) {
         // TODO: Implementar lógica de processamento de resposta externa
         log.info("Processando resposta para token: {}, resposta: {}", token, resposta);
