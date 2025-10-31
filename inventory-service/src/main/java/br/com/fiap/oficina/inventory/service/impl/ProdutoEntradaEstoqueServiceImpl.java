@@ -94,7 +94,10 @@ public class ProdutoEntradaEstoqueServiceImpl implements ProdutoEntradaEstoqueSe
         ProdutoEntradaEstoqueResponseDTO dto = new ProdutoEntradaEstoqueResponseDTO();
         dto.setId(movimentacao.getId());
         dto.setProdutoCatalogoId(movimentacao.getProdutoCatalogoId());
-        dto.setNomeProduto(null); // Would need catalog service integration
+        // Known limitation: Product name cannot be set because integration with the catalog service is not yet implemented.
+        // As a result, dto.setNomeProduto(null) will always set the product name to null.
+        // To resolve this, implement a call to the catalog service to fetch the product name by produtoCatalogoId.
+        dto.setNomeProduto(null);
         dto.setQuantidade(movimentacao.getQuantidade());
         dto.setPrecoUnitario(movimentacao.getPrecoUnitario());
         
