@@ -8,7 +8,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ProdutoEstoqueMapper {
 
-    @Mapping(source = "produtoCatalogoId", target = "produtoId")
     @Mapping(source = "produtoCatalogoId", target = "produtoCatalogoId")
     @Mapping(source = "updatedAt", target = "ultimaAtualizacao")
     @Mapping(target = "nomeProduto", ignore = true)
