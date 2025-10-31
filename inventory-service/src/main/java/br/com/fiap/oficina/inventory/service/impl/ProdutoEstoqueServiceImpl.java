@@ -61,9 +61,8 @@ public class ProdutoEstoqueServiceImpl implements ProdutoEstoqueService {
         }
         
         int quantidadeReservada = reservaEstoqueRepository
-                .findByOrdemServicoIdAndAtivaTrue(produtoCatalogoId)
+                .findByProdutoCatalogoIdAndAtivaTrue(produtoCatalogoId)
                 .stream()
-                .filter(r -> r.getProdutoCatalogoId().equals(produtoCatalogoId))
                 .mapToInt(r -> r.getQuantidadeReservada())
                 .sum();
         
