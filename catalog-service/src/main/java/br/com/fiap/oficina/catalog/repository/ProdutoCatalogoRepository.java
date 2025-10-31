@@ -15,6 +15,6 @@ public interface ProdutoCatalogoRepository extends JpaRepository<ProdutoCatalogo
 
     List<ProdutoCatalogo> findByAtivoFalse();
 
-    @Query("SELECT p FROM ProdutoCatalogo p WHERE p.ativo = true AND (LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%')) OR LOWER(p.descricao) LIKE LOWER(CONCAT('%', :termo, '%')))")
+    @Query("SELECT p FROM ProdutoCatalogo p WHERE p.ativo = true AND (:termo IS NOT NULL AND :termo <> '' AND (LOWER(p.nome) LIKE LOWER(CONCAT('%', :termo, '%')) OR LOWER(p.descricao) LIKE LOWER(CONCAT('%', :termo, '%'))))")
     List<ProdutoCatalogo> buscarPorTermo(@Param("termo") String termo);
 }
