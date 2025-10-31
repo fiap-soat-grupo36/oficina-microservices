@@ -43,7 +43,7 @@ public class SecurityConfig {
 
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .headers(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers.frameOptions().sameOrigin())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET).permitAll()
                         .requestMatchers("/api/orcamentos/**").authenticated()
