@@ -84,15 +84,6 @@ public class OrcamentoServiceImpl implements OrcamentoService {
     }
 
     @Override
-    public OrcamentoResponseDTO buscarPorOrdemServicoId(Long ordemServicoId) {
-        Orcamento orcamento = orcamentoRepository.findById(ordemServicoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException(
-                        "Orçamento não encontrado para a ordem de serviço " + ordemServicoId));
-        
-        return orcamentoMapper.toDTO(orcamento);
-    }
-
-    @Override
     @Transactional
     public void deletar(Long id) {
         Orcamento orcamento = getOrcamento(id);
