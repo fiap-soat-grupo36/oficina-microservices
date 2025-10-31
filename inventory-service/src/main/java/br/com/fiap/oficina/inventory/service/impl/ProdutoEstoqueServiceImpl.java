@@ -120,4 +120,59 @@ public class ProdutoEstoqueServiceImpl implements ProdutoEstoqueService {
         
         return produtoEstoqueMapper.toResponseDTO(saldo);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProdutoEstoqueResponseDTO> listarTodos() {
+        return produtoEstoqueRepository.findAll()
+                .stream()
+                .map(produtoEstoqueMapper::toResponseDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProdutoEstoqueResponseDTO buscarPorId(Long id) {
+        ProdutoEstoque produto = produtoEstoqueRepository
+                .findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado no estoque"));
+        return produtoEstoqueMapper.toResponseDTO(produto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProdutoEstoqueResponseDTO buscarPorProdutoCatalogo(Long produtoCatalogoId) {
+        return getSaldoConsolidado(produtoCatalogoId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProdutoEstoqueResponseDTO> buscarPorTermo(String termo) {
+        // Since we don't have product name in the entity, we return empty list
+        // In a real implementation, this would query the catalog service
+        return List.of();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProdutoEstoqueResponseDTO> listarBaixoEstoque() {
+        return produtoEstoqueRepository.findAll()
+                .stream()
+                .filter(p -> p.getQuantidadeDisponivel() < p.getEstoqueMinimo())
+                .map(produtoEstoqueMapper::toResponseDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public ProdutoEstoqueResponseDTO atualizarEstoqueMinimo(Long id, Integer estoqueMinimo) {
+        ProdutoEstoque produto = produtoEstoqueRepository
+                .findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado no estoque"));
+        
+        produto.setEstoqueMinimo(estoqueMinimo);
+        produto = produtoEstoqueRepository.save(produto);
+        
+        return produtoEstoqueMapper.toResponseDTO(produto);
+    }
 }
