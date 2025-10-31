@@ -181,6 +181,7 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
         // Valida se o usuário tem role MECANICO
         // Nota: Em produção, deve-se validar via Auth-Service
         os.setMecanicoId(mecanicoId);
+        os.setStatus(StatusOrdemServico.EM_DIAGNOSTICO);
         os = repository.save(os);
 
         return toResponseDTO(os);
@@ -212,6 +213,12 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
         log.info("Iniciando execução da ordem de serviço ID: {}", id);
         
         OrdemServico os = getOrdemServico(id);
+        
+        // Valida se orçamento foi aprovado
+        if (os.getStatus() != StatusOrdemServico.AGUARDANDO_APROVACAO) {
+            throw new BusinessException("Ordem de serviço deve estar aguardando aprovação para iniciar execução");
+        }
+        
         os.setStatus(StatusOrdemServico.EM_EXECUCAO);
         os.setDataInicioExecucao(LocalDateTime.now());
         
@@ -229,6 +236,12 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
         log.info("Finalizando ordem de serviço ID: {}", id);
         
         OrdemServico os = getOrdemServico(id);
+        
+        // Valida se está em execução
+        if (os.getStatus() != StatusOrdemServico.EM_EXECUCAO) {
+            throw new BusinessException("Ordem de serviço deve estar em execução para ser finalizada");
+        }
+        
         os.setStatus(StatusOrdemServico.FINALIZADA);
         os.setDataTerminoExecucao(LocalDateTime.now());
         
@@ -250,6 +263,12 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
         log.info("Entregando veículo da ordem de serviço ID: {}", id);
         
         OrdemServico os = getOrdemServico(id);
+        
+        // Valida se está finalizada
+        if (os.getStatus() != StatusOrdemServico.FINALIZADA) {
+            throw new BusinessException("Ordem de serviço deve estar finalizada para ser entregue");
+        }
+        
         os.setStatus(StatusOrdemServico.ENTREGUE);
         os.setDataEntrega(LocalDateTime.now());
         
