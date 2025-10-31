@@ -81,7 +81,7 @@ public class ServicoController {
     )
     @ApiResponse(responseCode = "200", description = "Lista de serviços encontrados com sucesso.", content = @Content(mediaType = "application/json"))
     public ResponseEntity<List<ServicoResponseDTO>> buscarPorTermo(
-            @RequestParam(required = true) String termo) {
+            @RequestParam String termo) {
         List<ServicoResponseDTO> servicos = servicoService.buscarPorTermo(termo);
         if (servicos.isEmpty()) {
             return ResponseEntity.noContent().build();
