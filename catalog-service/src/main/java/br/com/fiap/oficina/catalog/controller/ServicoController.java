@@ -118,6 +118,7 @@ public class ServicoController {
             description = "Remove um serviço com base no ID informado (soft delete).",
             operationId = "deletarServico"
     )
+    @ApiResponse(responseCode = "204", description = "Serviço deletado com sucesso")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         servicoService.deletar(id);
         return ResponseEntity.noContent().build();

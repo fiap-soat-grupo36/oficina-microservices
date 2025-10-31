@@ -115,9 +115,10 @@ public class ProdutoCatalogoController {
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Deletar produto por ID.",
-            description = "Remove um produto do catálogo com base no ID informado (hard delete).",
+            description = "Remove um produto do catálogo com base no ID informado (inativação lógica).",
             operationId = "deletarProdutoCatalogo"
     )
+    @ApiResponse(responseCode = "204", description = "Produto deletado com sucesso")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         produtoService.deletar(id);
         return ResponseEntity.noContent().build();
