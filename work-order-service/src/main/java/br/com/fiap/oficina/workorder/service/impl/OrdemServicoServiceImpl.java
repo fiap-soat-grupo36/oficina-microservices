@@ -214,7 +214,7 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
         
         OrdemServico os = getOrdemServico(id);
         
-        // Valida se orçamento foi aprovado
+        // Valida se ordem de serviço está aguardando aprovação (status correto após orçamento aprovado)
         if (os.getStatus() != StatusOrdemServico.AGUARDANDO_APROVACAO) {
             throw new BusinessException("Ordem de serviço deve estar aguardando aprovação para iniciar execução");
         }
