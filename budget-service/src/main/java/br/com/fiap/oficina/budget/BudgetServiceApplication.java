@@ -8,7 +8,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
         "br.com.fiap.oficina.budget",
         "br.com.fiap.oficina.shared"
 })
-@EnableAsync
 public class BudgetServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(BudgetServiceApplication.class, args);
