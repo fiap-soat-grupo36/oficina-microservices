@@ -120,6 +120,6 @@ public class UsuarioController {
             return ResponseEntity.ok(usuarios);
         }
 
-        throw new IllegalArgumentException("Informe username ou role para busca");
+        throw new IllegalArgumentException("Please provide either username or role parameter");
     }
 }
