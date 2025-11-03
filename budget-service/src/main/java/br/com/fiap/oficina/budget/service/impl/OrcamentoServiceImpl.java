@@ -82,6 +82,11 @@ public class OrcamentoServiceImpl implements OrcamentoService {
         Orcamento orcamento = getOrcamento(id);
         return orcamentoMapper.toDTO(orcamento);
     }
+    //FIXME: implementar
+    @Override
+    public OrcamentoResponseDTO buscarPorOrdemServicoId(Long ordemServicoId) {
+        return null;
+    }
 
     @Override
     @Transactional
