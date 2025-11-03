@@ -3,10 +3,10 @@ FROM maven:3.9.6-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
-# Copia o pom.xml raiz e o módulo específico
-COPY ../pom.xml ./pom.xml
-COPY ../shared-library ./shared-library
-COPY . ./work-order-service
+# Copia o pom.xml raiz e os módulos necessários
+COPY pom.xml ./
+COPY shared-library ./shared-library
+COPY work-order-service ./work-order-service
 
 # Build apenas este módulo
 RUN mvn clean package -DskipTests -pl work-order-service -am
