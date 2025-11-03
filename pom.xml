@@ -36,9 +36,9 @@
     </modules>
 
     <properties>
-        <java.version>17</java.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Versions -->
@@ -47,6 +47,28 @@
         <spring-cloud.version>2025.1.0-M4</spring-cloud.version>
         <springdoc.version>2.8.9</springdoc.version>
         <jwt.version>0.12.6</jwt.version>
+
+        <!-- SonarCloud -->
+        <sonar.organization>fiap-soat-grupo36</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <!-- Fora da análise (não faz sentido indexar) -->
+        <sonar.exclusions>**/target/**,**/generated/**</sonar.exclusions>
+        <!-- Fora da cobertura (ainda analisadas por qualidade) -->
+        <sonar.coverage.exclusions>
+            **/*Application*.java,
+            **/config/**,
+            **/dto/**,
+            **/entity/**,
+            **/mapper/**,
+            **/exception/**,
+            **/enums/**,
+            **/util/**,
+            **/utils/**,
+            **/constants/**,
+            **/*Request*.java,
+            **/*Response*.java,
+            **/*Exception*.java
+        </sonar.coverage.exclusions>
     </properties>
 
     <!-- Dependency Management (não adiciona dependências, apenas define versões) -->
@@ -168,5 +190,123 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <!-- Maven Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <annotationProcessorPaths>
+                        <!-- Lombok: necessário para gerar código -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <!-- MapStruct: necessário para gerar os mapeadores -->
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Surefire Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <spring.profiles.active>test</spring.profiles.active>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+
+            <!-- JaCoCo Plugin -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.10</version>
+                <executions>
+                    <!-- Injeta o agente para rastrear cobertura -->
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <!-- Gera o relatório após os testes -->
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <!-- Itens excluídos da cobertura -->
+                                <exclude>**/dto/**</exclude>
+                                <exclude>**/entity/enums/**</exclude>
+                                <exclude>**/exception/**</exclude>
+                                <exclude>**/mapper/**</exclude>
+                                <exclude>**/config/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
+
+    <!-- Profiles -->
+    <profiles>
+        <profile>
+            <id>verify-coverage</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.10</version>
+                        <executions>
+                            <execution>
+                                <id>check</id>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <rule>
+                                            <element>BUNDLE</element>
+                                            <limits>
+                                                <limit>
+                                                    <counter>LINE</counter>
+                                                    <value>COVEREDRATIO</value>
+                                                    <minimum>0.80</minimum>
+                                                </limit>
+                                            </limits>
+                                        </rule>
+                                    </rules>
+                                    <!-- Exclusões seguem a mesma lógica do report -->
+                                    <excludes>
+                                        <exclude>**/dto/**</exclude>
+                                        <exclude>**/entity/enums/**</exclude>
+                                        <exclude>**/exception/**</exclude>
+                                        <exclude>**/mapper/**</exclude>
+                                        <exclude>**/config/**</exclude>
+                                    </excludes>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
