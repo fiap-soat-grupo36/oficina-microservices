@@ -1,6 +1,5 @@
 package br.com.fiap.oficina.shared.utils;
 
-import br.com.fiap.oficina.shared.exception.DocumentoInvalidoException;
 import java.util.regex.Pattern;
 
 public class ClienteValidator {

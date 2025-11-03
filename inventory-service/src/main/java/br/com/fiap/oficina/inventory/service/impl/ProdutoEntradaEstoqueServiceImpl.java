@@ -31,10 +31,10 @@ public class ProdutoEntradaEstoqueServiceImpl implements ProdutoEntradaEstoqueSe
     @Transactional
     public ProdutoEntradaEstoqueResponseDTO registrarEntrada(ProdutoEntradaEstoqueRequestDTO request) {
         log.info("Registrando entrada de estoque para produto ID: {}", request.getProdutoCatalogoId());
-        
+
         // Ensure product stock exists
         produtoEstoqueService.obterOuCriarSaldo(request.getProdutoCatalogoId());
-        
+
         // Create movement entry
         MovimentacaoEstoque movimentacao = new MovimentacaoEstoque();
         movimentacao.setProdutoCatalogoId(request.getProdutoCatalogoId());
@@ -46,14 +46,14 @@ public class ProdutoEntradaEstoqueServiceImpl implements ProdutoEntradaEstoqueSe
         movimentacao.setObservacao(request.getObservacoes());
         movimentacao.setUsuarioRegistro(getCurrentUsername());
         movimentacao.setDataMovimentacao(LocalDateTime.now());
-        
+
         movimentacao = movimentacaoEstoqueRepository.save(movimentacao);
-        
+
         // Update stock after entry
         produtoEstoqueService.atualizarSaldoAposMovimentacao(request.getProdutoCatalogoId());
-        
+
         log.info("Entrada registrada com sucesso. ID: {}", movimentacao.getId());
-        
+
         return mapToResponseDTO(movimentacao);
     }
 
@@ -63,14 +63,14 @@ public class ProdutoEntradaEstoqueServiceImpl implements ProdutoEntradaEstoqueSe
             Long produtoCatalogoId,
             LocalDateTime dataInicio,
             LocalDateTime dataFim) {
-        
+
         List<MovimentacaoEstoque> movimentacoes = movimentacaoEstoqueRepository.findWithFilters(
                 produtoCatalogoId,
                 TipoMovimentacao.ENTRADA,
                 dataInicio,
                 dataFim
         );
-        
+
         return movimentacoes.stream()
                 .map(this::mapToResponseDTO)
                 .toList();
@@ -82,11 +82,11 @@ public class ProdutoEntradaEstoqueServiceImpl implements ProdutoEntradaEstoqueSe
         MovimentacaoEstoque movimentacao = movimentacaoEstoqueRepository
                 .findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Entrada não encontrada"));
-        
+
         if (movimentacao.getTipoMovimentacao() != TipoMovimentacao.ENTRADA) {
             throw new RecursoNaoEncontradoException("Movimentação não é uma entrada");
         }
-        
+
         return mapToResponseDTO(movimentacao);
     }
 
@@ -100,18 +100,18 @@ public class ProdutoEntradaEstoqueServiceImpl implements ProdutoEntradaEstoqueSe
         dto.setNomeProduto(null);
         dto.setQuantidade(movimentacao.getQuantidade());
         dto.setPrecoUnitario(movimentacao.getPrecoUnitario());
-        
+
         if (movimentacao.getPrecoUnitario() != null && movimentacao.getQuantidade() != null) {
             dto.setValorTotal(movimentacao.getPrecoUnitario()
                     .multiply(BigDecimal.valueOf(movimentacao.getQuantidade())));
         }
-        
+
         dto.setNumeroNotaFiscal(movimentacao.getNumeroNotaFiscal());
         dto.setFornecedor(movimentacao.getFornecedor());
         dto.setObservacoes(movimentacao.getObservacao());
         dto.setDataEntrada(movimentacao.getDataMovimentacao());
         dto.setUsuarioRegistro(movimentacao.getUsuarioRegistro());
-        
+
         return dto;
     }
 

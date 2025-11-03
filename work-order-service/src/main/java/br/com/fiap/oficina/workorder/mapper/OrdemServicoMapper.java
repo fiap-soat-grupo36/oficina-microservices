@@ -1,7 +1,7 @@
 package br.com.fiap.oficina.workorder.mapper;
 
-import br.com.fiap.oficina.workorder.dto.response.OrdemServicoResumoDTO;
 import br.com.fiap.oficina.workorder.dto.response.OrdemServicoResponseDTO;
+import br.com.fiap.oficina.workorder.dto.response.OrdemServicoResumoDTO;
 import br.com.fiap.oficina.workorder.entity.OrdemServico;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

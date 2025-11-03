@@ -12,10 +12,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ItemReservaDTO {
-    
+
     @NotNull(message = "produtoCatalogoId é obrigatório")
     private Long produtoCatalogoId;
-    
+
     @NotNull(message = "quantidade é obrigatória")
     @Min(value = 1, message = "quantidade deve ser no mínimo 1")
     private Integer quantidade;

@@ -3,8 +3,8 @@ package br.com.fiap.oficina.workorder.service;
 import br.com.fiap.oficina.shared.enums.StatusOrdemServico;
 import br.com.fiap.oficina.workorder.dto.request.ItemOrdemServicoDTO;
 import br.com.fiap.oficina.workorder.dto.request.OsRequestDTO;
-import br.com.fiap.oficina.workorder.dto.response.OrdemServicoResumoDTO;
 import br.com.fiap.oficina.workorder.dto.response.OrdemServicoResponseDTO;
+import br.com.fiap.oficina.workorder.dto.response.OrdemServicoResumoDTO;
 import br.com.fiap.oficina.workorder.dto.response.OsItemDTO;
 import br.com.fiap.oficina.workorder.entity.OrdemServico;
 

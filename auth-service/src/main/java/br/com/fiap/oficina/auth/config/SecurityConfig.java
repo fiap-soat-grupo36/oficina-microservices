@@ -34,7 +34,7 @@ public class SecurityConfig {
 
     @Autowired
     public SecurityConfig(JwtTokenProvider tokenProvider,
-                         UserDetailsService userDetailsService) {
+                          UserDetailsService userDetailsService) {
         this.tokenProvider = tokenProvider;
         this.userDetailsService = userDetailsService;
     }

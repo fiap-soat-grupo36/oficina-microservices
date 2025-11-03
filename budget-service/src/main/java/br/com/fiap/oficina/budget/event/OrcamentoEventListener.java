@@ -12,9 +12,9 @@ public class OrcamentoEventListener {
     @Async
     @EventListener
     public void handleOrcamentoDisponivel(OrcamentoDisponivelEvent event) {
-        log.info("Orçamento disponível para aprovação - ID: {}, Valor: {}", 
-                 event.getOrcamento().getId(), 
-                 event.getOrcamento().getValorTotal());
+        log.info("Orçamento disponível para aprovação - ID: {}, Valor: {}",
+                event.getOrcamento().getId(),
+                event.getOrcamento().getValorTotal());
         // TODO: Implementar notificação ao cliente (email, SMS, etc)
     }
 }

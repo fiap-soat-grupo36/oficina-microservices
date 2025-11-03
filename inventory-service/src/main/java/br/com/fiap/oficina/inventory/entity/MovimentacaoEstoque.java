@@ -35,12 +35,12 @@ public class MovimentacaoEstoque {
     private LocalDateTime dataMovimentacao = LocalDateTime.now();
 
     private String observacao;
-    
+
     @Column(name = "numero_nota_fiscal")
     private String numeroNotaFiscal;
-    
+
     private String fornecedor;
-    
+
     @Column(name = "usuario_registro")
     private String usuarioRegistro;
 }

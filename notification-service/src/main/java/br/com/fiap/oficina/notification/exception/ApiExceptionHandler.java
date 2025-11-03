@@ -14,6 +14,6 @@ public class ApiExceptionHandler {
     public ResponseEntity<String> handleEmailNaoEnviado(EmailNaoEnviadoException ex) {
         log.error("Erro ao enviar email: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body("Erro ao enviar notificação por email");
+                .body("Erro ao enviar notificação por email");
     }
 }

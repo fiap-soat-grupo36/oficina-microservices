@@ -49,10 +49,10 @@ public class ProdutoEstoqueServiceImpl implements ProdutoEstoqueService {
     @Transactional
     public void atualizarSaldoAposMovimentacao(Long produtoCatalogoId) {
         ProdutoEstoque saldo = obterOuCriarSaldo(produtoCatalogoId);
-        
+
         List<MovimentacaoEstoque> movimentacoes = movimentacaoEstoqueRepository
                 .findByProdutoCatalogoId(produtoCatalogoId);
-        
+
         int quantidadeTotal = 0;
         for (MovimentacaoEstoque mov : movimentacoes) {
             if (mov.getTipoMovimentacao() == TipoMovimentacao.ENTRADA) {
@@ -61,17 +61,17 @@ public class ProdutoEstoqueServiceImpl implements ProdutoEstoqueService {
                 quantidadeTotal -= mov.getQuantidade();
             }
         }
-        
+
         int quantidadeReservada = reservaEstoqueRepository
                 .findByProdutoCatalogoIdAndAtivaTrue(produtoCatalogoId)
                 .stream()
                 .mapToInt(r -> r.getQuantidadeReservada())
                 .sum();
-        
+
         saldo.setQuantidadeTotal(quantidadeTotal);
         saldo.setQuantidadeReservada(quantidadeReservada);
         saldo.setQuantidadeDisponivel(quantidadeTotal - quantidadeReservada);
-        
+
         produtoEstoqueRepository.save(saldo);
         recalcularPrecoMedio(produtoCatalogoId);
     }
@@ -82,13 +82,13 @@ public class ProdutoEstoqueServiceImpl implements ProdutoEstoqueService {
         ProdutoEstoque saldo = produtoEstoqueRepository
                 .findByProdutoCatalogoId(produtoCatalogoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado no estoque"));
-        
+
         List<MovimentacaoEstoque> entradas = movimentacaoEstoqueRepository
                 .findByProdutoCatalogoId(produtoCatalogoId)
                 .stream()
                 .filter(m -> m.getTipoMovimentacao() == TipoMovimentacao.ENTRADA)
                 .toList();
-        
+
         if (entradas.isEmpty() || saldo.getQuantidadeTotal() == 0) {
             saldo.setPrecoCustoMedio(BigDecimal.ZERO);
             saldo.setPrecoMedioSugerido(BigDecimal.ZERO);
@@ -96,20 +96,20 @@ public class ProdutoEstoqueServiceImpl implements ProdutoEstoqueService {
             BigDecimal custoTotal = entradas.stream()
                     .map(e -> e.getPrecoUnitario().multiply(BigDecimal.valueOf(e.getQuantidade())))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
-            
+
             BigDecimal precoMedio = custoTotal.divide(
                     BigDecimal.valueOf(saldo.getQuantidadeTotal()),
                     2,
                     RoundingMode.HALF_UP
             );
-            
+
             BigDecimal precoSugerido = precoMedio.multiply(BigDecimal.valueOf(1.30))
                     .setScale(2, RoundingMode.HALF_UP);
-            
+
             saldo.setPrecoCustoMedio(precoMedio);
             saldo.setPrecoMedioSugerido(precoSugerido);
         }
-        
+
         produtoEstoqueRepository.save(saldo);
     }
 
@@ -119,7 +119,7 @@ public class ProdutoEstoqueServiceImpl implements ProdutoEstoqueService {
         ProdutoEstoque saldo = produtoEstoqueRepository
                 .findByProdutoCatalogoId(produtoCatalogoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado no estoque"));
-        
+
         return produtoEstoqueMapper.toResponseDTO(saldo);
     }
 
@@ -171,10 +171,10 @@ public class ProdutoEstoqueServiceImpl implements ProdutoEstoqueService {
         ProdutoEstoque produto = produtoEstoqueRepository
                 .findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado no estoque"));
-        
+
         produto.setEstoqueMinimo(estoqueMinimo);
         produto = produtoEstoqueRepository.save(produto);
-        
+
         return produtoEstoqueMapper.toResponseDTO(produto);
     }
 }

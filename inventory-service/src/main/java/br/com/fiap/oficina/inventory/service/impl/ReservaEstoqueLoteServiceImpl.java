@@ -50,18 +50,18 @@ public class ReservaEstoqueLoteServiceImpl implements br.com.fiap.oficina.invent
                 resultado.setDetalhe(e.getMessage());
                 resultado.setReservaItemId(null);
                 houveErro = true;
-                
+
                 if (Boolean.TRUE.equals(request.getAllOrNothing())) {
                     throw e; // Rollback da transação
                 }
-                
+
             } catch (Exception e) {
                 resultado.setReservada(0);
                 resultado.setStatus("ERRO");
                 resultado.setDetalhe(e.getMessage());
                 resultado.setReservaItemId(null);
                 houveErro = true;
-                
+
                 if (Boolean.TRUE.equals(request.getAllOrNothing())) {
                     throw e; // Rollback da transação
                 }

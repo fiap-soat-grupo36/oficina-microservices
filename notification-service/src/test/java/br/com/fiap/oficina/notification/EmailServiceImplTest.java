@@ -1,6 +1,5 @@
 package br.com.fiap.oficina.notification;
 
-import br.com.fiap.oficina.notification.exception.EmailNaoEnviadoException;
 import br.com.fiap.oficina.notification.service.impl.EmailServiceImpl;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;

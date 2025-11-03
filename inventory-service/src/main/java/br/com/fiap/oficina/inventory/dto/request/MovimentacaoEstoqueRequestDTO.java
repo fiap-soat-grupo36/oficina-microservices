@@ -16,19 +16,19 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MovimentacaoEstoqueRequestDTO {
-    
+
     @NotNull(message = "produtoCatalogoId é obrigatório")
     private Long produtoCatalogoId;
-    
+
     @NotNull(message = "tipoMovimentacao é obrigatório")
     private TipoMovimentacao tipoMovimentacao;
-    
+
     @NotNull(message = "quantidade é obrigatória")
     @Min(value = 1, message = "quantidade deve ser no mínimo 1")
     private Integer quantidade;
-    
+
     @DecimalMin(value = "0.0", inclusive = true, message = "precoUnitario deve ser maior ou igual a zero")
     private BigDecimal precoUnitario;
-    
+
     private String observacao;
 }

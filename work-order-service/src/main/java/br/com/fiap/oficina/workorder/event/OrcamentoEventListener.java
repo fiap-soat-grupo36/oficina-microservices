@@ -19,8 +19,8 @@ public class OrcamentoEventListener {
     @Async
     @EventListener
     public void handleVeiculoDisponivelEvent(VeiculoDisponivelEvent event) {
-        log.info("Evento VeiculoDisponivelEvent recebido para veículo ID: {} da ordem de serviço ID: {}", 
-                 event.getVeiculoId(), event.getOrdemServicoId());
+        log.info("Evento VeiculoDisponivelEvent recebido para veículo ID: {} da ordem de serviço ID: {}",
+                event.getVeiculoId(), event.getOrdemServicoId());
         // Aqui pode-se notificar o cliente que o veículo está disponível
     }
 }

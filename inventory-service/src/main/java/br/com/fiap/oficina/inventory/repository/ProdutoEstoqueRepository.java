@@ -19,7 +19,7 @@ public interface ProdutoEstoqueRepository extends JpaRepository<ProdutoEstoque, 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM ProdutoEstoque p WHERE p.produtoCatalogoId = :produtoCatalogoId")
     Optional<ProdutoEstoque> findByProdutoCatalogoIdForUpdate(@Param("produtoCatalogoId") Long produtoCatalogoId);
-    
+
     @Query("SELECT p FROM ProdutoEstoque p WHERE p.quantidadeDisponivel < p.estoqueMinimo")
     List<ProdutoEstoque> findBaixoEstoque();
 }

@@ -15,13 +15,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReservaLoteRequestDTO {
-    
+
     @NotNull(message = "ordemServicoId é obrigatório")
     private Long ordemServicoId;
-    
+
     @NotEmpty(message = "A lista de itens não pode estar vazia")
     @Valid
     private List<ItemReservaDTO> itens;
-    
+
     private Boolean allOrNothing = false;
 }

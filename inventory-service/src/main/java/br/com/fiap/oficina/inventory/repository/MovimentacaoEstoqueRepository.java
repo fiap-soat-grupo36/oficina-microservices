@@ -18,10 +18,10 @@ public interface MovimentacaoEstoqueRepository extends JpaRepository<Movimentaca
     List<MovimentacaoEstoque> findByTipoMovimentacao(TipoMovimentacao tipo);
 
     @Query("SELECT m FROM MovimentacaoEstoque m WHERE " +
-           "(:produtoCatalogoId IS NULL OR m.produtoCatalogoId = :produtoCatalogoId) AND " +
-           "(:tipo IS NULL OR m.tipoMovimentacao = :tipo) AND " +
-           "(:dataInicio IS NULL OR m.dataMovimentacao >= :dataInicio) AND " +
-           "(:dataFim IS NULL OR m.dataMovimentacao <= :dataFim)")
+            "(:produtoCatalogoId IS NULL OR m.produtoCatalogoId = :produtoCatalogoId) AND " +
+            "(:tipo IS NULL OR m.tipoMovimentacao = :tipo) AND " +
+            "(:dataInicio IS NULL OR m.dataMovimentacao >= :dataInicio) AND " +
+            "(:dataFim IS NULL OR m.dataMovimentacao <= :dataFim)")
     List<MovimentacaoEstoque> findWithFilters(
             @Param("produtoCatalogoId") Long produtoCatalogoId,
             @Param("tipo") TipoMovimentacao tipo,

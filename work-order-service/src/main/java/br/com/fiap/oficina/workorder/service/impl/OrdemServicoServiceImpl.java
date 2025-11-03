@@ -1,12 +1,12 @@
 package br.com.fiap.oficina.workorder.service.impl;
 
 import br.com.fiap.oficina.shared.enums.StatusOrdemServico;
-import br.com.fiap.oficina.workorder.dto.response.ClienteResponseDTO;
-import br.com.fiap.oficina.workorder.dto.response.ServicoResponseDTO;
-import br.com.fiap.oficina.workorder.dto.response.VeiculoResponseDTO;
 import br.com.fiap.oficina.shared.exception.BusinessException;
 import br.com.fiap.oficina.shared.exception.RecursoNaoEncontradoException;
-import br.com.fiap.oficina.workorder.client.*;
+import br.com.fiap.oficina.workorder.client.ClienteClient;
+import br.com.fiap.oficina.workorder.client.ProdutoCatalogoClient;
+import br.com.fiap.oficina.workorder.client.ServicoClient;
+import br.com.fiap.oficina.workorder.client.VeiculoClient;
 import br.com.fiap.oficina.workorder.dto.request.ItemOrdemServicoDTO;
 import br.com.fiap.oficina.workorder.dto.request.OsRequestDTO;
 import br.com.fiap.oficina.workorder.dto.response.*;
@@ -44,8 +44,8 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
     @Override
     @Transactional
     public OrdemServicoResponseDTO criar(OsRequestDTO request) {
-        log.info("Criando ordem de serviço para cliente ID: {} e veículo ID: {}", 
-                 request.getClienteId(), request.getVeiculoId());
+        log.info("Criando ordem de serviço para cliente ID: {} e veículo ID: {}",
+                request.getClienteId(), request.getVeiculoId());
 
         // Valida cliente e veículo
         ClienteResponseDTO cliente = clienteClient.getCliente(request.getClienteId());
@@ -175,9 +175,9 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
     @Transactional
     public OrdemServicoResponseDTO atribuirMecanico(Long id, Long mecanicoId) {
         log.info("Atribuindo mecânico ID: {} à ordem de serviço ID: {}", mecanicoId, id);
-        
+
         OrdemServico os = getOrdemServico(id);
-        
+
         // Valida se o usuário tem role MECANICO
         // Nota: Em produção, deve-se validar via Auth-Service
         os.setMecanicoId(mecanicoId);
@@ -190,10 +190,10 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
     @Transactional
     public OrdemServicoResponseDTO diagnosticar(Long id, String observacoes) {
         log.info("Diagnosticando ordem de serviço ID: {}", id);
-        
+
         OrdemServico os = getOrdemServico(id);
         os.setStatus(StatusOrdemServico.EM_DIAGNOSTICO);
-        
+
         if (observacoes != null) {
             os.setObservacoes(observacoes);
         }
@@ -210,17 +210,17 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
     @Transactional
     public OrdemServicoResponseDTO executar(Long id, String observacoes) {
         log.info("Iniciando execução da ordem de serviço ID: {}", id);
-        
+
         OrdemServico os = getOrdemServico(id);
-        
+
         // Valida se ordem de serviço está aguardando aprovação (status correto após orçamento aprovado)
         if (os.getStatus() != StatusOrdemServico.AGUARDANDO_APROVACAO) {
             throw new BusinessException("Ordem de serviço deve estar aguardando aprovação para iniciar execução");
         }
-        
+
         os.setStatus(StatusOrdemServico.EM_EXECUCAO);
         os.setDataInicioExecucao(LocalDateTime.now());
-        
+
         if (observacoes != null) {
             os.setObservacoes(observacoes);
         }
@@ -233,17 +233,17 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
     @Transactional
     public OrdemServicoResponseDTO finalizar(Long id, String observacoes) {
         log.info("Finalizando ordem de serviço ID: {}", id);
-        
+
         OrdemServico os = getOrdemServico(id);
-        
+
         // Valida se está em execução
         if (os.getStatus() != StatusOrdemServico.EM_EXECUCAO) {
             throw new BusinessException("Ordem de serviço deve estar em execução para ser finalizada");
         }
-        
+
         os.setStatus(StatusOrdemServico.FINALIZADA);
         os.setDataTerminoExecucao(LocalDateTime.now());
-        
+
         if (observacoes != null) {
             os.setObservacoes(observacoes);
         }
@@ -260,17 +260,17 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
     @Transactional
     public OrdemServicoResponseDTO entregar(Long id, String observacoes) {
         log.info("Entregando veículo da ordem de serviço ID: {}", id);
-        
+
         OrdemServico os = getOrdemServico(id);
-        
+
         // Valida se está finalizada
         if (os.getStatus() != StatusOrdemServico.FINALIZADA) {
             throw new BusinessException("Ordem de serviço deve estar finalizada para ser entregue");
         }
-        
+
         os.setStatus(StatusOrdemServico.ENTREGUE);
         os.setDataEntrega(LocalDateTime.now());
-        
+
         if (observacoes != null) {
             os.setObservacoes(observacoes);
         }
@@ -283,7 +283,7 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
     @Transactional
     public List<OsItemDTO> adicionarServicos(Long id, List<Long> servicosIds) {
         log.info("Adicionando serviços à ordem de serviço ID: {}", id);
-        
+
         OrdemServico os = getOrdemServico(id);
 
         if (os.getStatus() == StatusOrdemServico.AGUARDANDO_APROVACAO) {
@@ -312,7 +312,7 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
     @Transactional
     public OrdemServicoResponseDTO removerServicos(Long id, List<Long> servicosIds) {
         log.info("Removendo serviços da ordem de serviço ID: {}", id);
-        
+
         OrdemServico os = getOrdemServico(id);
 
         if (os.getStatus() == StatusOrdemServico.AGUARDANDO_APROVACAO) {
@@ -331,7 +331,7 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
     @Transactional
     public List<OsItemDTO> adicionarProdutos(Long id, List<ItemOrdemServicoDTO> produtos) {
         log.info("Adicionando produtos à ordem de serviço ID: {}", id);
-        
+
         OrdemServico os = getOrdemServico(id);
 
         if (os.getStatus() == StatusOrdemServico.AGUARDANDO_APROVACAO) {
@@ -370,7 +370,7 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
     @Transactional
     public OrdemServicoResponseDTO removerProdutos(Long id, List<Long> produtosIds) {
         log.info("Removendo produtos da ordem de serviço ID: {}", id);
-        
+
         OrdemServico os = getOrdemServico(id);
 
         if (os.getStatus() == StatusOrdemServico.AGUARDANDO_APROVACAO) {
@@ -404,7 +404,7 @@ public class OrdemServicoServiceImpl implements OrdemServicoService {
     @Transactional
     public void adicionarOrcamento(Long ordemServicoId, Long orcamentoId, StatusOrdemServico status) {
         log.info("Adicionando orçamento ID: {} à ordem de serviço ID: {}", orcamentoId, ordemServicoId);
-        
+
         OrdemServico os = getOrdemServico(ordemServicoId);
         os.setOrcamentoId(orcamentoId);
         os.setStatus(status);

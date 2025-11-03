@@ -8,17 +8,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface MovimentacaoEstoqueService {
-    
+
     MovimentacaoEstoqueResponseDTO registrarEntrada(MovimentacaoEstoqueRequestDTO dto);
-    
+
     MovimentacaoEstoqueResponseDTO registrarSaida(MovimentacaoEstoqueRequestDTO dto);
-    
+
     List<MovimentacaoEstoqueResponseDTO> listarMovimentacoes(
             Long produtoCatalogoId,
             TipoMovimentacao tipo,
             LocalDateTime dataInicio,
             LocalDateTime dataFim
     );
-    
+
     MovimentacaoEstoqueResponseDTO buscarPorId(Long id);
 }

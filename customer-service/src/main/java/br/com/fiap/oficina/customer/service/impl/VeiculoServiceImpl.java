@@ -39,7 +39,7 @@ public class VeiculoServiceImpl implements VeiculoService {
                 throw new IllegalArgumentException("Placa já cadastrada: " + dto.getPlaca());
             });
         }
-        
+
         Veiculo entity = veiculoMapper.toEntity(dto);
         atualizarCliente(dto.getClienteId(), entity);
         Veiculo salvo = veiculoRepository.save(entity);
@@ -73,7 +73,7 @@ public class VeiculoServiceImpl implements VeiculoService {
         veiculo.setAno(request.getAno());
         veiculo.setCor(request.getCor());
         veiculo.setObservacoes(request.getObservacoes());
-        
+
         // Validar se cliente existe (se alterado)
         if (request.getClienteId() != null && (veiculo.getCliente() == null || !request.getClienteId().equals(veiculo.getCliente().getId()))) {
             atualizarCliente(request.getClienteId(), veiculo);
@@ -97,12 +97,12 @@ public class VeiculoServiceImpl implements VeiculoService {
                 .map(veiculoMapper::toDTO)
                 .orElseThrow(() -> new RecursoNaoEncontradoException(String.format(VEICULO_PLACA_NAO_ENCONTRADO, placa)));
     }
-    
+
     @Override
     public List<VeiculoResponseDTO> buscarPorCliente(Long clienteId) {
         // Valida se cliente existe
         clienteService.getCliente(clienteId);
-        
+
         List<Veiculo> veiculos = veiculoRepository.findByClienteId(clienteId);
         return veiculoMapper.toDTOList(veiculos);
     }

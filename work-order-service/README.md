@@ -12,6 +12,7 @@ Microserviço responsável pelo gerenciamento de ordens de serviço da oficina.
 ## Funcionalidades
 
 ### Gerenciamento de Ordens de Serviço
+
 - Criar, listar, atualizar e deletar ordens de serviço
 - Atribuir mecânico a uma OS
 - Diagnosticar, executar, finalizar e entregar veículo
@@ -59,13 +60,15 @@ EM_EXECUCAO → FINALIZADA → ENTREGUE
 
 ### Feign Client Runtime Issue
 
-Existe um problema de compatibilidade conhecido entre Spring Cloud OpenFeign versão milestone (5.0.0-M4) e Spring Boot 3.5.3, causando erro em tempo de execução:
+Existe um problema de compatibilidade conhecido entre Spring Cloud OpenFeign versão milestone (5.0.0-M4) e Spring Boot
+3.5.3, causando erro em tempo de execução:
 
 ```
 java.lang.NoClassDefFoundError: tools/jackson/databind/JacksonModule
 ```
 
 **Soluções possíveis:**
+
 1. Aguardar versão estável do Spring Cloud compatível com Spring Boot 3.5.x
 2. Fazer downgrade do Spring Boot para 3.4.x
 3. Usar versão estável do Spring Cloud (não milestone)
@@ -82,6 +85,7 @@ mvn spring-boot:run
 ## Banco de Dados
 
 Console H2 disponível em: `http://localhost:8086/h2-console`
+
 - URL: `jdbc:h2:mem:workorderdb`
 - Username: `sa`
 - Password: (vazio)

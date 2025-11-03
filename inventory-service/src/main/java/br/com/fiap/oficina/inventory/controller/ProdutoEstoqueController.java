@@ -22,8 +22,8 @@ public class ProdutoEstoqueController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE', 'ESTOQUISTA')")
     @Operation(
-        summary = "Listar todos os produtos em estoque",
-        description = "Retorna lista completa de produtos no estoque"
+            summary = "Listar todos os produtos em estoque",
+            description = "Retorna lista completa de produtos no estoque"
     )
     public ResponseEntity<List<ProdutoEstoqueResponseDTO>> listarTodos() {
         List<ProdutoEstoqueResponseDTO> estoque = produtoEstoqueService.listarTodos();
@@ -36,8 +36,8 @@ public class ProdutoEstoqueController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE', 'ESTOQUISTA')")
     @Operation(
-        summary = "Buscar produto em estoque por ID",
-        description = "Retorna detalhes de um produto específico no estoque"
+            summary = "Buscar produto em estoque por ID",
+            description = "Retorna detalhes de um produto específico no estoque"
     )
     public ResponseEntity<ProdutoEstoqueResponseDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(produtoEstoqueService.buscarPorId(id));
@@ -46,11 +46,11 @@ public class ProdutoEstoqueController {
     @GetMapping("/produto/{produtoCatalogoId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE', 'ESTOQUISTA')")
     @Operation(
-        summary = "Buscar estoque por produto do catálogo",
-        description = "Retorna o estoque de um produto específico do catálogo"
+            summary = "Buscar estoque por produto do catálogo",
+            description = "Retorna o estoque de um produto específico do catálogo"
     )
     public ResponseEntity<ProdutoEstoqueResponseDTO> buscarPorProdutoCatalogo(
-        @PathVariable Long produtoCatalogoId
+            @PathVariable Long produtoCatalogoId
     ) {
         return ResponseEntity.ok(produtoEstoqueService.buscarPorProdutoCatalogo(produtoCatalogoId));
     }
@@ -58,11 +58,11 @@ public class ProdutoEstoqueController {
     @GetMapping("/buscar")
     @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE', 'ESTOQUISTA')")
     @Operation(
-        summary = "Buscar produtos em estoque por termo",
-        description = "Busca produtos cujo nome contenha o termo informado"
+            summary = "Buscar produtos em estoque por termo",
+            description = "Busca produtos cujo nome contenha o termo informado"
     )
     public ResponseEntity<List<ProdutoEstoqueResponseDTO>> buscarPorTermo(
-        @RequestParam String termo
+            @RequestParam String termo
     ) {
         List<ProdutoEstoqueResponseDTO> produtos = produtoEstoqueService.buscarPorTermo(termo);
         if (produtos.isEmpty()) {
@@ -74,8 +74,8 @@ public class ProdutoEstoqueController {
     @GetMapping("/baixo-estoque")
     @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE', 'ESTOQUISTA')")
     @Operation(
-        summary = "Listar produtos com estoque baixo",
-        description = "Retorna produtos com quantidade abaixo do estoque mínimo"
+            summary = "Listar produtos com estoque baixo",
+            description = "Retorna produtos com quantidade abaixo do estoque mínimo"
     )
     public ResponseEntity<List<ProdutoEstoqueResponseDTO>> listarBaixoEstoque() {
         List<ProdutoEstoqueResponseDTO> produtos = produtoEstoqueService.listarBaixoEstoque();
@@ -88,12 +88,12 @@ public class ProdutoEstoqueController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @Operation(
-        summary = "Atualizar estoque mínimo",
-        description = "Atualiza a quantidade mínima de estoque de um produto"
+            summary = "Atualizar estoque mínimo",
+            description = "Atualiza a quantidade mínima de estoque de um produto"
     )
     public ResponseEntity<ProdutoEstoqueResponseDTO> atualizarEstoqueMinimo(
-        @PathVariable Long id,
-        @RequestParam Integer estoqueMinimo
+            @PathVariable Long id,
+            @RequestParam Integer estoqueMinimo
     ) {
         return ResponseEntity.ok(produtoEstoqueService.atualizarEstoqueMinimo(id, estoqueMinimo));
     }
@@ -102,8 +102,8 @@ public class ProdutoEstoqueController {
     @GetMapping("/saldo/{produtoId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA', 'ATENDENTE')")
     @Operation(
-        summary = "Obter saldo consolidado (legado)",
-        description = "Endpoint legado para obter saldo consolidado"
+            summary = "Obter saldo consolidado (legado)",
+            description = "Endpoint legado para obter saldo consolidado"
     )
     public ResponseEntity<ProdutoEstoqueResponseDTO> obterSaldo(@PathVariable Long produtoId) {
         ProdutoEstoqueResponseDTO saldo = produtoEstoqueService.getSaldoConsolidado(produtoId);

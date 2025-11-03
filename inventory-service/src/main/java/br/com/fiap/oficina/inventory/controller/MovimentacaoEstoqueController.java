@@ -27,13 +27,13 @@ public class MovimentacaoEstoqueController {
     public ResponseEntity<MovimentacaoEstoqueResponseDTO> registrarMovimentacao(
             @Valid @RequestBody MovimentacaoEstoqueRequestDTO request) {
         MovimentacaoEstoqueResponseDTO response;
-        
+
         if (request.getTipoMovimentacao() == TipoMovimentacao.ENTRADA) {
             response = movimentacaoEstoqueService.registrarEntrada(request);
         } else {
             response = movimentacaoEstoqueService.registrarSaida(request);
         }
-        
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -45,7 +45,7 @@ public class MovimentacaoEstoqueController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataInicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataFim
     ) {
-        List<MovimentacaoEstoqueResponseDTO> movimentacoes = 
+        List<MovimentacaoEstoqueResponseDTO> movimentacoes =
                 movimentacaoEstoqueService.listarMovimentacoes(produtoCatalogoId, tipo, dataInicio, dataFim);
         return ResponseEntity.ok(movimentacoes);
     }

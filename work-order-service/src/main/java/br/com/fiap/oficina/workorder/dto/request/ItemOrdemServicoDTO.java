@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 public class ItemOrdemServicoDTO {
 
     private Long produtoCatalogoId;
-    
+
     private Integer quantidade;
-    
+
     private BigDecimal precoUnitario;
 }

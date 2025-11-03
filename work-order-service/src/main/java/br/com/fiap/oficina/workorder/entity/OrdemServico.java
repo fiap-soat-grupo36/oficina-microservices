@@ -51,8 +51,8 @@ public class OrdemServico {
     private Long orcamentoId;
 
     @ElementCollection
-    @CollectionTable(name = "ordem_servico_servicos", 
-                     joinColumns = @JoinColumn(name = "ordem_servico_id"))
+    @CollectionTable(name = "ordem_servico_servicos",
+            joinColumns = @JoinColumn(name = "ordem_servico_id"))
     @Column(name = "servico_id")
     private List<Long> servicosIds = new ArrayList<>();
 

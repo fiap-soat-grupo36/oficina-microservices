@@ -13,16 +13,16 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ProdutoEstoqueResponseDTO {
     private Long id;
-    
+
     @JsonProperty("produtoCatalogoId")
     private Long produtoCatalogoId;
-    
+
     // Legacy field mapping to same property
     @JsonProperty("produtoId")
     public Long getProdutoId() {
         return produtoCatalogoId;
     }
-    
+
     private String nomeProduto;
     private String codigoProduto;
     private Integer quantidadeDisponivel;

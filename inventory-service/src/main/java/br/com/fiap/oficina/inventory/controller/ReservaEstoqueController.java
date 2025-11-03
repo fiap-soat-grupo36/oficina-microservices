@@ -2,8 +2,8 @@ package br.com.fiap.oficina.inventory.controller;
 
 import br.com.fiap.oficina.inventory.dto.request.ReservaLoteRequestDTO;
 import br.com.fiap.oficina.inventory.dto.response.ReservaLoteResponseDTO;
-import br.com.fiap.oficina.inventory.service.ReservaEstoqueService;
 import br.com.fiap.oficina.inventory.service.ReservaEstoqueLoteService;
+import br.com.fiap.oficina.inventory.service.ReservaEstoqueService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;

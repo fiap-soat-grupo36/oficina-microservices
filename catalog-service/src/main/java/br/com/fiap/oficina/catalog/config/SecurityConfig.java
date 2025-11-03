@@ -23,7 +23,7 @@ public class SecurityConfig {
     private static final String ADMIN = "ADMIN";
     private static final String ATENDENTE = "ATENDENTE";
     private static final String MECANICO = "MECANICO";
-    
+
     private static final String[] PUBLIC_GET = {
             "/actuator/health",
             "/swagger-ui/**",
@@ -36,7 +36,7 @@ public class SecurityConfig {
 
     @Autowired
     public SecurityConfig(JwtTokenProvider tokenProvider,
-                         UserDetailsService userDetailsService) {
+                          UserDetailsService userDetailsService) {
         this.tokenProvider = tokenProvider;
         this.userDetailsService = userDetailsService;
     }

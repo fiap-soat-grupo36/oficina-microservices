@@ -25,7 +25,7 @@ public class OrcamentoServiceImpl implements OrcamentoService {
     private final OrcamentoMapper orcamentoMapper;
 
     @Autowired
-    public OrcamentoServiceImpl(OrcamentoRepository orcamentoRepository, 
+    public OrcamentoServiceImpl(OrcamentoRepository orcamentoRepository,
                                 OrcamentoMapper orcamentoMapper) {
         this.orcamentoRepository = orcamentoRepository;
         this.orcamentoMapper = orcamentoMapper;
@@ -35,19 +35,19 @@ public class OrcamentoServiceImpl implements OrcamentoService {
     @Transactional
     public OrcamentoResponseDTO aprovar(Long id) {
         Orcamento orcamento = getOrcamento(id);
-        
+
         if (orcamento.getStatusOrcamento() != StatusOrcamento.CRIADO) {
             throw new IllegalStateException("Apenas orçamentos com status CRIADO podem ser aprovados");
         }
-        
+
         orcamento.setStatusOrcamento(StatusOrcamento.APROVADO);
         orcamento.setDataAprovacao(LocalDateTime.now());
-        
+
         Orcamento salvo = orcamentoRepository.save(orcamento);
         log.info("Orçamento {} aprovado", id);
-        
+
         // TODO: Baixa definitiva do estoque (comentado no original)
-        
+
         return orcamentoMapper.toDTO(salvo);
     }
 
@@ -55,19 +55,19 @@ public class OrcamentoServiceImpl implements OrcamentoService {
     @Transactional
     public OrcamentoResponseDTO reprovar(Long id) {
         Orcamento orcamento = getOrcamento(id);
-        
+
         if (orcamento.getStatusOrcamento() != StatusOrcamento.CRIADO) {
             throw new IllegalStateException("Apenas orçamentos com status CRIADO podem ser reprovados");
         }
-        
+
         orcamento.setStatusOrcamento(StatusOrcamento.REPROVADO);
         orcamento.setDataReprovacao(LocalDateTime.now());
-        
+
         Orcamento salvo = orcamentoRepository.save(orcamento);
         log.info("Orçamento {} reprovado", id);
-        
+
         // TODO: Cancelar reservas de estoque via ReservaEstoqueService
-        
+
         return orcamentoMapper.toDTO(salvo);
     }
 
@@ -82,6 +82,7 @@ public class OrcamentoServiceImpl implements OrcamentoService {
         Orcamento orcamento = getOrcamento(id);
         return orcamentoMapper.toDTO(orcamento);
     }
+
     //FIXME: implementar
     @Override
     public OrcamentoResponseDTO buscarPorOrdemServicoId(Long ordemServicoId) {
@@ -92,12 +93,12 @@ public class OrcamentoServiceImpl implements OrcamentoService {
     @Transactional
     public void deletar(Long id) {
         Orcamento orcamento = getOrcamento(id);
-        
+
         if (orcamento.getStatusOrcamento() == StatusOrcamento.APROVADO) {
             throw new br.com.fiap.oficina.shared.exception.OrcamentoJaAprovadoException(
                     "Não é possível deletar um orçamento aprovado");
         }
-        
+
         orcamentoRepository.delete(orcamento);
         log.info("Orçamento {} deletado com sucesso", id);
     }

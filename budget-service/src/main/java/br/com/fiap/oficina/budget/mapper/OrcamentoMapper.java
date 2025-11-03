@@ -10,6 +10,8 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface OrcamentoMapper {
     OrcamentoResponseDTO toDTO(Orcamento orcamento);
+
     OrcamentoResumoDTO toResumoDTO(Orcamento orcamento);
+
     List<OrcamentoResponseDTO> toDTOList(List<Orcamento> orcamentos);
 }

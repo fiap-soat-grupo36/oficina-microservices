@@ -54,8 +54,8 @@ public class OrcamentoController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @Operation(
-        summary = "Deletar orçamento",
-        description = "Remove um orçamento do sistema"
+            summary = "Deletar orçamento",
+            description = "Remove um orçamento do sistema"
     )
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         orcamentoService.deletar(id);
@@ -65,11 +65,11 @@ public class OrcamentoController {
     @GetMapping("/ordem-servico/{ordemServicoId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE', 'CLIENTE')")
     @Operation(
-        summary = "Buscar orçamento por ordem de serviço",
-        description = "Retorna o orçamento associado a uma ordem de serviço específica"
+            summary = "Buscar orçamento por ordem de serviço",
+            description = "Retorna o orçamento associado a uma ordem de serviço específica"
     )
     public ResponseEntity<OrcamentoResponseDTO> buscarPorOrdemServico(
-        @PathVariable Long ordemServicoId
+            @PathVariable Long ordemServicoId
     ) {
         return ResponseEntity.ok(orcamentoService.buscarPorOrdemServicoId(ordemServicoId));
     }

@@ -27,11 +27,11 @@ public class ProdutoEntradaEstoqueController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA')")
     @Operation(
-        summary = "Registrar entrada de produtos no estoque",
-        description = "Registra a entrada de uma ou mais unidades de um produto"
+            summary = "Registrar entrada de produtos no estoque",
+            description = "Registra a entrada de uma ou mais unidades de um produto"
     )
     public ResponseEntity<ProdutoEntradaEstoqueResponseDTO> registrarEntrada(
-        @Valid @RequestBody ProdutoEntradaEstoqueRequestDTO request
+            @Valid @RequestBody ProdutoEntradaEstoqueRequestDTO request
     ) {
         ProdutoEntradaEstoqueResponseDTO response = entradaService.registrarEntrada(request);
         URI location = URI.create("/estoque/entradas/" + response.getId());
@@ -41,24 +41,24 @@ public class ProdutoEntradaEstoqueController {
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA', 'ATENDENTE')")
     @Operation(
-        summary = "Listar todas as entradas de estoque",
-        description = "Retorna histórico de entradas de produtos"
+            summary = "Listar todas as entradas de estoque",
+            description = "Retorna histórico de entradas de produtos"
     )
     public ResponseEntity<List<ProdutoEntradaEstoqueResponseDTO>> listarEntradas(
-        @RequestParam(required = false) Long produtoCatalogoId,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataInicio,
-        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataFim
+            @RequestParam(required = false) Long produtoCatalogoId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataInicio,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataFim
     ) {
-        List<ProdutoEntradaEstoqueResponseDTO> entradas = 
-            entradaService.listarEntradas(produtoCatalogoId, dataInicio, dataFim);
+        List<ProdutoEntradaEstoqueResponseDTO> entradas =
+                entradaService.listarEntradas(produtoCatalogoId, dataInicio, dataFim);
         return ResponseEntity.ok(entradas);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'ESTOQUISTA', 'ATENDENTE')")
     @Operation(
-        summary = "Buscar entrada de estoque por ID",
-        description = "Retorna detalhes de uma entrada específica"
+            summary = "Buscar entrada de estoque por ID",
+            description = "Retorna detalhes de uma entrada específica"
     )
     public ResponseEntity<ProdutoEntradaEstoqueResponseDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(entradaService.buscarPorId(id));

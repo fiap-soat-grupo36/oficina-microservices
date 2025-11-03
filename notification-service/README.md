@@ -4,7 +4,8 @@ Microserviço responsável pelo envio de notificações por email para os client
 
 ## Descrição
 
-O Notification Service é um microserviço dedicado ao envio de notificações por email, utilizando templates HTML e processamento assíncrono para garantir performance e escalabilidade.
+O Notification Service é um microserviço dedicado ao envio de notificações por email, utilizando templates HTML e
+processamento assíncrono para garantir performance e escalabilidade.
 
 ## Funcionalidades
 
@@ -47,24 +48,31 @@ O serviço não expõe endpoints REST, funciona através de Event Listeners.
 ## Eventos Suportados
 
 ### CalcularOrcamentoEvent
+
 Disparado quando um novo orçamento precisa ser calculado.
 
 ### OrcamentoDisponivelEvent
+
 Disparado quando um orçamento está disponível para o cliente, enviando um email com os detalhes.
 
 ### VeiculoDisponivelEvent
+
 Disparado quando um veículo está pronto para retirada, enviando um email de notificação ao cliente.
 
 ## Templates de Email
 
 ### orcamento-disponivel.html
+
 Template para notificação de orçamento disponível, contendo:
+
 - Número do orçamento
 - Lista de itens com descrição, quantidade e valores
 - Valor total do orçamento
 
 ### veiculo-pronto.html
+
 Template para notificação de veículo pronto, contendo:
+
 - Informações do veículo (modelo e placa)
 - Horários de funcionamento
 - Instruções para retirada
@@ -108,7 +116,8 @@ logging:
 
 ## Tratamento de Erros
 
-O serviço possui tratamento específico para falhas no envio de emails através do `ApiExceptionHandler`, retornando mensagens amigáveis em caso de erro.
+O serviço possui tratamento específico para falhas no envio de emails através do `ApiExceptionHandler`, retornando
+mensagens amigáveis em caso de erro.
 
 ## Arquitetura
 

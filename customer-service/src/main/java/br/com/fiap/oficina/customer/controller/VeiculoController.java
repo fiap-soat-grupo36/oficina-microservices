@@ -76,7 +76,7 @@ public class VeiculoController {
     public ResponseEntity<VeiculoResponseDTO> buscarPorPlaca(@PathVariable String placa) {
         return ResponseEntity.ok(veiculoService.buscarPorPlaca(placa));
     }
-    
+
     @GetMapping("/cliente/{clienteId}")
     @Operation(
             summary = "Buscar veículos por cliente",

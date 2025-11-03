@@ -8,12 +8,12 @@ import java.util.List;
 
 public interface ProdutoEntradaEstoqueService {
     ProdutoEntradaEstoqueResponseDTO registrarEntrada(ProdutoEntradaEstoqueRequestDTO request);
-    
+
     List<ProdutoEntradaEstoqueResponseDTO> listarEntradas(
-        Long produtoCatalogoId, 
-        LocalDateTime dataInicio, 
-        LocalDateTime dataFim
+            Long produtoCatalogoId,
+            LocalDateTime dataInicio,
+            LocalDateTime dataFim
     );
-    
+
     ProdutoEntradaEstoqueResponseDTO buscarPorId(Long id);
 }
