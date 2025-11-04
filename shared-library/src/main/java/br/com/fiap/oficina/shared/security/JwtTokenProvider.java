@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -74,7 +75,8 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload();
 
-        return claims.get("roles", List.class);
+        List<String> roles = claims.get("roles", List.class);
+        return roles != null ? roles : Collections.emptyList();
     }
 
     public boolean validateToken(String token) {

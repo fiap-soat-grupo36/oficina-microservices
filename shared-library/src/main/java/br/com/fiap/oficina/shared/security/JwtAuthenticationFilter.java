@@ -55,11 +55,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 } else {
                     // Extract roles from JWT token for services that only validate JWT
                     List<String> roles = tokenProvider.getRolesFromToken(jwt);
-                    List<SimpleGrantedAuthority> authorities = roles != null ? 
-                            roles.stream()
-                                .map(SimpleGrantedAuthority::new)
-                                .collect(Collectors.toList()) :
-                            Collections.emptyList();
+                    List<SimpleGrantedAuthority> authorities = roles.stream()
+                            .filter(role -> role != null && !role.trim().isEmpty())
+                            .map(SimpleGrantedAuthority::new)
+                            .collect(Collectors.toList());
                     authentication = new UsernamePasswordAuthenticationToken(
                             username, null, authorities);
                 }
