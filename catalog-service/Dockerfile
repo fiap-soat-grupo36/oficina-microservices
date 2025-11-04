@@ -14,11 +14,14 @@ RUN mvn clean package -DskipTests -pl catalog-service -am
 # Etapa 2: Runtime com Java 21
 FROM eclipse-temurin:21-jdk-alpine
 
+# Instalar wget para healthcheck
+RUN apk add --no-cache wget
+
 WORKDIR /app
 
 # Copia o jar do módulo
 COPY --from=builder /app/catalog-service/target/catalog-service-*.jar app.jar
 
-EXPOSE 8080
+EXPOSE 8083
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
