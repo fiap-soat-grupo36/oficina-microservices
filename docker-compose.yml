@@ -1,5 +1,28 @@
 services:
   # ========================================
+  # 0. POSTGRES DATABASE
+  # ========================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_DB: oficina-db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - oficina-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d oficina-db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ========================================
   # 1. EUREKA SERVER (Deve iniciar primeiro)
   # ========================================
   eureka-server:
@@ -31,11 +54,16 @@ services:
     ports:
       - "8082:8082"
     depends_on:
+      postgres:
+        condition: service_healthy
       eureka-server:
         condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_URL=http://eureka-server:8761/eureka/
+      - DB_URL=jdbc:postgresql://postgres:5432/oficina-db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
     networks:
       - oficina-network
     healthcheck:
@@ -56,6 +84,8 @@ services:
     ports:
       - "8081:8081"
     depends_on:
+      postgres:
+        condition: service_healthy
       eureka-server:
         condition: service_healthy
       auth-service:
@@ -63,6 +93,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_URL=http://eureka-server:8761/eureka/
+      - DB_URL=jdbc:postgresql://postgres:5432/oficina-db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
     networks:
       - oficina-network
     healthcheck:
@@ -83,6 +116,8 @@ services:
     ports:
       - "8083:8083"
     depends_on:
+      postgres:
+        condition: service_healthy
       eureka-server:
         condition: service_healthy
       auth-service:
@@ -90,6 +125,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_URL=http://eureka-server:8761/eureka/
+      - DB_URL=jdbc:postgresql://postgres:5432/oficina-db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
     networks:
       - oficina-network
     healthcheck:
@@ -110,6 +148,8 @@ services:
     ports:
       - "8084:8084"
     depends_on:
+      postgres:
+        condition: service_healthy
       eureka-server:
         condition: service_healthy
       auth-service:
@@ -117,6 +157,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_URL=http://eureka-server:8761/eureka/
+      - DB_URL=jdbc:postgresql://postgres:5432/oficina-db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
     networks:
       - oficina-network
     healthcheck:
@@ -137,6 +180,8 @@ services:
     ports:
       - "8085:8085"
     depends_on:
+      postgres:
+        condition: service_healthy
       eureka-server:
         condition: service_healthy
       auth-service:
@@ -144,6 +189,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_URL=http://eureka-server:8761/eureka/
+      - DB_URL=jdbc:postgresql://postgres:5432/oficina-db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
     networks:
       - oficina-network
     healthcheck:
@@ -164,6 +212,8 @@ services:
     ports:
       - "8086:8086"
     depends_on:
+      postgres:
+        condition: service_healthy
       eureka-server:
         condition: service_healthy
       auth-service:
@@ -175,6 +225,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_URL=http://eureka-server:8761/eureka/
+      - DB_URL=jdbc:postgresql://postgres:5432/oficina-db
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
     networks:
       - oficina-network
     healthcheck:
@@ -214,3 +267,7 @@ services:
 networks:
   oficina-network:
     driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
