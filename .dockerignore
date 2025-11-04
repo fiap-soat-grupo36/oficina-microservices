@@ -20,10 +20,8 @@
 **/test/
 **/*test*.xml
 
-# Docker files
+# Docker compose files (not needed during image build)
 docker-compose*.yml
-Dockerfile
-**/Dockerfile
 
 # CI/CD
 .github/
