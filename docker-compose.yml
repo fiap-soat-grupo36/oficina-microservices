@@ -14,7 +14,7 @@ services:
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8761/actuator/health || exit 1"]
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8761/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -61,7 +61,7 @@ services:
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8082/actuator/health || exit 1"]
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8082/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -92,7 +92,7 @@ services:
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/actuator/health || exit 1"]
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -123,7 +123,7 @@ services:
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8083/actuator/health || exit 1"]
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8083/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -154,7 +154,7 @@ services:
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8084/actuator/health || exit 1"]
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8084/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -185,7 +185,7 @@ services:
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8085/actuator/health || exit 1"]
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8085/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -220,7 +220,7 @@ services:
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8086/actuator/health || exit 1"]
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8086/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -248,7 +248,7 @@ services:
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8087/actuator/health || exit 1"]
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8087/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
