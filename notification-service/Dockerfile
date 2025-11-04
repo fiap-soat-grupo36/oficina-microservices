@@ -3,10 +3,8 @@ FROM maven:3.9.6-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
-# Copia o pom.xml raiz e os módulos necessários
-COPY pom.xml ./
-COPY shared-library ./shared-library
-COPY notification-service ./notification-service
+# Copia todo o projeto (necessário porque o parent POM referencia todos os módulos)
+COPY . .
 
 # Build apenas este módulo
 RUN mvn clean package -DskipTests -pl notification-service -am
