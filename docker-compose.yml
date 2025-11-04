@@ -197,6 +197,12 @@ services:
       - EMAIL_PASSWORD=${EMAIL_PASSWORD:-senha-app}
     networks:
       - oficina-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8087/actuator/health", "||", "exit", "1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
 networks:
   oficina-network:

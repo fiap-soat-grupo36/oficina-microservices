@@ -40,6 +40,15 @@ app:
     email:
       sender: oficina.fiap@gmail.com
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
 logging:
   level:
     br.com.fiap.oficina.notification: DEBUG
