@@ -13,15 +13,26 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
-    private final UserDetailsService userDetailsService;
+    private UserDetailsService userDetailsService;
 
+    // Constructor with UserDetailsService (for auth-service)
     public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, UserDetailsService userDetailsService) {
         this.tokenProvider = tokenProvider;
         this.userDetailsService = userDetailsService;
+    }
+
+    // Constructor without UserDetailsService (for other services)
+    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider) {
+        this.tokenProvider = tokenProvider;
+        this.userDetailsService = null;
     }
 
     @Override
@@ -34,9 +45,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 String username = tokenProvider.getUsernameFromToken(jwt);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
+                // If userDetailsService is available, load full user details
+                // If not, extract roles from JWT token
+                UsernamePasswordAuthenticationToken authentication;
+                if (userDetailsService != null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                } else {
+                    // Extract roles from JWT token for services that only validate JWT
+                    List<String> roles = tokenProvider.getRolesFromToken(jwt);
+                    List<SimpleGrantedAuthority> authorities = roles.stream()
+                            .filter(role -> role != null && !role.trim().isEmpty())
+                            .map(SimpleGrantedAuthority::new)
+                            .collect(Collectors.toList());
+                    authentication = new UsernamePasswordAuthenticationToken(
+                            username, null, authorities);
+                }
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
