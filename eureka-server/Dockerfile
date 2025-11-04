@@ -13,6 +13,9 @@ RUN mvn clean package -DskipTests -pl eureka-server -am
 # Etapa 2: Runtime com Java 21
 FROM eclipse-temurin:21-jdk-alpine
 
+# Instalar wget para healthcheck
+RUN apk add --no-cache wget
+
 WORKDIR /app
 
 # Copia o jar do módulo

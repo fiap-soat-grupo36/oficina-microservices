@@ -14,11 +14,14 @@ RUN mvn clean package -DskipTests -pl auth-service -am
 # Etapa 2: Runtime com Java 21
 FROM eclipse-temurin:21-jdk-alpine
 
+# Instalar wget para healthcheck
+RUN apk add --no-cache wget
+
 WORKDIR /app
 
 # Copia o jar do módulo
 COPY --from=builder /app/auth-service/target/auth-service-*.jar app.jar
 
-EXPOSE 8080
+EXPOSE 8082
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
