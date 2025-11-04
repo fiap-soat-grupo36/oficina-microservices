@@ -1,6 +1,9 @@
 version: '3.8'
 
 services:
+  # ========================================
+  # 1. EUREKA SERVER (Deve iniciar primeiro)
+  # ========================================
   eureka-server:
     build:
       context: .
@@ -11,10 +14,10 @@ services:
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8761/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
       start_period: 40s
 
   postgres:
@@ -35,13 +38,16 @@ services:
     networks:
       - oficina-network
 
+  # ========================================
+  # 2. AUTH SERVICE
+  # ========================================
   auth-service:
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile
     container_name: auth-service
     ports:
-      - "8081:8080"
+      - "8082:8082"
     depends_on:
       postgres:
         condition: service_healthy
@@ -51,119 +57,202 @@ services:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: auth-service
     networks:
       - oficina-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8082/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
+  # ========================================
+  # 3. CUSTOMER SERVICE
+  # ========================================
   customer-service:
     build:
       context: .
       dockerfile: ./customer-service/Dockerfile
     container_name: customer-service
     ports:
-      - "8082:8080"
+      - "8081:8081"
     depends_on:
       postgres:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      auth-service:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/customer_db
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: customer-service
     networks:
       - oficina-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
+  # ========================================
+  # 4. CATALOG SERVICE
+  # ========================================
   catalog-service:
     build:
       context: .
       dockerfile: ./catalog-service/Dockerfile
     container_name: catalog-service
     ports:
-      - "8083:8080"
+      - "8083:8083"
     depends_on:
       postgres:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      auth-service:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/catalog_db
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: catalog-service
     networks:
       - oficina-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8083/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
+  # ========================================
+  # 5. INVENTORY SERVICE
+  # ========================================
   inventory-service:
     build:
       context: .
       dockerfile: ./inventory-service/Dockerfile
     container_name: inventory-service
     ports:
-      - "8084:8080"
+      - "8084:8084"
     depends_on:
       postgres:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      auth-service:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/inventory_db
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: inventory-service
     networks:
       - oficina-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8084/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
+  # ========================================
+  # 6. BUDGET SERVICE
+  # ========================================
   budget-service:
     build:
       context: .
       dockerfile: ./budget-service/Dockerfile
     container_name: budget-service
     ports:
-      - "8085:8080"
+      - "8085:8085"
     depends_on:
       postgres:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      auth-service:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/budget_db
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: budget-service
     networks:
       - oficina-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8085/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
+  # ========================================
+  # 7. WORK ORDER SERVICE
+  # ========================================
   work-order-service:
     build:
       context: .
       dockerfile: ./work-order-service/Dockerfile
     container_name: work-order-service
     ports:
-      - "8086:8080"
+      - "8086:8086"
     depends_on:
       postgres:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      customer-service:
+        condition: service_healthy
+      catalog-service:
+        condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/workorder_db
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: work-order-service
     networks:
       - oficina-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8086/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
+  # ========================================
+  # 8. NOTIFICATION SERVICE
+  # ========================================
   notification-service:
     build:
       context: .
       dockerfile: ./notification-service/Dockerfile
     container_name: notification-service
     ports:
-      - "8087:8080"
+      - "8087:8087"
     depends_on:
       eureka-server:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_APPLICATION_NAME: notification-service
+      EMAIL_USERNAME: ${EMAIL_USERNAME:-oficina.fiap@gmail.com}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-senha-app}
     networks:
       - oficina-network
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8087/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
 volumes:
   postgres-data:
