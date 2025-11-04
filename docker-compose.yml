@@ -32,9 +32,6 @@ services:
     container_name: eureka-server
     ports:
       - "8761:8761"
-    depends_on:
-      postgres:
-        condition: service_healthy
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     networks:
