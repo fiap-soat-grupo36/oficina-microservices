@@ -9,12 +9,14 @@ services:
     container_name: eureka-server
     ports:
       - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --quiet --tries=1 -O /dev/null http://localhost:8761/actuator/health || exit 1"]
-      interval: 15s
-      timeout: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
       retries: 5
       start_period: 60s
 
@@ -32,7 +34,8 @@ services:
       eureka-server:
         condition: service_healthy
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_URL=http://eureka-server:8761/eureka/
     networks:
       - oficina-network
     healthcheck:
@@ -58,7 +61,8 @@ services:
       auth-service:
         condition: service_healthy
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_URL=http://eureka-server:8761/eureka/
     networks:
       - oficina-network
     healthcheck:
@@ -84,7 +88,8 @@ services:
       auth-service:
         condition: service_healthy
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_URL=http://eureka-server:8761/eureka/
     networks:
       - oficina-network
     healthcheck:
@@ -110,7 +115,8 @@ services:
       auth-service:
         condition: service_healthy
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_URL=http://eureka-server:8761/eureka/
     networks:
       - oficina-network
     healthcheck:
@@ -136,7 +142,8 @@ services:
       auth-service:
         condition: service_healthy
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_URL=http://eureka-server:8761/eureka/
     networks:
       - oficina-network
     healthcheck:
@@ -166,7 +173,8 @@ services:
       catalog-service:
         condition: service_healthy
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_URL=http://eureka-server:8761/eureka/
     networks:
       - oficina-network
     healthcheck:
@@ -190,9 +198,10 @@ services:
       eureka-server:
         condition: service_healthy
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_URL=http://eureka-server:8761/eureka/
       - EMAIL_USERNAME=${EMAIL_USERNAME:-oficina.fiap@gmail.com}
-      - EMAIL_PASSWORD=${EMAIL_PASSWORD:-senha-app}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-senha-app}
     networks:
       - oficina-network
     healthcheck:
