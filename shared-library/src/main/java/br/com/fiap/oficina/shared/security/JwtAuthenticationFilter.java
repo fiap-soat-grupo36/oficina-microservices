@@ -14,11 +14,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
-    private final UserDetailsService userDetailsService;
+    private UserDetailsService userDetailsService;
 
     // Constructor with UserDetailsService (for auth-service)
     public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, UserDetailsService userDetailsService) {
@@ -43,16 +46,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String username = tokenProvider.getUsernameFromToken(jwt);
 
                 // If userDetailsService is available, load full user details
-                // If not, create simple authentication with just username
+                // If not, extract roles from JWT token
                 UsernamePasswordAuthenticationToken authentication;
                 if (userDetailsService != null) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     authentication = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                 } else {
-                    // Simple authentication without roles (for services that only validate JWT)
+                    // Extract roles from JWT token for services that only validate JWT
+                    List<String> roles = tokenProvider.getRolesFromToken(jwt);
+                    List<SimpleGrantedAuthority> authorities = roles != null ? 
+                            roles.stream()
+                                .map(SimpleGrantedAuthority::new)
+                                .collect(Collectors.toList()) :
+                            Collections.emptyList();
                     authentication = new UsernamePasswordAuthenticationToken(
-                            username, null, Collections.emptyList());
+                            username, null, authorities);
                 }
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 

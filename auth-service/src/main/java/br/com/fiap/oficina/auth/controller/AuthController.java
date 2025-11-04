@@ -41,11 +41,10 @@ public class AuthController {
     )
     @ApiResponse(responseCode = "200", description = "Autenticação realizada com sucesso", content = @Content(mediaType = "application/json"))
     public ResponseEntity<AuthResponseDTO> authenticate(@RequestBody @Valid AuthRequestDTO request) {
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                request.getUsername(), request.getPassword());
-        authenticationManager.authenticate(authentication);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
-        String token = jwtTokenProvider.generateToken(request.getUsername());
+        String token = jwtTokenProvider.generateToken(authentication.getName(), authentication.getAuthorities());
         return ResponseEntity.ok(new AuthResponseDTO(token));
     }
 }
