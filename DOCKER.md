@@ -71,6 +71,7 @@ docker-compose down -v --rmi all
 ## Acessos
 
 - Eureka Dashboard: http://localhost:8761
+- Swagger Agregado: http://localhost:8761/swagger-ui.html
 - Auth Service: http://localhost:8082/swagger-ui.html
 - Customer Service: http://localhost:8081/swagger-ui.html
 - Catalog Service: http://localhost:8083/swagger-ui.html
