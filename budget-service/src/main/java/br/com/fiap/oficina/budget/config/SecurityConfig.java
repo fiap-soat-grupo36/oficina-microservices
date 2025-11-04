@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions().sameOrigin())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET).permitAll()
-                        .requestMatchers("/api/orcamentos/**").permitAll()  // Orçamentos são PÚBLICOS
+                        // .requestMatchers("/api/orcamentos/**").permitAll()  // Orçamentos são PÚBLICOS
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
