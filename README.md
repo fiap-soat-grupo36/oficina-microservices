@@ -104,7 +104,17 @@ Todos os serviços expõem endpoints de monitoramento:
 
 ## 📚 Documentação da API
 
-Cada serviço expõe sua documentação OpenAPI:
+### Swagger Agregado
+
+Para facilitar o acesso à documentação de todos os microserviços em um único local, o **Eureka Server** disponibiliza um Swagger agregado:
+
+**🔗 Acesso único:** http://localhost:8761/swagger-ui.html
+
+Através do Swagger agregado, você pode visualizar e testar as APIs de todos os serviços através de um dropdown, sem precisar acessar cada serviço individualmente.
+
+### Documentação Individual dos Serviços
+
+Cada serviço também expõe sua documentação OpenAPI de forma independente:
 
 - Auth Service: http://localhost:8082/swagger-ui.html
 - Customer Service: http://localhost:8081/swagger-ui.html
