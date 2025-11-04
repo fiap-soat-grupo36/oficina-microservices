@@ -4,6 +4,7 @@ import br.com.fiap.oficina.inventory.dto.request.ProdutoEntradaEstoqueRequestDTO
 import br.com.fiap.oficina.inventory.dto.response.ProdutoEntradaEstoqueResponseDTO;
 import br.com.fiap.oficina.inventory.service.ProdutoEntradaEstoqueService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequestMapping("/estoque/entradas")
 @RequiredArgsConstructor
 @Tag(name = "Produto Entrada Estoque", description = "Gerenciamento de entradas de produtos no estoque")
+@SecurityRequirement(name = "bearerAuth")
 public class ProdutoEntradaEstoqueController {
 
     private final ProdutoEntradaEstoqueService entradaService;

@@ -1,4 +1,4 @@
-package br.com.fiap.oficina.budget.config;
+package br.com.fiap.oficina.customer.config;
 
 import br.com.fiap.oficina.shared.security.JwtAuthenticationFilter;
 import br.com.fiap.oficina.shared.security.JwtTokenProvider;
@@ -19,6 +19,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    private static final String[] PUBLIC_POST = {
+            "/api/clientes",      // Cadastro de cliente é PÚBLICO
+            "/api/usuarios",      // Cadastro de usuário é PÚBLICO
+            "/api/veiculos"       // Cadastro de veículo é PÚBLICO
+    };
 
     private static final String[] PUBLIC_GET = {
             "/actuator/health",
@@ -45,8 +51,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers.frameOptions().sameOrigin())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.POST, PUBLIC_POST).permitAll()
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET).permitAll()
-                        .requestMatchers("/api/orcamentos/**").permitAll()  // Orçamentos são PÚBLICOS
+                        .requestMatchers("/api/clientes/**").authenticated()  // GET, PUT, DELETE protegidos
+                        .requestMatchers("/api/veiculos/**").authenticated()  // GET, PUT, DELETE protegidos
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

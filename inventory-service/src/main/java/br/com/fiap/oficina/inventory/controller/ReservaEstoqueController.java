@@ -4,6 +4,7 @@ import br.com.fiap.oficina.inventory.dto.request.ReservaLoteRequestDTO;
 import br.com.fiap.oficina.inventory.dto.response.ReservaLoteResponseDTO;
 import br.com.fiap.oficina.inventory.service.ReservaEstoqueLoteService;
 import br.com.fiap.oficina.inventory.service.ReservaEstoqueService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/reservas")
 @RequiredArgsConstructor
 @Profile({"dev", "local"})
+@SecurityRequirement(name = "bearerAuth")
 public class ReservaEstoqueController {
 
     private final ReservaEstoqueLoteService reservaEstoqueLoteService;
