@@ -52,11 +52,16 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Spring Cloud OpenFeign - VERSÃO COMPATÍVEL -->
+        <!-- Spring Cloud OpenFeign -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
-            <version>4.1.3</version>
+        </dependency>
+
+        <!-- Eureka Client -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
         <!-- MapStruct -->
