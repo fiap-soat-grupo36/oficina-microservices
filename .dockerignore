@@ -16,8 +16,7 @@
 *.md
 !README.md
 
-# Test files
-**/test/
+# Test configuration files
 **/*test*.xml
 
 # Docker compose files (not needed during image build)
