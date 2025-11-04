@@ -3,8 +3,8 @@ spring:
     name: notification-service
 
   mail:
-    host: smtp.gmail.com
-    port: 587
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
     username: ${EMAIL_USERNAME:oficina.fiap@gmail.com}
     password: ${EMAIL_PASSWORD:senha-app}
     properties:
@@ -24,32 +24,12 @@ spring:
     encoding: UTF-8
 
 server:
-  port: 8087
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    register-with-eureka: true
-    fetch-registry: true
-    # Novas configurações para otimizar startup
-    registry-fetch-interval-seconds: 5
-    eureka-server-connect-timeout-seconds: 5
-    eureka-server-read-timeout-seconds: 5
-    eureka-service-url-poll-interval-seconds: 30
-    initial-instance-info-replication-interval-seconds: 10
-  instance:
-    prefer-ip-address: true
-    # Reduzir intervalos de heartbeat
-    lease-renewal-interval-in-seconds: 10
-    lease-expiration-duration-in-seconds: 30
-    # Registrar mais rápido
-    instance-id: ${spring.application.name}:${server.port}
+  port: ${SERVER_PORT:8087}
 
 app:
   notification:
     email:
-      sender: oficina.fiap@gmail.com
+      sender: ${EMAIL_SENDER:oficina.fiap@gmail.com}
 
 management:
   endpoints:
@@ -62,4 +42,4 @@ management:
 
 logging:
   level:
-    br.com.fiap.oficina.notification: DEBUG
+    root: INFO

@@ -1,0 +1,4 @@
+# Profile para Docker Compose
+eureka:
+  instance:
+    hostname: ${EUREKA_HOSTNAME:eureka-server}

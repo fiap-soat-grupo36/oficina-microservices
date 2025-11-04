@@ -1,0 +1,4 @@
+# Profile para desenvolvimento local
+eureka:
+  instance:
+    hostname: localhost
