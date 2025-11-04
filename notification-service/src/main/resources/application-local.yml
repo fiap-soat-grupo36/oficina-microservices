@@ -1,0 +1,11 @@
+# Profile para desenvolvimento local
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+logging:
+  level:
+    br.com.fiap.oficina: DEBUG
+    org.springframework.mail: DEBUG
