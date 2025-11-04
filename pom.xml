@@ -25,6 +25,7 @@
     <!-- Módulos (serão adicionados conforme criar) -->
     <modules>
         <!-- Remova comentários conforme criar cada módulo -->
+        <module>eureka-server</module>
         <module>shared-library</module>
         <module>customer-service</module>
         <module>catalog-service</module>
