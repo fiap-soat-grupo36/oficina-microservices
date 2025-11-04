@@ -13,15 +13,23 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
     private final UserDetailsService userDetailsService;
 
+    // Constructor with UserDetailsService (for auth-service)
     public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, UserDetailsService userDetailsService) {
         this.tokenProvider = tokenProvider;
         this.userDetailsService = userDetailsService;
+    }
+
+    // Constructor without UserDetailsService (for other services)
+    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider) {
+        this.tokenProvider = tokenProvider;
+        this.userDetailsService = null;
     }
 
     @Override
@@ -34,9 +42,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 String username = tokenProvider.getUsernameFromToken(jwt);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
+                // If userDetailsService is available, load full user details
+                // If not, create simple authentication with just username
+                UsernamePasswordAuthenticationToken authentication;
+                if (userDetailsService != null) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                } else {
+                    // Simple authentication without roles (for services that only validate JWT)
+                    authentication = new UsernamePasswordAuthenticationToken(
+                            username, null, Collections.emptyList());
+                }
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
