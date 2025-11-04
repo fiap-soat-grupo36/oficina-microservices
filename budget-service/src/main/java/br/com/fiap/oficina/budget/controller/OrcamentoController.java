@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,35 +23,30 @@ public class OrcamentoController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE', 'CLIENTE')")
     @Operation(summary = "Listar todos os orçamentos", description = "Retorna lista completa de orçamentos")
     public ResponseEntity<List<OrcamentoResponseDTO>> listarTodos() {
         return ResponseEntity.ok(orcamentoService.buscarTodos());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE', 'CLIENTE')")
     @Operation(summary = "Buscar orçamento por ID", description = "Retorna um orçamento específico")
     public ResponseEntity<OrcamentoResponseDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(orcamentoService.buscarPorId(id));
     }
 
     @PutMapping("/{id}/aprovar")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE', 'CLIENTE')")
     @Operation(summary = "Aprovar orçamento", description = "Aprova um orçamento específico")
     public ResponseEntity<OrcamentoResponseDTO> aprovar(@PathVariable Long id) {
         return ResponseEntity.ok(orcamentoService.aprovar(id));
     }
 
     @PutMapping("/{id}/reprovar")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE', 'CLIENTE')")
     @Operation(summary = "Reprovar orçamento", description = "Reprova um orçamento específico")
     public ResponseEntity<OrcamentoResponseDTO> reprovar(@PathVariable Long id) {
         return ResponseEntity.ok(orcamentoService.reprovar(id));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE')")
     @Operation(
             summary = "Deletar orçamento",
             description = "Remove um orçamento do sistema"
@@ -63,7 +57,6 @@ public class OrcamentoController {
     }
 
     @GetMapping("/ordem-servico/{ordemServicoId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ATENDENTE', 'CLIENTE')")
     @Operation(
             summary = "Buscar orçamento por ordem de serviço",
             description = "Retorna o orçamento associado a uma ordem de serviço específica"

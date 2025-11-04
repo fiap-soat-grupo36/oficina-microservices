@@ -6,6 +6,7 @@ import br.com.fiap.oficina.catalog.service.ProdutoCatalogoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import java.util.List;
         name = "Catálogo de Produtos",
         description = "Gerenciamento de produtos/peças do catálogo."
 )
+@SecurityRequirement(name = "bearerAuth")
 public class ProdutoCatalogoController {
 
     private final ProdutoCatalogoService produtoService;
