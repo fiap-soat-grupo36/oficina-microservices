@@ -35,6 +35,15 @@ jwt:
   secret: minha-chave-secreta-super-segura-para-jwt-com-256-bits-no-minimo
   expiration-in-ms: 3600000
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
 logging:
   level:
     root: INFO
