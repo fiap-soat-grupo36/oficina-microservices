@@ -14,29 +14,11 @@ services:
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8761/actuator/health || exit 1"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8761/actuator/health", "||", "exit", "1"]
+      interval: 15s
+      timeout: 10s
       retries: 5
-      start_period: 40s
-
-  postgres:
-    image: postgres:16
-    container_name: oficina-postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - oficina-network
+      start_period: 60s
 
   # ========================================
   # 2. AUTH SERVICE
@@ -49,23 +31,18 @@ services:
     ports:
       - "8082:8082"
     depends_on:
-      postgres:
-        condition: service_healthy
       eureka-server:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_APPLICATION_NAME: auth-service
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8082/actuator/health || exit 1"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8082/actuator/health", "||", "exit", "1"]
+      interval: 15s
+      timeout: 10s
       retries: 5
-      start_period: 40s
+      start_period: 60s
 
   # ========================================
   # 3. CUSTOMER SERVICE
@@ -78,25 +55,20 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      postgres:
-        condition: service_healthy
       eureka-server:
         condition: service_healthy
       auth-service:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/customer_db
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_APPLICATION_NAME: customer-service
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8081/actuator/health || exit 1"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/actuator/health", "||", "exit", "1"]
+      interval: 15s
+      timeout: 10s
       retries: 5
-      start_period: 40s
+      start_period: 60s
 
   # ========================================
   # 4. CATALOG SERVICE
@@ -109,25 +81,20 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      postgres:
-        condition: service_healthy
       eureka-server:
         condition: service_healthy
       auth-service:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/catalog_db
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_APPLICATION_NAME: catalog-service
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8083/actuator/health || exit 1"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8083/actuator/health", "||", "exit", "1"]
+      interval: 15s
+      timeout: 10s
       retries: 5
-      start_period: 40s
+      start_period: 60s
 
   # ========================================
   # 5. INVENTORY SERVICE
@@ -140,25 +107,20 @@ services:
     ports:
       - "8084:8084"
     depends_on:
-      postgres:
-        condition: service_healthy
       eureka-server:
         condition: service_healthy
       auth-service:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/inventory_db
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_APPLICATION_NAME: inventory-service
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8084/actuator/health || exit 1"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8084/actuator/health", "||", "exit", "1"]
+      interval: 15s
+      timeout: 10s
       retries: 5
-      start_period: 40s
+      start_period: 60s
 
   # ========================================
   # 6. BUDGET SERVICE
@@ -171,25 +133,20 @@ services:
     ports:
       - "8085:8085"
     depends_on:
-      postgres:
-        condition: service_healthy
       eureka-server:
         condition: service_healthy
       auth-service:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/budget_db
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_APPLICATION_NAME: budget-service
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8085/actuator/health || exit 1"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8085/actuator/health", "||", "exit", "1"]
+      interval: 15s
+      timeout: 10s
       retries: 5
-      start_period: 40s
+      start_period: 60s
 
   # ========================================
   # 7. WORK ORDER SERVICE
@@ -202,8 +159,6 @@ services:
     ports:
       - "8086:8086"
     depends_on:
-      postgres:
-        condition: service_healthy
       eureka-server:
         condition: service_healthy
       auth-service:
@@ -213,18 +168,15 @@ services:
       catalog-service:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/workorder_db
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_APPLICATION_NAME: work-order-service
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     networks:
       - oficina-network
     healthcheck:
-      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8086/actuator/health || exit 1"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8086/actuator/health", "||", "exit", "1"]
+      interval: 15s
+      timeout: 10s
       retries: 5
-      start_period: 40s
+      start_period: 60s
 
   # ========================================
   # 8. NOTIFICATION SERVICE
@@ -240,22 +192,11 @@ services:
       eureka-server:
         condition: service_healthy
     environment:
-      SPRING_PROFILES_ACTIVE: docker
-      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
-      SPRING_APPLICATION_NAME: notification-service
-      EMAIL_USERNAME: ${EMAIL_USERNAME:-oficina.fiap@gmail.com}
-      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-senha-app}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EMAIL_USERNAME=${EMAIL_USERNAME:-oficina.fiap@gmail.com}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD:-senha-app}
     networks:
       - oficina-network
-    healthcheck:
-      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://localhost:8087/actuator/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
-
-volumes:
-  postgres-data:
 
 networks:
   oficina-network:

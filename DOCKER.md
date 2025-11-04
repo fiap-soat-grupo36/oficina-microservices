@@ -5,6 +5,30 @@
 - Docker Compose 2.0+
 - 8GB RAM disponível (mínimo)
 
+## 💾 Banco de Dados
+
+Este projeto utiliza **H2 Database em memória** para todos os microserviços.
+
+### Características do H2:
+- ✅ Banco de dados em memória (não requer instalação externa)
+- ✅ Configuração zero - já está pronto para uso
+- ✅ Ideal para desenvolvimento e testes
+- ⚠️ **Os dados são perdidos ao reiniciar os containers** (comportamento esperado)
+
+### Console H2:
+Cada serviço que utiliza banco de dados expõe um console H2:
+- Auth Service: http://localhost:8082/h2-console
+- Customer Service: http://localhost:8081/h2-console
+- Catalog Service: http://localhost:8083/h2-console
+- Inventory Service: http://localhost:8084/h2-console
+- Budget Service: http://localhost:8085/h2-console
+- Work Order Service: http://localhost:8086/h2-console
+
+**Credenciais de acesso ao console:**
+- JDBC URL: `jdbc:h2:mem:{service}db` (exemplo: `jdbc:h2:mem:authdb`)
+- Username: `sa`
+- Password: (deixar em branco)
+
 ## Comandos
 
 ### Iniciar todos os serviços
