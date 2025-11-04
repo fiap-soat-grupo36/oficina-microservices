@@ -4,6 +4,7 @@ import br.com.fiap.oficina.inventory.dto.request.MovimentacaoEstoqueRequestDTO;
 import br.com.fiap.oficina.inventory.dto.response.MovimentacaoEstoqueResponseDTO;
 import br.com.fiap.oficina.inventory.service.MovimentacaoEstoqueService;
 import br.com.fiap.oficina.shared.enums.TipoMovimentacao;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/estoque/movimentacoes")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class MovimentacaoEstoqueController {
 
     private final MovimentacaoEstoqueService movimentacaoEstoqueService;

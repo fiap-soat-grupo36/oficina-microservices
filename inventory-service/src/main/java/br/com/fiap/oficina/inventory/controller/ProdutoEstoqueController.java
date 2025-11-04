@@ -3,6 +3,7 @@ package br.com.fiap.oficina.inventory.controller;
 import br.com.fiap.oficina.inventory.dto.response.ProdutoEstoqueResponseDTO;
 import br.com.fiap.oficina.inventory.service.ProdutoEstoqueService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import java.util.List;
 @RequestMapping("/estoque")
 @RequiredArgsConstructor
 @Tag(name = "Produto Estoque", description = "Gerenciamento de produtos em estoque")
+@SecurityRequirement(name = "bearerAuth")
 public class ProdutoEstoqueController {
 
     private final ProdutoEstoqueService produtoEstoqueService;

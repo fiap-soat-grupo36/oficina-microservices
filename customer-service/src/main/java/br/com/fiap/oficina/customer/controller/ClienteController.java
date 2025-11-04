@@ -6,6 +6,7 @@ import br.com.fiap.oficina.customer.service.ClienteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,8 @@ public class ClienteController {
     @Operation(
             summary = "Lista todos os cliente.",
             description = "Retorna uma lista de todos os clientes cadastrados.",
-            operationId = "listarClientes"
+            operationId = "listarClientes",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponse(responseCode = "200", description = "Lista de clientes retornada com sucesso.", content = @Content(mediaType = "application/json"))
     public ResponseEntity<List<ClienteResponseDTO>> listarClientes() {
@@ -62,7 +64,8 @@ public class ClienteController {
     @Operation(
             summary = "Busca cliente por ID.",
             description = "Retorna os detalhes de um cliente específico cadastrado com base no ID informado.",
-            operationId = "buscarClientePorId"
+            operationId = "buscarClientePorId",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponse(responseCode = "200", description = "Cliente encontrado com sucesso.", content = @Content(mediaType = "application/json"))
     public ResponseEntity<ClienteResponseDTO> buscarPorId(@PathVariable Long id) {
@@ -73,7 +76,8 @@ public class ClienteController {
     @GetMapping("/buscar")
     @Operation(
             summary = "Buscar cliente por CPF ou email",
-            description = "Retorna cliente específico baseado em CPF ou email informado. Se ambos forem fornecidos, apenas o CPF será utilizado."
+            description = "Retorna cliente específico baseado em CPF ou email informado. Se ambos forem fornecidos, apenas o CPF será utilizado.",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponse(responseCode = "200", description = "Cliente encontrado")
     public ResponseEntity<ClienteResponseDTO> buscarPorCpfOuEmail(
@@ -93,7 +97,8 @@ public class ClienteController {
     @Operation(
             summary = "Atualiza cliente por ID.",
             description = "Atualiza os dados de um cliente com base no ID informado.",
-            operationId = "atualizaClientePorId"
+            operationId = "atualizaClientePorId",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponse(responseCode = "200", description = "Cliente atualizado com sucesso.", content = @Content(mediaType = "application/json"))
     public ResponseEntity<ClienteResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid ClienteRequestDTO cliente) {
@@ -105,7 +110,8 @@ public class ClienteController {
     @Operation(
             summary = "Deletar cliente por ID",
             description = "Remove um cliente do sistema com base no ID informado.",
-            operationId = "deletarCliente"
+            operationId = "deletarCliente",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         clienteService.deletar(id);

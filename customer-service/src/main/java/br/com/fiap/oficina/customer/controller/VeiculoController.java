@@ -6,6 +6,7 @@ import br.com.fiap.oficina.customer.service.VeiculoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,8 @@ public class VeiculoController {
     @Operation(
             summary = "Listar todos os veículos",
             description = "Retorna uma lista de todas os veículos cadastrados.",
-            operationId = "listarTodosVeiculos"
+            operationId = "listarTodosVeiculos",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponse(responseCode = "200", description = "Lista de veículos retornada com sucesso.", content = @Content(mediaType = "application/json"))
     public ResponseEntity<List<VeiculoResponseDTO>> listarTodos() {
@@ -59,7 +61,8 @@ public class VeiculoController {
     @Operation(
             summary = "Buscar veículo por ID",
             description = "Retorna os detalhes de um veículo específico com base no ID informado.",
-            operationId = "buscarVeiculoPorId"
+            operationId = "buscarVeiculoPorId",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponse(responseCode = "200", description = "Veículo encontrado com sucesso.", content = @Content(mediaType = "application/json"))
     public ResponseEntity<VeiculoResponseDTO> buscarPorId(@PathVariable Long id) {
@@ -70,7 +73,8 @@ public class VeiculoController {
     @Operation(
             summary = "Buscar veículo por placa",
             description = "Retorna um veículo correspondente a placa informada (case-insensitive).",
-            operationId = "buscarVeiculoPorPlaca"
+            operationId = "buscarVeiculoPorPlaca",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponse(responseCode = "200", description = "Veículo encontrado com sucesso.", content = @Content(mediaType = "application/json"))
     public ResponseEntity<VeiculoResponseDTO> buscarPorPlaca(@PathVariable String placa) {
@@ -80,7 +84,8 @@ public class VeiculoController {
     @GetMapping("/cliente/{clienteId}")
     @Operation(
             summary = "Buscar veículos por cliente",
-            description = "Retorna todos os veículos de um cliente específico"
+            description = "Retorna todos os veículos de um cliente específico",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponse(responseCode = "200", description = "Veículos encontrados")
     public ResponseEntity<List<VeiculoResponseDTO>> buscarPorCliente(
@@ -97,7 +102,8 @@ public class VeiculoController {
     @Operation(
             summary = "Atualizar veículo por ID",
             description = "Atualiza os dados de um veículo existente com base no ID informado.",
-            operationId = "atualizarVeiculo"
+            operationId = "atualizarVeiculo",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponse(responseCode = "200", description = "Veículo atualizado com sucesso.", content = @Content(mediaType = "application/json"))
     public ResponseEntity<VeiculoResponseDTO> atualizar(@PathVariable Long id, @RequestBody @Valid VeiculoRequesDTO dto) {
@@ -108,7 +114,8 @@ public class VeiculoController {
     @Operation(
             summary = "Transferir veiculo por ID",
             description = "Transfere os dados de um veículo existente com base no ID informado.",
-            operationId = "transferirVeiculo"
+            operationId = "transferirVeiculo",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponse(responseCode = "200", description = "Veículo transferido com sucesso.", content = @Content(mediaType = "application/json"))
     public ResponseEntity<VeiculoResponseDTO> transferir(@PathVariable Long id, @RequestParam Long novoClienteId) {
@@ -119,7 +126,8 @@ public class VeiculoController {
     @Operation(
             summary = "Deletar veículo por ID",
             description = "Remove um veículo do sistema com base no ID informado.",
-            operationId = "deletarVeiculo"
+            operationId = "deletarVeiculo",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         veiculoService.deletar(id);
