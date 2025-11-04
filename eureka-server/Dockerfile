@@ -3,9 +3,8 @@ FROM maven:3.9.6-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
-# Copia o pom.xml raiz e o módulo eureka-server
-COPY pom.xml ./
-COPY eureka-server ./eureka-server
+# Copia todo o projeto (necessário porque o parent POM referencia todos os módulos)
+COPY . .
 
 # Build apenas este módulo
 RUN mvn clean package -DskipTests -pl eureka-server -am

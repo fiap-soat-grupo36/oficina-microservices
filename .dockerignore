@@ -1,0 +1,39 @@
+# Git files
+.git
+.gitignore
+.github
+
+# IDE files
+.idea
+.vscode
+*.iml
+
+# Build artifacts (will be built inside Docker)
+**/target/
+**/build/
+
+# Documentation
+*.md
+!README.md
+
+# Test files
+**/test/
+**/*test*.xml
+
+# Docker files
+docker-compose*.yml
+Dockerfile
+**/Dockerfile
+
+# CI/CD
+.github/
+codecov.yml
+
+# Scripts
+*.sh
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log
