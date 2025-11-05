@@ -47,7 +47,8 @@ class ServicoControllerTest {
         request.setNome("Troca de óleo");
         request.setDescricao("Troca completa de óleo");
         request.setPrecoBase(BigDecimal.valueOf(100.00));
-        request.setCategoria(br.com.fiap.oficina.shared.enums.CategoriaServico.MANUTENCAO_PREVENTIVA);
+        request.setCategoria(br.com.fiap.oficina.shared.enums.CategoriaServico.MECANICO);
+        request.setTempoEstimadoMinutos(60L);
 
         ServicoResponseDTO response = new ServicoResponseDTO();
         response.setId(1L);
@@ -128,7 +129,8 @@ class ServicoControllerTest {
         ServicoRequestDTO request = new ServicoRequestDTO();
         request.setNome("Troca de óleo atualizada");
         request.setPrecoBase(BigDecimal.valueOf(120.00));
-        request.setCategoria(br.com.fiap.oficina.shared.enums.CategoriaServico.MANUTENCAO_PREVENTIVA);
+        request.setCategoria(br.com.fiap.oficina.shared.enums.CategoriaServico.MECANICO);
+        request.setTempoEstimadoMinutos(90L);
 
         ServicoResponseDTO response = new ServicoResponseDTO();
         response.setId(1L);
