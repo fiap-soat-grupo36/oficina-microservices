@@ -79,6 +79,14 @@ docker-compose down -v --rmi all
 - Budget Service: http://localhost:8085/swagger-ui.html
 - Work Order Service: http://localhost:8086/swagger-ui.html
 
+### Swagger Agregado
+
+O Swagger agregado no Eureka Server permite visualizar todas as APIs em um único local:
+
+- **Acesso pelo navegador**: As URLs usam `localhost` para que o navegador possa acessá-las
+- **Comunicação interna**: Os microserviços continuam se comunicando via nomes dos serviços Docker
+- **CORS habilitado**: Configuração global na `shared-library` permite requisições cross-origin
+
 ## Troubleshooting
 
 ### Serviço não registra no Eureka
