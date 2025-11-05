@@ -112,6 +112,12 @@ Para facilitar o acesso à documentação de todos os microserviços em um únic
 
 Através do Swagger agregado, você pode visualizar e testar as APIs de todos os serviços através de um dropdown, sem precisar acessar cada serviço individualmente.
 
+#### Como funciona
+
+- **URLs de documentação**: O Swagger agregado usa `localhost` nas URLs para que o navegador possa acessá-las
+- **Comunicação entre serviços**: A comunicação interna via Feign continua usando nomes de serviços (ex: `auth-service`)
+- **CORS**: Configuração CORS global na `shared-library` permite acesso cross-origin aos endpoints de documentação
+
 ### Documentação Individual dos Serviços
 
 Cada serviço também expõe sua documentação OpenAPI de forma independente:
