@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,6 +30,7 @@ class ReservaEstoqueServiceImplTest {
     @Mock
     private ProdutoEstoqueRepository produtoEstoqueRepository;
 
+    // Mantém mocks dos repositórios; NÃO exigimos interação com ProdutoEstoqueService
     @InjectMocks
     private ReservaEstoqueServiceImpl reservaEstoqueService;
 
@@ -55,7 +57,8 @@ class ReservaEstoqueServiceImplTest {
                 .thenReturn(Optional.of(produtoEstoque));
         when(reservaEstoqueRepository.save(any(ReservaEstoque.class)))
                 .thenReturn(reserva);
-        doNothing().when(produtoEstoqueService).atualizarSaldoAposMovimentacao(any());
+        when(produtoEstoqueRepository.save(any(ProdutoEstoque.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
         ReservaEstoque result = reservaEstoqueService.reservar(produtoCatalogoId, ordemServicoId, quantidade);
@@ -88,6 +91,7 @@ class ReservaEstoqueServiceImplTest {
         assertThrows(EstoqueInsuficienteException.class,
                 () -> reservaEstoqueService.reservar(produtoCatalogoId, ordemServicoId, quantidade));
         verify(reservaEstoqueRepository, never()).save(any());
+        verify(produtoEstoqueRepository, never()).save(any());
     }
 
     @Test
@@ -95,17 +99,19 @@ class ReservaEstoqueServiceImplTest {
     void deveCancelarReservasPorOrdemServico() {
         // Arrange
         Long ordemServicoId = 1L;
-        
+
         ReservaEstoque reserva1 = new ReservaEstoque();
         reserva1.setId(1L);
         reserva1.setOrdemServicoId(ordemServicoId);
         reserva1.setProdutoCatalogoId(100L);
+        reserva1.setQuantidadeReservada(10); // <- preenchido para evitar NPE
         reserva1.setAtiva(true);
 
         ReservaEstoque reserva2 = new ReservaEstoque();
         reserva2.setId(2L);
         reserva2.setOrdemServicoId(ordemServicoId);
         reserva2.setProdutoCatalogoId(200L);
+        reserva2.setQuantidadeReservada(5); // <- preenchido para evitar NPE
         reserva2.setAtiva(true);
 
         List<ReservaEstoque> reservas = Arrays.asList(reserva1, reserva2);
@@ -148,7 +154,7 @@ class ReservaEstoqueServiceImplTest {
     void deveListarReservasPorOrdemServico() {
         // Arrange
         Long ordemServicoId = 1L;
-        
+
         ReservaEstoque reserva1 = new ReservaEstoque();
         reserva1.setId(1L);
         reserva1.setOrdemServicoId(ordemServicoId);
@@ -191,7 +197,8 @@ class ReservaEstoqueServiceImplTest {
                 .thenReturn(Optional.of(produtoEstoque));
         when(reservaEstoqueRepository.save(any(ReservaEstoque.class)))
                 .thenReturn(reserva);
-        doNothing().when(produtoEstoqueService).atualizarSaldoAposMovimentacao(any());
+        when(produtoEstoqueRepository.save(any(ProdutoEstoque.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
         ReservaEstoque result = reservaEstoqueService.reservar(produtoCatalogoId, ordemServicoId, quantidade);
@@ -200,5 +207,6 @@ class ReservaEstoqueServiceImplTest {
         assertNotNull(result);
         assertEquals(quantidade, result.getQuantidadeReservada());
         verify(reservaEstoqueRepository, times(1)).save(any(ReservaEstoque.class));
+        verify(produtoEstoqueRepository, times(1)).save(any(ProdutoEstoque.class));
     }
 }
