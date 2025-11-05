@@ -60,13 +60,13 @@ class ReservaEstoqueControllerTest {
 
         ItemReservaResultDTO result1 = new ItemReservaResultDTO();
         result1.setProdutoCatalogoId(100L);
-        result1.setQuantidadeReservada(10);
-        result1.setSucesso(true);
+        result1.setReservada(10);
+        result1.setStatus("SUCESSO");
 
         ItemReservaResultDTO result2 = new ItemReservaResultDTO();
         result2.setProdutoCatalogoId(200L);
-        result2.setQuantidadeReservada(5);
-        result2.setSucesso(true);
+        result2.setReservada(5);
+        result2.setStatus("SUCESSO");
 
         ReservaLoteResponseDTO response = new ReservaLoteResponseDTO();
         response.setOrdemServicoId(1L);

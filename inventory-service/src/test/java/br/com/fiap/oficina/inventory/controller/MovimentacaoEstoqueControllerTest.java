@@ -51,8 +51,8 @@ class MovimentacaoEstoqueControllerTest {
 
         MovimentacaoEstoqueResponseDTO response = new MovimentacaoEstoqueResponseDTO();
         response.setId(1L);
-        response.setProdutoCatalogoId(100L);
-        response.setTipoMovimentacao(TipoMovimentacao.ENTRADA);
+        response.setProdutoId(100L);
+        response.setTipo(TipoMovimentacao.ENTRADA);
         response.setQuantidade(50);
         response.setPrecoUnitario(BigDecimal.valueOf(10.00));
 
@@ -82,8 +82,8 @@ class MovimentacaoEstoqueControllerTest {
 
         MovimentacaoEstoqueResponseDTO response = new MovimentacaoEstoqueResponseDTO();
         response.setId(2L);
-        response.setProdutoCatalogoId(100L);
-        response.setTipoMovimentacao(TipoMovimentacao.SAIDA);
+        response.setProdutoId(100L);
+        response.setTipo(TipoMovimentacao.SAIDA);
         response.setQuantidade(20);
 
         when(movimentacaoEstoqueService.registrarSaida(any(MovimentacaoEstoqueRequestDTO.class)))
@@ -106,11 +106,11 @@ class MovimentacaoEstoqueControllerTest {
         // Arrange
         MovimentacaoEstoqueResponseDTO mov1 = new MovimentacaoEstoqueResponseDTO();
         mov1.setId(1L);
-        mov1.setTipoMovimentacao(TipoMovimentacao.ENTRADA);
+        mov1.setTipo(TipoMovimentacao.ENTRADA);
 
         MovimentacaoEstoqueResponseDTO mov2 = new MovimentacaoEstoqueResponseDTO();
         mov2.setId(2L);
-        mov2.setTipoMovimentacao(TipoMovimentacao.SAIDA);
+        mov2.setTipo(TipoMovimentacao.SAIDA);
 
         List<MovimentacaoEstoqueResponseDTO> movimentacoes = Arrays.asList(mov1, mov2);
 
@@ -132,13 +132,13 @@ class MovimentacaoEstoqueControllerTest {
         // Arrange
         MovimentacaoEstoqueResponseDTO mov = new MovimentacaoEstoqueResponseDTO();
         mov.setId(1L);
-        mov.setProdutoCatalogoId(100L);
+        mov.setProdutoId(100L);
 
         when(movimentacaoEstoqueService.listarMovimentacoes(eq(100L), any(), any(), any()))
                 .thenReturn(Arrays.asList(mov));
 
         // Act & Assert
-        mockMvc.perform(get("/estoque/movimentacoes").param("produtoCatalogoId", "100"))
+        mockMvc.perform(get("/estoque/movimentacoes").param("produtoId", "100"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -153,8 +153,8 @@ class MovimentacaoEstoqueControllerTest {
         // Arrange
         MovimentacaoEstoqueResponseDTO mov = new MovimentacaoEstoqueResponseDTO();
         mov.setId(1L);
-        mov.setProdutoCatalogoId(100L);
-        mov.setTipoMovimentacao(TipoMovimentacao.ENTRADA);
+        mov.setProdutoId(100L);
+        mov.setTipo(TipoMovimentacao.ENTRADA);
         mov.setQuantidade(50);
 
         when(movimentacaoEstoqueService.buscarPorId(1L)).thenReturn(mov);

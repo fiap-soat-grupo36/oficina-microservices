@@ -155,8 +155,8 @@ class ProdutoEstoqueServiceImplTest {
         dto2.setId(2L);
 
         when(produtoEstoqueRepository.findAll()).thenReturn(produtos);
-        when(produtoEstoqueMapper.toDTO(produto1)).thenReturn(dto1);
-        when(produtoEstoqueMapper.toDTO(produto2)).thenReturn(dto2);
+        when(produtoEstoqueMapper.toResponseDTO(produto1)).thenReturn(dto1);
+        when(produtoEstoqueMapper.toResponseDTO(produto2)).thenReturn(dto2);
 
         // Act
         List<ProdutoEstoqueResponseDTO> result = produtoEstoqueService.listarTodos();
@@ -179,7 +179,7 @@ class ProdutoEstoqueServiceImplTest {
         dto.setId(id);
 
         when(produtoEstoqueRepository.findById(id)).thenReturn(Optional.of(produto));
-        when(produtoEstoqueMapper.toDTO(produto)).thenReturn(dto);
+        when(produtoEstoqueMapper.toResponseDTO(produto)).thenReturn(dto);
 
         // Act
         ProdutoEstoqueResponseDTO result = produtoEstoqueService.buscarPorId(id);
@@ -216,7 +216,7 @@ class ProdutoEstoqueServiceImplTest {
 
         when(produtoEstoqueRepository.findByProdutoCatalogoId(produtoCatalogoId))
                 .thenReturn(Optional.of(produto));
-        when(produtoEstoqueMapper.toDTO(produto)).thenReturn(dto);
+        when(produtoEstoqueMapper.toResponseDTO(produto)).thenReturn(dto);
 
         // Act
         ProdutoEstoqueResponseDTO result = produtoEstoqueService.buscarPorProdutoCatalogo(produtoCatalogoId);
@@ -240,7 +240,7 @@ class ProdutoEstoqueServiceImplTest {
         dto.setId(1L);
 
         when(produtoEstoqueRepository.findBaixoEstoque()).thenReturn(Arrays.asList(produto));
-        when(produtoEstoqueMapper.toDTO(produto)).thenReturn(dto);
+        when(produtoEstoqueMapper.toResponseDTO(produto)).thenReturn(dto);
 
         // Act
         List<ProdutoEstoqueResponseDTO> result = produtoEstoqueService.listarBaixoEstoque();
@@ -267,7 +267,7 @@ class ProdutoEstoqueServiceImplTest {
 
         when(produtoEstoqueRepository.findById(id)).thenReturn(Optional.of(produto));
         when(produtoEstoqueRepository.save(any(ProdutoEstoque.class))).thenReturn(produto);
-        when(produtoEstoqueMapper.toDTO(produto)).thenReturn(dto);
+        when(produtoEstoqueMapper.toResponseDTO(produto)).thenReturn(dto);
 
         // Act
         ProdutoEstoqueResponseDTO result = produtoEstoqueService.atualizarEstoqueMinimo(id, novoEstoqueMinimo);
@@ -326,7 +326,7 @@ class ProdutoEstoqueServiceImplTest {
 
         when(produtoEstoqueRepository.findByProdutoCatalogoId(produtoCatalogoId))
                 .thenReturn(Optional.of(produto));
-        when(produtoEstoqueMapper.toDTO(produto)).thenReturn(dto);
+        when(produtoEstoqueMapper.toResponseDTO(produto)).thenReturn(dto);
 
         // Act
         ProdutoEstoqueResponseDTO result = produtoEstoqueService.getSaldoConsolidado(produtoCatalogoId);

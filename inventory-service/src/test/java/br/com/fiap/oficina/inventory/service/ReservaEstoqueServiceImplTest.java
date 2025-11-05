@@ -2,6 +2,7 @@ package br.com.fiap.oficina.inventory.service;
 
 import br.com.fiap.oficina.inventory.entity.ProdutoEstoque;
 import br.com.fiap.oficina.inventory.entity.ReservaEstoque;
+import br.com.fiap.oficina.inventory.repository.ProdutoEstoqueRepository;
 import br.com.fiap.oficina.inventory.repository.ReservaEstoqueRepository;
 import br.com.fiap.oficina.inventory.service.impl.ReservaEstoqueServiceImpl;
 import br.com.fiap.oficina.shared.exception.EstoqueInsuficienteException;
@@ -26,7 +27,7 @@ class ReservaEstoqueServiceImplTest {
     private ReservaEstoqueRepository reservaEstoqueRepository;
 
     @Mock
-    private ProdutoEstoqueService produtoEstoqueService;
+    private ProdutoEstoqueRepository produtoEstoqueRepository;
 
     @InjectMocks
     private ReservaEstoqueServiceImpl reservaEstoqueService;
@@ -50,8 +51,8 @@ class ReservaEstoqueServiceImplTest {
         reserva.setQuantidadeReservada(quantidade);
         reserva.setAtiva(true);
 
-        when(produtoEstoqueService.obterOuCriarSaldo(produtoCatalogoId))
-                .thenReturn(produtoEstoque);
+        when(produtoEstoqueRepository.findByProdutoCatalogoIdForUpdate(produtoCatalogoId))
+                .thenReturn(Optional.of(produtoEstoque));
         when(reservaEstoqueRepository.save(any(ReservaEstoque.class)))
                 .thenReturn(reserva);
         doNothing().when(produtoEstoqueService).atualizarSaldoAposMovimentacao(any());
@@ -65,7 +66,7 @@ class ReservaEstoqueServiceImplTest {
         assertEquals(quantidade, result.getQuantidadeReservada());
         assertTrue(result.getAtiva());
         verify(reservaEstoqueRepository, times(1)).save(any(ReservaEstoque.class));
-        verify(produtoEstoqueService, times(1)).atualizarSaldoAposMovimentacao(produtoCatalogoId);
+        verify(produtoEstoqueRepository, times(1)).save(any(ProdutoEstoque.class));
     }
 
     @Test
@@ -80,8 +81,8 @@ class ReservaEstoqueServiceImplTest {
         produtoEstoque.setProdutoCatalogoId(produtoCatalogoId);
         produtoEstoque.setQuantidadeDisponivel(50);
 
-        when(produtoEstoqueService.obterOuCriarSaldo(produtoCatalogoId))
-                .thenReturn(produtoEstoque);
+        when(produtoEstoqueRepository.findByProdutoCatalogoIdForUpdate(produtoCatalogoId))
+                .thenReturn(Optional.of(produtoEstoque));
 
         // Act & Assert
         assertThrows(EstoqueInsuficienteException.class,
@@ -109,11 +110,26 @@ class ReservaEstoqueServiceImplTest {
 
         List<ReservaEstoque> reservas = Arrays.asList(reserva1, reserva2);
 
+        ProdutoEstoque produto1 = new ProdutoEstoque();
+        produto1.setProdutoCatalogoId(100L);
+        produto1.setQuantidadeTotal(100);
+        produto1.setQuantidadeReservada(10);
+
+        ProdutoEstoque produto2 = new ProdutoEstoque();
+        produto2.setProdutoCatalogoId(200L);
+        produto2.setQuantidadeTotal(100);
+        produto2.setQuantidadeReservada(5);
+
         when(reservaEstoqueRepository.findByOrdemServicoIdAndAtivaTrue(ordemServicoId))
                 .thenReturn(reservas);
         when(reservaEstoqueRepository.save(any(ReservaEstoque.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
-        doNothing().when(produtoEstoqueService).atualizarSaldoAposMovimentacao(any());
+        when(produtoEstoqueRepository.findByProdutoCatalogoIdForUpdate(100L))
+                .thenReturn(Optional.of(produto1));
+        when(produtoEstoqueRepository.findByProdutoCatalogoIdForUpdate(200L))
+                .thenReturn(Optional.of(produto2));
+        when(produtoEstoqueRepository.save(any(ProdutoEstoque.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
         reservaEstoqueService.cancelarPorOrdemServico(ordemServicoId);
@@ -122,8 +138,9 @@ class ReservaEstoqueServiceImplTest {
         assertFalse(reserva1.getAtiva());
         assertFalse(reserva2.getAtiva());
         verify(reservaEstoqueRepository, times(2)).save(any(ReservaEstoque.class));
-        verify(produtoEstoqueService, times(1)).atualizarSaldoAposMovimentacao(100L);
-        verify(produtoEstoqueService, times(1)).atualizarSaldoAposMovimentacao(200L);
+        verify(produtoEstoqueRepository, times(1)).findByProdutoCatalogoIdForUpdate(100L);
+        verify(produtoEstoqueRepository, times(1)).findByProdutoCatalogoIdForUpdate(200L);
+        verify(produtoEstoqueRepository, times(2)).save(any(ProdutoEstoque.class));
     }
 
     @Test
@@ -142,7 +159,7 @@ class ReservaEstoqueServiceImplTest {
 
         List<ReservaEstoque> reservas = Arrays.asList(reserva1, reserva2);
 
-        when(reservaEstoqueRepository.findByOrdemServicoId(ordemServicoId))
+        when(reservaEstoqueRepository.listarReservasProdutosPorOS(ordemServicoId))
                 .thenReturn(reservas);
 
         // Act
@@ -151,7 +168,7 @@ class ReservaEstoqueServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(reservaEstoqueRepository, times(1)).findByOrdemServicoId(ordemServicoId);
+        verify(reservaEstoqueRepository, times(1)).listarReservasProdutosPorOS(ordemServicoId);
     }
 
     @Test
@@ -170,8 +187,8 @@ class ReservaEstoqueServiceImplTest {
         reserva.setProdutoCatalogoId(produtoCatalogoId);
         reserva.setQuantidadeReservada(quantidade);
 
-        when(produtoEstoqueService.obterOuCriarSaldo(produtoCatalogoId))
-                .thenReturn(produtoEstoque);
+        when(produtoEstoqueRepository.findByProdutoCatalogoIdForUpdate(produtoCatalogoId))
+                .thenReturn(Optional.of(produtoEstoque));
         when(reservaEstoqueRepository.save(any(ReservaEstoque.class)))
                 .thenReturn(reserva);
         doNothing().when(produtoEstoqueService).atualizarSaldoAposMovimentacao(any());
