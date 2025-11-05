@@ -1,6 +1,7 @@
 package br.com.fiap.oficina.catalog.repository;
 
 import br.com.fiap.oficina.catalog.entity.ProdutoCatalogo;
+import br.com.fiap.oficina.shared.enums.CategoriaProduto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,12 +34,14 @@ class ProdutoCatalogoRepositoryTest {
         ProdutoCatalogo ativo = new ProdutoCatalogo();
         ativo.setNome("Produto Ativo");
         ativo.setDescricao("Descrição");
+        ativo.setCategoria(CategoriaProduto.INSUMO);
         ativo.setPreco(BigDecimal.valueOf(100.00));
         ativo.setAtivo(true);
 
         ProdutoCatalogo inativo = new ProdutoCatalogo();
         inativo.setNome("Produto Inativo");
         inativo.setDescricao("Descrição");
+        inativo.setCategoria(CategoriaProduto.INSUMO);
         inativo.setPreco(BigDecimal.valueOf(100.00));
         inativo.setAtivo(false);
 
@@ -62,12 +65,16 @@ class ProdutoCatalogoRepositoryTest {
         ProdutoCatalogo ativo = new ProdutoCatalogo();
         ativo.setNome("Produto Ativo");
         ativo.setDescricao("Descrição");
+        ativo.setCategoria(CategoriaProduto.INSUMO);
+
         ativo.setPreco(BigDecimal.valueOf(100.00));
         ativo.setAtivo(true);
 
         ProdutoCatalogo inativo = new ProdutoCatalogo();
         inativo.setNome("Produto Inativo");
         inativo.setDescricao("Descrição");
+        inativo.setCategoria(CategoriaProduto.INSUMO);
+
         inativo.setPreco(BigDecimal.valueOf(100.00));
         inativo.setAtivo(false);
 
@@ -134,20 +141,20 @@ class ProdutoCatalogoRepositoryTest {
     @DisplayName("Não deve buscar produtos inativos por termo")
     void naoDeveBuscarProdutosInativosPorTermo() {
         // Arrange
-        ProdutoCatalogo inativo = new ProdutoCatalogo();
-        inativo.setNome("Filtro Inativo");
-        inativo.setDescricao("Descrição");
-        inativo.setPreco(BigDecimal.valueOf(50.00));
-        inativo.setAtivo(false);
+        ProdutoCatalogo produto = new ProdutoCatalogo();
+        produto.setNome("Óleo Motor Inativo");
+        produto.setDescricao("Óleo sintético 5W30");
+        produto.setCategoria(CategoriaProduto.INSUMO);
+        produto.setPreco(BigDecimal.valueOf(45.90));
+        produto.setAtivo(false); // Produto inativo
 
-        entityManager.persist(inativo);
-        entityManager.flush();
+        entityManager.persistAndFlush(produto);
 
         // Act
-        List<ProdutoCatalogo> result = produtoCatalogoRepository.buscarPorTermo("filtro");
+        List<ProdutoCatalogo> resultado = produtoCatalogoRepository.buscarPorTermo("óleo");
 
         // Assert
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty(), "Não deve retornar produtos inativos");
     }
 }
