@@ -317,8 +317,8 @@ create_servicos() {
             "categoria": "ALINHAMENTO"
         }')
     
-    http_code=$(echo "$response2" | tail -n1)
-    body=$(echo "$response2" | sed '$d')
+    local http_code=$(echo "$response2" | tail -n1)
+    local body=$(echo "$response2" | sed '$d')
     
     echo "$body" > results/servico2.json
     
@@ -377,8 +377,8 @@ create_produtos() {
             "categoria": "PECA"
         }')
     
-    http_code=$(echo "$response2" | tail -n1)
-    body=$(echo "$response2" | sed '$d')
+    local http_code=$(echo "$response2" | tail -n1)
+    local body=$(echo "$response2" | sed '$d')
     
     echo "$body" > results/produto2.json
     
