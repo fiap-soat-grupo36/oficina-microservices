@@ -215,6 +215,19 @@ VERIFICANDO SERVIÇOS
 - **Budget Service**: http://localhost:8085/swagger-ui.html
 - **Work Order Service**: http://localhost:8086/swagger-ui.html
 
+## 📝 Categorias Válidas
+
+**Serviços (CategoriaServico):**
+- `MECANICO` - Serviços mecânicos gerais
+- `ELETRICO` - Serviços elétricos
+- `FREIOS` - Serviços de freios
+- `ALINHAMENTO` - Alinhamento e balanceamento
+- `SUSPENSAO` - Serviços de suspensão
+
+**Produtos (CategoriaProduto):**
+- `PECA` - Peças e componentes
+- `INSUMO` - Insumos e materiais consumíveis
+
 ## 📝 Notas
 
 - Os testes criam dados reais no banco
