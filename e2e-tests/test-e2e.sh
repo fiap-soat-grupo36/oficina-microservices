@@ -71,19 +71,27 @@ check_response() {
 check_service() {
     local service_name=$1
     local service_url=$2
+    local max_attempts=3
+    local attempt=1
     
     print_info "Verificando $service_name..."
     
-    local response=$(curl -s -w "\n%{http_code}" "$service_url/actuator/health" 2>/dev/null)
-    local http_code=$(echo "$response" | tail -n1)
+    while [ $attempt -le $max_attempts ]; do
+        if curl -s -f -o /dev/null --max-time 5 "$service_url/actuator/health"; then
+            print_success "$service_name está online"
+            return 0
+        fi
+        
+        if [ $attempt -lt $max_attempts ]; then
+            print_info "Tentativa $attempt/$max_attempts falhou. Aguardando 5 segundos..."
+            sleep 5
+        fi
+        
+        ((attempt++))
+    done
     
-    if [ "$http_code" = "200" ]; then
-        print_success "$service_name está online"
-        return 0
-    else
-        print_error "$service_name está offline (HTTP $http_code)"
-        return 1
-    fi
+    print_error "$service_name está offline após $max_attempts tentativas"
+    return 1
 }
 
 verify_all_services() {
@@ -271,41 +279,57 @@ create_servicos() {
     print_header "6. CRIAR SERVIÇOS NO CATÁLOGO"
     
     # Serviço 1: Troca de Óleo
-    local response1=$(curl -s -X POST "$CATALOG_SERVICE/api/servicos" \
+    local response1=$(curl -s -w "\n%{http_code}" -X POST "$CATALOG_SERVICE/api/servicos" \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $TOKEN" \
         -d '{
             "nome": "Troca de Óleo",
             "descricao": "Troca de óleo do motor com filtro",
-            "preco": 150.00,
-            "tempoEstimado": 60,
-            "categoria": "MANUTENCAO"
+            "precoBase": 150.00,
+            "tempoEstimadoMinutos": 60,
+            "categoria": "MECANICO"
         }')
     
-    echo "$response1" > results/servico1.json
+    local http_code=$(echo "$response1" | tail -n1)
+    local body=$(echo "$response1" | sed '$d')
     
-    if check_response "$response1" "Criação do Serviço 1 (Troca de Óleo)"; then
-        SERVICO1_ID=$(echo "$response1" | jq -r '.id // .servicoId // .servico_id // empty')
-        print_info "Serviço 1 ID: $SERVICO1_ID"
+    echo "$body" > results/servico1.json
+    
+    if [ "$http_code" = "201" ] || [ "$http_code" = "200" ]; then
+        if check_response "$body" "Criação do Serviço 1 (Troca de Óleo)"; then
+            SERVICO1_ID=$(echo "$body" | jq -r '.id // .servicoId // .servico_id // empty')
+            print_info "Serviço 1 ID: $SERVICO1_ID"
+        fi
+    else
+        print_error "Falha ao criar serviço 1 (HTTP $http_code)"
+        echo "$body" | jq '.' 2>/dev/null || echo "$body"
     fi
     
     # Serviço 2: Alinhamento
-    local response2=$(curl -s -X POST "$CATALOG_SERVICE/api/servicos" \
+    local response2=$(curl -s -w "\n%{http_code}" -X POST "$CATALOG_SERVICE/api/servicos" \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $TOKEN" \
         -d '{
             "nome": "Alinhamento e Balanceamento",
             "descricao": "Alinhamento e balanceamento das 4 rodas",
-            "preco": 120.00,
-            "tempoEstimado": 90,
-            "categoria": "MANUTENCAO"
+            "precoBase": 120.00,
+            "tempoEstimadoMinutos": 90,
+            "categoria": "ALINHAMENTO"
         }')
     
-    echo "$response2" > results/servico2.json
+    local http_code=$(echo "$response2" | tail -n1)
+    local body=$(echo "$response2" | sed '$d')
     
-    if check_response "$response2" "Criação do Serviço 2 (Alinhamento)"; then
-        SERVICO2_ID=$(echo "$response2" | jq -r '.id // .servicoId // .servico_id // empty')
-        print_info "Serviço 2 ID: $SERVICO2_ID"
+    echo "$body" > results/servico2.json
+    
+    if [ "$http_code" = "201" ] || [ "$http_code" = "200" ]; then
+        if check_response "$body" "Criação do Serviço 2 (Alinhamento)"; then
+            SERVICO2_ID=$(echo "$body" | jq -r '.id // .servicoId // .servico_id // empty')
+            print_info "Serviço 2 ID: $SERVICO2_ID"
+        fi
+    else
+        print_error "Falha ao criar serviço 2 (HTTP $http_code)"
+        echo "$body" | jq '.' 2>/dev/null || echo "$body"
     fi
 }
 
@@ -317,41 +341,55 @@ create_produtos() {
     print_header "7. CRIAR PRODUTOS NO CATÁLOGO"
     
     # Produto 1: Óleo
-    local response1=$(curl -s -X POST "$CATALOG_SERVICE/api/produtos" \
+    local response1=$(curl -s -w "\n%{http_code}" -X POST "$CATALOG_SERVICE/api/catalogo-produtos" \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $TOKEN" \
         -d '{
             "nome": "Óleo Motor 5W30",
             "descricao": "Óleo sintético para motor 5W30 - 1L",
             "preco": 45.00,
-            "unidade": "LITRO",
-            "categoria": "LUBRIFICANTE"
+            "categoria": "INSUMO"
         }')
     
-    echo "$response1" > results/produto1.json
+    local http_code=$(echo "$response1" | tail -n1)
+    local body=$(echo "$response1" | sed '$d')
     
-    if check_response "$response1" "Criação do Produto 1 (Óleo)"; then
-        PRODUTO1_ID=$(echo "$response1" | jq -r '.id // .produtoId // .produto_id // empty')
-        print_info "Produto 1 ID: $PRODUTO1_ID"
+    echo "$body" > results/produto1.json
+    
+    if [ "$http_code" = "201" ] || [ "$http_code" = "200" ]; then
+        if check_response "$body" "Criação do Produto 1 (Óleo)"; then
+            PRODUTO1_ID=$(echo "$body" | jq -r '.id // .produtoId // .produto_id // empty')
+            print_info "Produto 1 ID: $PRODUTO1_ID"
+        fi
+    else
+        print_error "Falha ao criar produto 1 (HTTP $http_code)"
+        echo "$body" | jq '.' 2>/dev/null || echo "$body"
     fi
     
     # Produto 2: Filtro
-    local response2=$(curl -s -X POST "$CATALOG_SERVICE/api/produtos" \
+    local response2=$(curl -s -w "\n%{http_code}" -X POST "$CATALOG_SERVICE/api/catalogo-produtos" \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $TOKEN" \
         -d '{
             "nome": "Filtro de Óleo",
             "descricao": "Filtro de óleo original",
             "preco": 35.00,
-            "unidade": "UNIDADE",
-            "categoria": "FILTRO"
+            "categoria": "PECA"
         }')
     
-    echo "$response2" > results/produto2.json
+    local http_code=$(echo "$response2" | tail -n1)
+    local body=$(echo "$response2" | sed '$d')
     
-    if check_response "$response2" "Criação do Produto 2 (Filtro)"; then
-        PRODUTO2_ID=$(echo "$response2" | jq -r '.id // .produtoId // .produto_id // empty')
-        print_info "Produto 2 ID: $PRODUTO2_ID"
+    echo "$body" > results/produto2.json
+    
+    if [ "$http_code" = "201" ] || [ "$http_code" = "200" ]; then
+        if check_response "$body" "Criação do Produto 2 (Filtro)"; then
+            PRODUTO2_ID=$(echo "$body" | jq -r '.id // .produtoId // .produto_id // empty')
+            print_info "Produto 2 ID: $PRODUTO2_ID"
+        fi
+    else
+        print_error "Falha ao criar produto 2 (HTTP $http_code)"
+        echo "$body" | jq '.' 2>/dev/null || echo "$body"
     fi
 }
 
@@ -719,16 +757,16 @@ main() {
     print_banner
     
     # Executar todos os testes em sequência
-    verify_all_services
-    create_admin
-    login
+    verify_all_services || exit 1
+    create_admin || exit 1
+    login || exit 1
     create_mecanico
-    create_cliente
-    create_veiculo
+    create_cliente || exit 1
+    create_veiculo || exit 1
     create_servicos
     create_produtos
     add_estoque
-    create_ordem_servico
+    create_ordem_servico || exit 1
     atribuir_mecanico
     add_servicos_os
     add_produtos_os
