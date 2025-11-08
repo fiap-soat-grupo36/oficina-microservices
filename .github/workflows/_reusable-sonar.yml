@@ -27,9 +27,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: SonarCloud Scan
-        if: ${{ secrets.SONAR_TOKEN != '' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:${{ inputs.scanner_version }}:sonar             -Dsonar.host.url="${{ inputs.sonar_host }}"             -Dsonar.organization="${{ inputs.sonar_org }}"             -Dsonar.projectKey="${{ inputs.sonar_project_key }}"
+          mvn --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:${{ inputs.scanner_version }}:sonar \
+            -Dsonar.host.url="${{ inputs.sonar_host }}" \
+            -Dsonar.organization="${{ inputs.sonar_org }}" \
+            -Dsonar.projectKey="${{ inputs.sonar_project_key }}"
