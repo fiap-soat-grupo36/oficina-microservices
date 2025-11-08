@@ -31,9 +31,7 @@ jobs:
       - name: Run unit tests
         run: mvn --batch-mode test
 
-      # Verificação de cobertura com thresholds diferentes:
-      # - PR: não trava por pouca coisa (ex.: 50%)
-      # - main: mais rigoroso (ex.: 70%)
+      # Cobertura com thresholds diferentes
       - name: Run coverage verification (PR)
         if: ${{ github.event_name == 'pull_request' }}
         run: mvn --batch-mode verify -Pverify-coverage -Dcoverage.minimum=0.50
@@ -42,29 +40,32 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: mvn --batch-mode verify -Pverify-coverage -Dcoverage.minimum=0.70
 
-      # Publica relatórios JaCoCo (HTML) como artifact para inspeção
       - name: Upload JaCoCo reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: jacoco-reports
-          path: |
-            **/target/site/jacoco/**
+          path: "**/target/site/jacoco/**"
           if-no-files-found: ignore
           retention-days: 7
 
-      # Exporta SONAR_TOKEN via ambiente (em forks fica vazio, e o passo do Sonar é pulado)
-      - name: Export SONAR_TOKEN env
+      # Exporta SONAR_TOKEN (se não existir, o passo do Sonar é pulado)
+      - name: Export Sonar token
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: echo "SONAR_TOKEN=${SONAR_TOKEN}" >> "$GITHUB_ENV"
 
+      # SonarCloud (só roda com token presente)
       - name: SonarCloud Scan
         if: ${{ env.SONAR_TOKEN != '' }}
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }} # PR decoration
           SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
-        run: mvn --batch-mode sonar:sonar
+        run: |
+          mvn --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:4.0.0.4121:sonar \
+            -Dsonar.host.url="https://sonarcloud.io" \
+            -Dsonar.organization="fiap-soat-grupo36" \
+            -Dsonar.projectKey="fiap-soat-grupo36_oficina-microservices"
 
   docker-build:
     runs-on: ubuntu-latest
