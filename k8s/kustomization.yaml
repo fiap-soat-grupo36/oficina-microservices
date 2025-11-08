@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: oficina
+resources:
+  - namespace.yaml
+  - configmap-shared.yaml
+  - secret-database.yaml
+  - secret-auth.yaml
+  - secret-notification.yaml
+  - postgres.yaml
+  - eureka-server.yaml
+  - auth-service.yaml
+  - customer-service.yaml
+  - catalog-service.yaml
+  - inventory-service.yaml
+  - budget-service.yaml
+  - work-order-service.yaml
+  - notification-service.yaml

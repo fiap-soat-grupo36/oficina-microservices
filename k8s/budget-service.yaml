@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: budget-service
+  namespace: oficina
+  labels:
+    app: budget-service
+spec:
+  type: ClusterIP
+  selector:
+    app: budget-service
+  ports:
+    - name: http
+      port: 8085
+      targetPort: 8085
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: budget-service
+  namespace: oficina
+  labels:
+    app: budget-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: budget-service
+  template:
+    metadata:
+      labels:
+        app: budget-service
+    spec:
+      containers:
+        - name: budget-service
+          image: your-registry/oficina-budget-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8085
+              name: http
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-shared-config
+                  key: SPRING_PROFILES_ACTIVE
+            - name: EUREKA_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-shared-config
+                  key: EUREKA_URL
+            - name: DB_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-shared-config
+                  key: DB_URL
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+            - name: SERVER_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-shared-config
+                  key: SERVER_PORT_BUDGET
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secrets
+                  key: JWT_SECRET
+            - name: JWT_EXPIRATION
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secrets
+                  key: JWT_EXPIRATION
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
