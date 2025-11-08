@@ -1,0 +1,35 @@
+name: _reusable-sonar
+on:
+  workflow_call:
+    inputs:
+      sonar_host:
+        required: false
+        type: string
+        default: 'https://sonarcloud.io'
+      sonar_org:
+        required: true
+        type: string
+      sonar_project_key:
+        required: true
+        type: string
+      scanner_version:
+        required: false
+        type: string
+        default: '4.0.0.4121'
+    secrets:
+      SONAR_TOKEN:
+        required: false
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SonarCloud Scan
+        if: ${{ secrets.SONAR_TOKEN != '' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:${{ inputs.scanner_version }}:sonar             -Dsonar.host.url="${{ inputs.sonar_host }}"             -Dsonar.organization="${{ inputs.sonar_org }}"             -Dsonar.projectKey="${{ inputs.sonar_project_key }}"

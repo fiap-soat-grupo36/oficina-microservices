@@ -1,0 +1,61 @@
+name: _reusable-build
+on:
+  workflow_call:
+    inputs:
+      java_version:
+        required: false
+        type: string
+        default: '21'
+      coverage_min_pr:
+        required: false
+        type: string
+        default: '0.50'
+      coverage_min_main:
+        required: false
+        type: string
+        default: '0.70'
+      maven_args:
+        required: false
+        type: string
+        default: ''
+    secrets: {}
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java_version }}
+          distribution: temurin
+          cache: maven
+
+      - name: Build (no tests)
+        run: mvn --batch-mode clean install -DskipTests ${{ inputs.maven_args }}
+
+      - name: Unit tests
+        run: mvn --batch-mode test ${{ inputs.maven_args }}
+
+      - name: Coverage check (PR)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: mvn --batch-mode verify -Pverify-coverage -Dcoverage.minimum=${{ inputs.coverage_min_pr }} ${{ inputs.maven_args }}
+
+      - name: Coverage check (main)
+        if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        run: mvn --batch-mode verify -Pverify-coverage -Dcoverage.minimum=${{ inputs.coverage_min_main }} ${{ inputs.maven_args }}
+
+      - name: Upload JaCoCo reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-reports
+          path: "**/target/site/jacoco/**"
+          if-no-files-found: ignore
+          retention-days: 7
