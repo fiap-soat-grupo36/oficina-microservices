@@ -12,6 +12,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,10 +31,29 @@ jobs:
       - name: Run unit tests
         run: mvn --batch-mode test
 
-      - name: Run coverage verification
-        run: mvn --batch-mode verify -Pverify-coverage
+      # Verificação de cobertura com thresholds diferentes:
+      # - PR: não trava por pouca coisa (ex.: 50%)
+      # - main: mais rigoroso (ex.: 70%)
+      - name: Run coverage verification (PR)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: mvn --batch-mode verify -Pverify-coverage -Dcoverage.minimum=0.50
 
-      # Define a env var a partir do secret (fica vazia em forks sem acesso)
+      - name: Run coverage verification (main)
+        if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        run: mvn --batch-mode verify -Pverify-coverage -Dcoverage.minimum=0.70
+
+      # Publica relatórios JaCoCo (HTML) como artifact para inspeção
+      - name: Upload JaCoCo reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-reports
+          path: |
+            **/target/site/jacoco/**
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # Exporta SONAR_TOKEN via ambiente (em forks fica vazio, e o passo do Sonar é pulado)
       - name: Export SONAR_TOKEN env
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -69,6 +89,7 @@ jobs:
             dockerfile: ./work-order-service/Dockerfile
           - service: notification-service
             dockerfile: ./notification-service/Dockerfile
+
     steps:
       - uses: actions/checkout@v4
 
