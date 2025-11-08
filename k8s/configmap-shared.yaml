@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oficina-shared-config
+  namespace: oficina
+data:
+  SPRING_PROFILES_ACTIVE: k8s
+  EUREKA_URL: http://eureka-server:8761/eureka/
+  DB_URL: jdbc:postgresql://postgres:5432/oficina-db
+  DB_NAME: oficina-db
+  SERVER_PORT_AUTH: "8082"
+  SERVER_PORT_CUSTOMER: "8081"
+  SERVER_PORT_CATALOG: "8083"
+  SERVER_PORT_INVENTORY: "8084"
+  SERVER_PORT_BUDGET: "8085"
+  SERVER_PORT_WORK_ORDER: "8086"
+  SERVER_PORT_NOTIFICATION: "8087"
