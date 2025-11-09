@@ -85,6 +85,7 @@ jobs:
             "dockerfile": "./notification-service/Dockerfile"
           }
         ]
+      # Docker Hub namespace is automatically derived from DOCKERHUB_USERNAME when available.
       build_tags_suffix: "ci"
       push_images: false
       max_parallel: 4
