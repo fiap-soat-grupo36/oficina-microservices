@@ -56,7 +56,6 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: ${{ inputs.push_images }}
-          tags: |
-            ${{ matrix.service }}:${{ inputs.build_tags_suffix }}
+          tags: ${{ env.DOCKERHUB_USERNAME != '' && format('{0}/{1}:{2}', env.DOCKERHUB_USERNAME, matrix.service, inputs.build_tags_suffix) || format('{0}:{1}', matrix.service, inputs.build_tags_suffix) }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
