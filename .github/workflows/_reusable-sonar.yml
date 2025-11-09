@@ -1,0 +1,58 @@
+name: _reusable-sonar
+on:
+  workflow_call:
+    inputs:
+      java_version:
+        required: false
+        type: string
+        default: '21'
+      sonar_host:
+        required: false
+        type: string
+        default: 'https://sonarcloud.io'
+      sonar_org:
+        required: true
+        type: string
+      sonar_project_key:
+        required: true
+        type: string
+      scanner_version:
+        required: false
+        type: string
+        default: '4.0.0.4121'
+      maven_args:
+        required: false
+        type: string
+        default: ''
+    secrets:
+      SONAR_TOKEN:
+        required: false
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java_version }}
+          distribution: temurin
+          cache: maven
+
+      - name: Build project
+        run: mvn --batch-mode clean compile test-compile ${{ inputs.maven_args }}
+
+      - name: Run tests and SonarCloud Scan
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn --batch-mode verify sonar:sonar \
+            -Dsonar.host.url="${{ inputs.sonar_host }}" \
+            -Dsonar.organization="${{ inputs.sonar_org }}" \
+            -Dsonar.projectKey="${{ inputs.sonar_project_key }}" \
+            ${{ inputs.maven_args }}

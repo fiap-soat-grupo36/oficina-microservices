@@ -1,0 +1,91 @@
+name: CI - Oficina Microservices
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build_and_checks:
+    uses: ./.github/workflows/_reusable-build.yml
+    with:
+      java_version: '21'
+      coverage_min_pr: '0.50'
+      coverage_min_main: '0.70'
+      maven_args: ''
+    secrets: inherit
+
+  sonarcloud:
+    needs: build_and_checks
+    uses: ./.github/workflows/_reusable-sonar.yml
+    with:
+      java_version: '21'
+      sonar_org: 'fiap-soat-grupo36'
+      sonar_project_key: 'fiap-soat-grupo36_oficina-microservices'
+      sonar_host: 'https://sonarcloud.io'
+      scanner_version: '4.0.0.4121'
+      maven_args: ''
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  docker_eureka:
+    needs: [build_and_checks]
+    uses: ./.github/workflows/_reusable-dockerhub.yml
+    with:
+      services_json: |
+        [
+          { "service": "eureka-server", "dockerfile": "./eureka-server/Dockerfile" }
+        ]
+      build_tags_suffix: "ci"
+      push_images: false
+      max_parallel: 1
+    secrets: inherit
+
+  docker_rest:
+    needs: [docker_eureka]
+    uses: ./.github/workflows/_reusable-dockerhub.yml
+    with:
+      services_json: |
+        [
+          {
+            "service": "eureka-server",
+            "dockerfile": "./eureka-server/Dockerfile"
+          },
+          {
+            "service": "auth-service",
+            "dockerfile": "./auth-service/Dockerfile"
+          },
+          {
+            "service": "customer-service",
+            "dockerfile": "./customer-service/Dockerfile"
+          },
+          {
+            "service": "catalog-service",
+            "dockerfile": "./catalog-service/Dockerfile"
+          },
+          {
+            "service": "inventory-service",
+            "dockerfile": "./inventory-service/Dockerfile"
+          },
+          {
+            "service": "budget-service",
+            "dockerfile": "./budget-service/Dockerfile"
+          },
+          {
+            "service": "work-order-service",
+            "dockerfile": "./work-order-service/Dockerfile"
+          },
+          {
+            "service": "notification-service",
+            "dockerfile": "./notification-service/Dockerfile"
+          }
+        ]
+      build_tags_suffix: "ci"
+      push_images: false
+      max_parallel: 4
+    secrets: inherit
