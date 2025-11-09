@@ -34,7 +34,7 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   docker_eureka:
-    needs: [build_and_checks]
+    needs: [build_and_checks, sonarcloud]
     uses: ./.github/workflows/_reusable-dockerhub.yml
     with:
       services_json: |
