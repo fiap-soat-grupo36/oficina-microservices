@@ -41,8 +41,8 @@ jobs:
         [
           { "service": "eureka-server", "dockerfile": "./eureka-server/Dockerfile" }
         ]
-      build_tags_suffix: "ci"
-      push_images: false
+      build_tags_suffix: ${{ github.sha }}
+      push_images: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       max_parallel: 1
     secrets: inherit
 
@@ -85,8 +85,7 @@ jobs:
             "dockerfile": "./notification-service/Dockerfile"
           }
         ]
-      # Docker Hub namespace is automatically derived from DOCKERHUB_USERNAME when available.
-      build_tags_suffix: "ci"
-      push_images: false
+      build_tags_suffix: ${{ github.sha }}
+      push_images: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       max_parallel: 4
     secrets: inherit
