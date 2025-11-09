@@ -52,24 +52,38 @@
         <!-- SonarCloud -->
         <sonar.organization>fiap-soat-grupo36</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <!-- Fora da análise (não faz sentido indexar) -->
-        <sonar.exclusions>**/target/**,**/generated/**</sonar.exclusions>
-        <!-- Fora da cobertura (ainda analisadas por qualidade) -->
+        <!-- Exclusões do SonarQube -->
+        <sonar.exclusions>
+            <!-- DTOs -->
+            **/dto/**/*.java,
+            <!-- Entidades -->
+            **/entity/**/*.java,
+            <!-- Configurações -->
+            **/config/**/*.java,
+            <!-- Mappers (MapStruct) -->
+            **/mapper/**/*.java,
+            <!-- Classe principal -->
+            **/*Application.java,
+            <!-- Value Objects -->
+            **/vo/**/*.java
+        </sonar.exclusions>
+
+        <!-- Exclusões de cobertura de código -->
         <sonar.coverage.exclusions>
-            **/*Application*.java,
-            **/config/**,
-            **/dto/**,
-            **/entity/**,
-            **/mapper/**,
-            **/exception/**,
-            **/enums/**,
-            **/util/**,
-            **/utils/**,
-            **/constants/**,
-            **/*Request*.java,
-            **/*Response*.java,
-            **/*Exception*.java
+            <!-- DTOs -->
+            **/dto/**/*.java,
+            <!-- Entidades -->
+            **/entity/**/*.java,
+            <!-- Configurações -->
+            **/config/**/*.java,
+            <!-- Mappers (MapStruct) -->
+            **/mapper/**/*.java,
+            <!-- Classe principal -->
+            **/*Application.java,
+            <!-- Value Objects -->
+            **/vo/**/*.java
         </sonar.coverage.exclusions>
+
     </properties>
 
     <!-- Dependency Management (não adiciona dependências, apenas define versões) -->
