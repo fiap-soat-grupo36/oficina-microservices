@@ -24,10 +24,12 @@ jobs:
     needs: build_and_checks
     uses: ./.github/workflows/_reusable-sonar.yml
     with:
+      java_version: '21'
       sonar_org: 'fiap-soat-grupo36'
       sonar_project_key: 'fiap-soat-grupo36_oficina-microservices'
       sonar_host: 'https://sonarcloud.io'
       scanner_version: '4.0.0.4121'
+      maven_args: ''
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
