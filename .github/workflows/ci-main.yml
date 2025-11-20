@@ -37,7 +37,7 @@ jobs:
   create_pr:
     name: "Create PR to develop for feature branches"
     runs-on: ubuntu-latest
-    needs: sonarcloud
+    needs: build_and_checks
     # Only run on push events for branches matching feature/*
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature/')
     steps:
