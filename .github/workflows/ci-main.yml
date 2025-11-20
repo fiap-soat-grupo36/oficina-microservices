@@ -2,9 +2,10 @@ name: CI - Oficina Microservices
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ develop, feature/**, hotfix/**, main ]
   pull_request:
     branches: [ main, develop ]
+    types: [ opened, synchronize, reopened ]
 
 permissions:
   contents: read
@@ -127,8 +128,9 @@ jobs:
             });
 
             console.log(`Created PR ${pr.data.html_url}`);
-            
+
   docker_eureka:
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
     needs: [build_and_checks]
     uses: ./.github/workflows/_reusable-dockerhub.yml
     with:
@@ -142,6 +144,7 @@ jobs:
     secrets: inherit
 
   docker_rest:
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
     needs: [docker_eureka]
     uses: ./.github/workflows/_reusable-dockerhub.yml
     with:
