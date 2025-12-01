@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: catalog-service
-          image: your-registry/oficina-catalog-service:latest
+          image: grecomilani/oficina-catalog-service:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8083

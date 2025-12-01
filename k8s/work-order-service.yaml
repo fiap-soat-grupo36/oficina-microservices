@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: work-order-service
-          image: your-registry/oficina-work-order-service:latest
+          image: grecomilani/oficina-work-order-service:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8086

@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: customer-service
-          image: your-registry/oficina-customer-service:latest
+          image: grecomilani/oficina-customer-service:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081

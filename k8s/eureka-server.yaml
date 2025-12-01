@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: eureka-server
-          image: your-registry/oficina-eureka-server:latest
+          image: grecomilani/oficina-eureka-server:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8761

@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: your-registry/oficina-auth-service:latest
+          image: grecomilani/oficina-auth-service:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8082

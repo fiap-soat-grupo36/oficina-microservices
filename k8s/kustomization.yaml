@@ -16,3 +16,5 @@ resources:
   - budget-service.yaml
   - work-order-service.yaml
   - notification-service.yaml
+  - hpa.yaml
+  - ingress.yaml

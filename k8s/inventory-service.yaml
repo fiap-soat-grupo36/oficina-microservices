@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: inventory-service
-          image: your-registry/oficina-inventory-service:latest
+          image: grecomilani/oficina-inventory-service:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8084
