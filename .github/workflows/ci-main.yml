@@ -187,3 +187,9 @@ jobs:
       push_images: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       max_parallel: 4
     secrets: inherit
+
+  terraform:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    needs: [docker_rest]
+    uses: ./.github/workflows/_reusable-terraform.yml
+    secrets: inherit
