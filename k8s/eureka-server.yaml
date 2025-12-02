@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: eureka-server
-          image: your-registry/oficina-eureka-server:latest
+          image: grecomilani/oficina-eureka-server:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8761
@@ -58,8 +58,8 @@ spec:
             periodSeconds: 10
           resources:
             requests:
-              cpu: 250m
-              memory: 512Mi
+              cpu: 150m
+              memory: 256Mi
             limits:
               cpu: 500m
               memory: 1Gi

@@ -22,7 +22,7 @@ metadata:
   labels:
     app: auth-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: auth-service
@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: your-registry/oficina-auth-service:latest
+          image: grecomilani/oficina-auth-service:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8082
@@ -93,8 +93,8 @@ spec:
             periodSeconds: 10
           resources:
             requests:
-              cpu: 250m
-              memory: 512Mi
+              cpu: 150m
+              memory: 256Mi
             limits:
               cpu: 500m
               memory: 1Gi
