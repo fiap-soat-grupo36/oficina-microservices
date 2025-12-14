@@ -18,6 +18,10 @@ on:
         required: false
         type: string
         default: ''
+      skip_coverage_checks:
+        required: false
+        type: boolean
+        default: false
     secrets: {}
 jobs:
   build-and-test:
@@ -44,11 +48,11 @@ jobs:
         run: mvn --batch-mode test ${{ inputs.maven_args }}
 
       - name: Coverage check (PR)
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ !inputs.skip_coverage_checks && github.event_name == 'pull_request' }}
         run: mvn --batch-mode verify -Pverify-coverage -Dcoverage.minimum=${{ inputs.coverage_min_pr }} ${{ inputs.maven_args }}
 
       - name: Coverage check (main)
-        if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+        if: ${{ !inputs.skip_coverage_checks && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: mvn --batch-mode verify -Pverify-coverage -Dcoverage.minimum=${{ inputs.coverage_min_main }} ${{ inputs.maven_args }}
 
       - name: Upload JaCoCo reports

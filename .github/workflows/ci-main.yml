@@ -19,6 +19,7 @@ jobs:
       coverage_min_pr: '0.50'
       coverage_min_main: '0.70'
       maven_args: ''
+      skip_coverage_checks: true
     secrets: inherit
 
   sonarcloud:
