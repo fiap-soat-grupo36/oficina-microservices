@@ -5,10 +5,19 @@ on:
       services_json:
         required: true
         type: string
+      branch_tag:
+        required: true
+        type: string
+      ref_name_for_sha:
+        required: true
+        type: string
+      sha_short:
+        required: false
+        type: string
       build_tags_suffix:
         required: false
         type: string
-        default: 'ci'
+        default: ''
       push_images:
         required: false
         type: boolean
@@ -43,6 +52,25 @@ jobs:
           echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> "$GITHUB_ENV"
           echo "DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}" >> "$GITHUB_ENV"
 
+      - name: Prepare build metadata
+        run: |
+          SHA_INPUT="${{ inputs.sha_short }}"
+          if [ -z "$SHA_INPUT" ]; then
+            SHA_INPUT="${{ inputs.build_tags_suffix }}"
+          fi
+          if [ -z "$SHA_INPUT" ]; then
+            SHA_INPUT="${GITHUB_SHA}"
+          fi
+          echo "SHA_SHORT=${SHA_INPUT:0:7}" >> "$GITHUB_ENV"
+          echo "BRANCH_TAG=${{ inputs.branch_tag }}" >> "$GITHUB_ENV"
+          echo "REF_PREFIX=${{ inputs.ref_name_for_sha }}" >> "$GITHUB_ENV"
+
+          REGISTRY_NS="${{ env.DOCKERHUB_USERNAME }}"
+          if [ -z "$REGISTRY_NS" ]; then
+            REGISTRY_NS="grecomilani"
+          fi
+          echo "REGISTRY_NAMESPACE=${REGISTRY_NS}" >> "$GITHUB_ENV"
+
       - name: Login to Docker Hub (optional)
         if: ${{ inputs.push_images && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
         uses: docker/login-action@v3
@@ -56,6 +84,8 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: ${{ inputs.push_images }}
-          tags: ${{ env.DOCKERHUB_USERNAME != '' && format('{0}/{1}:{2}', env.DOCKERHUB_USERNAME, matrix.service, inputs.build_tags_suffix) || format('{0}:{1}', matrix.service, inputs.build_tags_suffix) }}
+          tags: |
+            ${{ format('{0}/{1}:{2}', env.REGISTRY_NAMESPACE, matrix.service, env.BRANCH_TAG) }}
+            ${{ format('{0}/{1}:{2}-{3}', env.REGISTRY_NAMESPACE, matrix.service, env.REF_PREFIX, env.SHA_SHORT) }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}

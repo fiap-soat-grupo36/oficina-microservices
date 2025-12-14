@@ -138,8 +138,10 @@ jobs:
         [
           { "service": "eureka-server", "dockerfile": "./eureka-server/Dockerfile" }
         ]
-      build_tags_suffix: ${{ github.sha }}
-      push_images: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      branch_tag: ${{ github.ref_name == 'main' && 'latest' || github.ref_name == 'develop' && 'develop' }}
+      ref_name_for_sha: ${{ github.ref_name }}
+      sha_short: ${{ github.sha }}
+      push_images: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
       max_parallel: 1
     secrets: inherit
 
@@ -183,7 +185,9 @@ jobs:
             "dockerfile": "./notification-service/Dockerfile"
           }
         ]
-      build_tags_suffix: ${{ github.sha }}
-      push_images: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      branch_tag: ${{ github.ref_name == 'main' && 'latest' || github.ref_name == 'develop' && 'develop' }}
+      ref_name_for_sha: ${{ github.ref_name }}
+      sha_short: ${{ github.sha }}
+      push_images: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
       max_parallel: 4
     secrets: inherit
