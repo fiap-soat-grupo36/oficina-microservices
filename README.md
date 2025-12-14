@@ -41,17 +41,21 @@ Todos os microserviços se registram automaticamente no **Eureka Server**, permi
 ### Executar com Docker Compose
 
 ```bash
-# Construir e iniciar todos os serviços
-docker-compose up -d
+# Dev: build local e sobe todos os serviços
+docker compose --profile dev up -d
+
+# Prod: usa imagens publicadas (defina REGISTRY/TAG)
+REGISTRY=seu-usuario TAG=latest docker compose --profile prod -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 # Verificar o status dos serviços
-docker-compose ps
+docker compose --profile dev ps
 
 # Visualizar logs
-docker-compose logs -f
+docker compose --profile dev logs -f
 
 # Parar todos os serviços
-docker-compose down
+docker compose --profile dev down
+docker compose --profile prod -f docker-compose.yml -f docker-compose.prod.yml down
 ```
 
 ### Executar Localmente (para desenvolvimento)
@@ -251,14 +255,14 @@ Cada serviço também expõe sua documentação OpenAPI de forma independente:
 ### Problemas com Docker
 
 ```bash
-# Reconstruir imagens
-docker-compose build --no-cache
+# Reconstruir imagens (dev)
+docker compose --profile dev up -d --build
 
 # Limpar volumes
-docker-compose down -v
+docker compose --profile dev down -v
 
 # Reiniciar tudo
-docker-compose up -d --force-recreate
+docker compose --profile dev up -d --force-recreate
 ```
 
 ## 📝 Estrutura do Projeto
@@ -274,7 +278,8 @@ oficina-microservices/
 ├── budget-service/         # Orçamentos
 ├── work-order-service/     # Ordens de serviço
 ├── notification-service/   # Notificações
-├── docker-compose.yml      # Configuração Docker
+├── docker-compose.yml      # Configuração Docker (perfil dev)
+├── docker-compose.prod.yml # Overrides para perfil prod
 └── pom.xml                 # POM raiz
 ```
 

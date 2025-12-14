@@ -5,6 +5,9 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: postgres
+    profiles:
+      - dev
+      - prod
     environment:
       POSTGRES_DB: oficina-db
       POSTGRES_USER: postgres
@@ -30,6 +33,8 @@ services:
       context: .
       dockerfile: ./eureka-server/Dockerfile
     container_name: eureka-server
+    profiles:
+      - dev
     ports:
       - "8761:8761"
     environment:
@@ -51,6 +56,8 @@ services:
       context: .
       dockerfile: ./auth-service/Dockerfile
     container_name: auth-service
+    profiles:
+      - dev
     ports:
       - "8082:8082"
     depends_on:
@@ -81,6 +88,8 @@ services:
       context: .
       dockerfile: ./customer-service/Dockerfile
     container_name: customer-service
+    profiles:
+      - dev
     ports:
       - "8081:8081"
     depends_on:
@@ -113,6 +122,8 @@ services:
       context: .
       dockerfile: ./catalog-service/Dockerfile
     container_name: catalog-service
+    profiles:
+      - dev
     ports:
       - "8083:8083"
     depends_on:
@@ -145,6 +156,8 @@ services:
       context: .
       dockerfile: ./inventory-service/Dockerfile
     container_name: inventory-service
+    profiles:
+      - dev
     ports:
       - "8084:8084"
     depends_on:
@@ -177,6 +190,8 @@ services:
       context: .
       dockerfile: ./budget-service/Dockerfile
     container_name: budget-service
+    profiles:
+      - dev
     ports:
       - "8085:8085"
     depends_on:
@@ -209,6 +224,8 @@ services:
       context: .
       dockerfile: ./work-order-service/Dockerfile
     container_name: work-order-service
+    profiles:
+      - dev
     ports:
       - "8086:8086"
     depends_on:
@@ -245,6 +262,8 @@ services:
       context: .
       dockerfile: ./notification-service/Dockerfile
     container_name: notification-service
+    profiles:
+      - dev
     ports:
       - "8087:8087"
     depends_on:
