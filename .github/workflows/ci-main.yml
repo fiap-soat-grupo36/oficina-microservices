@@ -85,7 +85,7 @@ jobs:
 
   create_pr_develop_main:
     name: "Create PR from develop to main"
-    if: false
+    if: ${{ false }}
     runs-on: ubuntu-latest
     needs: sonarcloud
     steps:
