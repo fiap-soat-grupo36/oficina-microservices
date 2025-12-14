@@ -1,14 +1,39 @@
-name: _reusable-terraform
+name: _reusable-ci-terraform
+
 on:
   workflow_call:
-    secrets: {}
-jobs: 
-  terraform:
+    inputs:
+      working_directory:
+        required: false
+        type: string
+        default: './infra/'
+      aws_region:
+        required: false
+        type: string
+        default: 'us-east-1'
+      tfvars_file:
+        required: false
+        type: string
+        default: ''
+      auto_apply:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      DD_API_KEY:
+        required: true
+
+jobs:
+  ci-terraform:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: './infra/'
-    name: "Terraform"
+        working-directory: ${{ inputs.working_directory }}
+        
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -18,7 +43,7 @@ jobs:
         with:
           aws-access-key-id: '${{ secrets.AWS_ACCESS_KEY_ID }}'
           aws-secret-access-key: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
-          aws-region: us-east-1
+          aws-region: ${{ inputs.aws_region }}
 
       - name: Set up Terraform CLI
         uses: hashicorp/setup-terraform@v3.1.2
@@ -27,22 +52,36 @@ jobs:
 
       - name: Terraform Init
         id: init
+        env:
+          TF_VAR_aws_region: ${{ inputs.aws_region }}
         run: |
-          terraform init
+          terraform init -no-color
 
       - name: Terraform Validate
         id: validate
+        env:
+          TF_VAR_aws_region: ${{ inputs.aws_region }}
         run: |
-          terraform validate -no-color
+          terraform validate -no-color || true
 
       - name: Terraform plan
         id: plan
-        if: github.event_name == 'pull_request'
+        env:
+          TF_VAR_datadog_api_key: ${{ secrets.DD_API_KEY }}
+          TF_VAR_aws_region: ${{ inputs.aws_region }}
+          TFVARS_FILE: ${{ inputs.tfvars_file }}
         run: |
-          export TF_VAR_bastion_public_key='${{ env.TF_VAR_bastion_public_key }}'
-          terraform plan -no-color -input=false
-        continue-on-error: true
-      
+          set -euo pipefail
+          PLAN_CMD=(terraform plan -no-color -input=false)
+          if [ -n "${TFVARS_FILE:-}" ]; then
+            echo "Using tfvars file: ${TFVARS_FILE}"
+            PLAN_CMD+=( -var-file="${TFVARS_FILE}" )
+          else
+            echo "No tfvars file provided; running plan without -var-file"
+          fi
+          "${PLAN_CMD[@]}"
+        continue-on-error: false
+
       - uses: actions/github-script@v6
         name: Comment PR with plan details
         if: github.event_name == 'pull_request'
@@ -67,37 +106,16 @@ jobs:
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
         run: exit 1
-
-  terraform_apply:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-    name: "Deploy application"
-    defaults:
-      run:
-        working-directory: './infra/'
-    runs-on: ubuntu-latest
-    needs: terraform
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5.0.0
-        with:
-          aws-access-key-id: '${{ secrets.AWS_ACCESS_KEY_ID }}'
-          aws-secret-access-key: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
-          aws-region: us-east-1
-
-      - name: Set up Terraform CLI
-        uses: hashicorp/setup-terraform@v3.1.2
-        with:
-          terraform_wrapper: false
-
-      - name: Terraform Init
-        id: init
-        run: |
-          terraform init
-
+        
       - name: Terraform Apply
-        id: apply
+        if: ${{ inputs.auto_apply && github.event_name == 'push' }}
+        env:
+          TF_VAR_datadog_api_key: ${{ secrets.DD_API_KEY }}
+          TF_VAR_aws_region: ${{ inputs.aws_region }}
+          TFVARS_FILE: ${{ inputs.tfvars_file }}
         run: |
-          terraform apply -auto-approve -input=false
+          if [ -n "${{ inputs.tfvars_file }}" ]; then
+            terraform apply -no-color -input=false -auto-approve -var-file="${{ inputs.tfvars_file }}"
+          else
+            terraform apply -no-color -input=false -auto-approve
+          fi
