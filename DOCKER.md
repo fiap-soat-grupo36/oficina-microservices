@@ -7,54 +7,52 @@
 
 ## 💾 Banco de Dados
 
-Este projeto utiliza **H2 Database em memória** para todos os microserviços.
+O Docker Compose sobe um Postgres compartilhado (`postgres`) para todos os serviços.
 
-### Características do H2:
-- ✅ Banco de dados em memória (não requer instalação externa)
-- ✅ Configuração zero - já está pronto para uso
-- ✅ Ideal para desenvolvimento e testes
-- ⚠️ **Os dados são perdidos ao reiniciar os containers** (comportamento esperado)
+**Config padrão**
+- Banco: `oficina-db`
+- Usuário/Senha: `postgres` / `postgres`
+- Porta exposta: `5432`
+- Volume: `postgres_data` (mantém os dados entre recriações de container)
 
-### Console H2:
-Cada serviço que utiliza banco de dados expõe um console H2:
-- Auth Service: http://localhost:8082/h2-console
-- Customer Service: http://localhost:8081/h2-console
-- Catalog Service: http://localhost:8083/h2-console
-- Inventory Service: http://localhost:8084/h2-console
-- Budget Service: http://localhost:8085/h2-console
-- Work Order Service: http://localhost:8086/h2-console
-
-**Credenciais de acesso ao console:**
-- JDBC URL: `jdbc:h2:mem:{service}db` (exemplo: `jdbc:h2:mem:authdb`)
-- Username: `sa`
-- Password: (deixar em branco)
+**Perfis e migrações**
+- Perfil `dev` recria e popula o banco (`DDL_AUTO=create-drop`, `SQL_INIT_MODE=always`)
+- Perfil `prod` preserva dados e não roda seeds (`DDL_AUTO=update`, `SQL_INIT_MODE=never`)
+- Personalize passando variáveis: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `DDL_AUTO`, `SQL_INIT_MODE`, `SHOW_SQL`
 
 ## Comandos
 
-### Iniciar todos os serviços
+### Subir ambiente de desenvolvimento (perfil dev - build local)
 ```bash
-docker-compose up -d
+docker compose --profile dev up -d
 ```
+
+### Subir ambiente de produção (perfil prod - imagens publicadas)
+```bash
+REGISTRY=seu-usuario TAG=latest docker compose --profile prod -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+> `REGISTRY` usa `grecomilani` por padrão e `TAG` assume `latest`.
 
 ### Parar todos os serviços
 ```bash
-docker-compose down
+docker compose --profile dev down
+docker compose --profile prod -f docker-compose.yml -f docker-compose.prod.yml down
 ```
 
 ### Ver logs de um serviço específico
 ```bash
-docker-compose logs -f eureka-server
-docker-compose logs -f work-order-service
+docker compose --profile dev logs -f eureka-server
+docker compose --profile prod -f docker-compose.yml -f docker-compose.prod.yml logs -f work-order-service
 ```
 
-### Rebuild após mudanças no código
+### Rebuild após mudanças no código (dev)
 ```bash
-docker-compose up -d --build
+docker compose --profile dev up -d --build
 ```
 
-### Limpar tudo (containers, volumes, imagens)
+### Limpar tudo (containers, volumes, imagens) no perfil dev
 ```bash
-docker-compose down -v --rmi all
+docker compose --profile dev down -v --rmi all
 ```
 
 ## Ordem de Inicialização
@@ -95,7 +93,7 @@ O Swagger agregado no Eureka Server permite visualizar todas as APIs em um únic
 curl http://localhost:8761/actuator/health
 
 # Verifique os logs do serviço
-docker-compose logs -f {service-name}
+docker compose --profile dev logs -f {service-name}
 ```
 
 ### Erro de memória
@@ -103,5 +101,5 @@ Aumente a memória disponível para o Docker nas configurações.
 
 ### Rebuild apenas um serviço
 ```bash
-docker-compose up -d --build customer-service
+docker compose --profile dev up -d --build customer-service
 ```

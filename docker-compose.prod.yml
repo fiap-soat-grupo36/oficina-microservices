@@ -1,0 +1,72 @@
+services:
+  eureka-server:
+    profiles:
+      - prod
+    image: ${REGISTRY:-grecomilani}/oficina-eureka-server:${TAG:-latest}
+    build: null
+
+  auth-service:
+    profiles:
+      - prod
+    image: ${REGISTRY:-grecomilani}/oficina-auth-service:${TAG:-latest}
+    build: null
+    environment:
+      DDL_AUTO: update
+      SQL_INIT_MODE: never
+      SHOW_SQL: false
+
+  customer-service:
+    profiles:
+      - prod
+    image: ${REGISTRY:-grecomilani}/oficina-customer-service:${TAG:-latest}
+    build: null
+    environment:
+      DDL_AUTO: update
+      SQL_INIT_MODE: never
+      SHOW_SQL: false
+
+  catalog-service:
+    profiles:
+      - prod
+    image: ${REGISTRY:-grecomilani}/oficina-catalog-service:${TAG:-latest}
+    build: null
+    environment:
+      DDL_AUTO: update
+      SQL_INIT_MODE: never
+      SHOW_SQL: false
+
+  inventory-service:
+    profiles:
+      - prod
+    image: ${REGISTRY:-grecomilani}/oficina-inventory-service:${TAG:-latest}
+    build: null
+    environment:
+      DDL_AUTO: update
+      SQL_INIT_MODE: never
+      SHOW_SQL: false
+
+  budget-service:
+    profiles:
+      - prod
+    image: ${REGISTRY:-grecomilani}/oficina-budget-service:${TAG:-latest}
+    build: null
+    environment:
+      DDL_AUTO: update
+      SQL_INIT_MODE: never
+      SHOW_SQL: false
+
+  work-order-service:
+    profiles:
+      - prod
+    image: ${REGISTRY:-grecomilani}/oficina-work-order-service:${TAG:-latest}
+    build: null
+    environment:
+      DDL_AUTO: update
+      SQL_INIT_MODE: never
+      SHOW_SQL: false
+
+  notification-service:
+    profiles:
+      - prod
+    image: ${REGISTRY:-grecomilani}/oficina-notification-service:${TAG:-latest}
+    build: null

@@ -1,18 +1,18 @@
 # Profile para Docker Compose
 spring:
   datasource:
-    url: jdbc:postgresql://postgres:5432/oficina-db
-    username: postgres
-    password: postgres
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/oficina-db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
-    show-sql: false
+      ddl-auto: ${DDL_AUTO:create-drop}
+    show-sql: ${SHOW_SQL:false}
 
   sql:
     init:
-      mode: always
+      mode: ${SQL_INIT_MODE:always}
 
 eureka:
   client:
