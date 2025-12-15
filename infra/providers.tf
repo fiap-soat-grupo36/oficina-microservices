@@ -6,7 +6,7 @@ terraform {
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "2.38.0"
+      version = "~> 2.0"
     }
     kubectl = {
       source  = "gavinbunney/kubectl"
@@ -16,12 +16,20 @@ terraform {
       source  = "hashicorp/http"
       version = "3.4.0"
     }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "2.16.1"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "3.6"
+    }
   }
 }
 
 # Configure the AWS Provider
 provider "aws" {
-  region = "us-east-1"
+  region = "us-east-2"
 }
 
 provider "kubernetes" {
@@ -30,9 +38,18 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.oficina.token
 }
 
+
 provider "kubectl" {
   host                   = data.aws_eks_cluster.oficina.endpoint
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.oficina.certificate_authority[0].data)
   token                  = data.aws_eks_cluster_auth.oficina.token
   load_config_file       = false
+}
+
+provider "helm" {
+  kubernetes {
+    host                   = data.aws_eks_cluster.oficina.endpoint
+    cluster_ca_certificate = base64decode(data.aws_eks_cluster.oficina.certificate_authority[0].data)
+    token                  = data.aws_eks_cluster_auth.oficina.token
+  }
 }

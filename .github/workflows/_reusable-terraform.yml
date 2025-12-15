@@ -3,6 +3,14 @@ name: _reusable-ci-terraform
 on:
   workflow_call:
     inputs:
+      workspace:
+        description: 'Terraform workspace name'
+        required: true
+        type: string
+      environment:
+        description: 'Environment to deploy (dev or prod)'
+        required: true
+        type: string
       working_directory:
         required: false
         type: string
@@ -24,7 +32,9 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-      DD_API_KEY:
+      DATADOG_API_KEY:
+        required: true
+      DATADOG_APP_KEY:
         required: true
 
 jobs:
@@ -56,6 +66,17 @@ jobs:
           TF_VAR_aws_region: ${{ inputs.aws_region }}
         run: |
           terraform init -no-color
+
+      - name: Select Terraform Workspace
+        run: |
+          echo "🔍 Listing existing workspaces..."
+          terraform workspace list
+          
+          echo "📋 Selecting workspace: ${{ inputs.workspace }}"
+          terraform workspace select ${{ inputs.workspace }} || terraform workspace new ${{ inputs.workspace }}
+          
+          echo "✅ Current workspace:"
+          terraform workspace show
 
       - name: Terraform Validate
         id: validate
