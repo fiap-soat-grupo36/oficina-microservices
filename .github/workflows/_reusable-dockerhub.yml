@@ -52,6 +52,14 @@ jobs:
           echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> "$GITHUB_ENV"
           echo "DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}" >> "$GITHUB_ENV"
 
+      - name: Validate Docker Hub credentials
+        if: ${{ inputs.push_images }}
+        run: |
+          if [ -z "${{ secrets.DOCKERHUB_USERNAME }}" ] || [ -z "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
+            echo "push_images=true, mas DOCKERHUB_USERNAME/DOCKERHUB_TOKEN não foram fornecidos."
+            exit 1
+          fi
+
       - name: Prepare build metadata
         run: |
           SHA_INPUT="${{ inputs.sha_short }}"
