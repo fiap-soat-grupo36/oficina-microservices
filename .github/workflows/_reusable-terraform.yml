@@ -88,7 +88,8 @@ jobs:
       - name: Terraform plan
         id: plan
         env:
-          TF_VAR_datadog_api_key: ${{ secrets.DD_API_KEY }}
+          TF_VAR_datadog_api_key: ${{ secrets.DATADOG_API_KEY }}
+          TF_VAR_datadog_app_key: ${{ secrets.DATADOG_APP_KEY }}
           TF_VAR_aws_region: ${{ inputs.aws_region }}
           TFVARS_FILE: ${{ inputs.tfvars_file }}
         run: |
@@ -131,7 +132,8 @@ jobs:
       - name: Terraform Apply
         if: ${{ inputs.auto_apply && github.event_name == 'push' }}
         env:
-          TF_VAR_datadog_api_key: ${{ secrets.DD_API_KEY }}
+          TF_VAR_datadog_api_key: ${{ secrets.DATADOG_API_KEY }}
+          TF_VAR_datadog_app_key: ${{ secrets.DATADOG_APP_KEY }}
           TF_VAR_aws_region: ${{ inputs.aws_region }}
           TFVARS_FILE: ${{ inputs.tfvars_file }}
         run: |
