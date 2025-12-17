@@ -2,7 +2,7 @@ module "datadog" {
   source  = "c0x12c/helm-datadog/aws"
   version = "~> 0.8.0"
 
-  environment  = var.environment
+  environment  = local.environment
   cluster_name = data.aws_eks_cluster.oficina.name
 
   datadog_site    = "https://us5.datadoghq.com/"
@@ -21,6 +21,19 @@ module "datadog" {
     name  = "DD_EKS_FARGATE"
     value = "true"
   }]
+
+  node_selector = {
+    "service-type" = "backbone"
+  }
+
+  tolerations = [
+    {
+      key      = "service-type"
+      operator = "Equal"
+      value    = "backbone"
+      effect   = "NoSchedule"
+    }
+  ]
 
   depends_on = [kubernetes_namespace.oficina]
 

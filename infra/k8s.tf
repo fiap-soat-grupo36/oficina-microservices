@@ -3,15 +3,21 @@
 ##################################################################
 
 data "http" "metrics_server_yaml" {
-  url = "https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
+  count = terraform.workspace == "dev" ? 1 : 0
+  url   = "https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
 }
 
 data "kubectl_file_documents" "docs" {
-  content = data.http.metrics_server_yaml.response_body
+  count   = terraform.workspace  == "dev" ? 1 : 0
+  content = data.http.metrics_server_yaml[0].response_body
 }
 
 resource "kubectl_manifest" "metrics" {
-  for_each   = data.kubectl_file_documents.docs.manifests
+  for_each = (
+    terraform.workspace == "dev"
+    ? data.kubectl_file_documents.docs[0].manifests
+    : {}
+  )
   yaml_body  = each.value
   depends_on = [kubernetes_namespace.oficina]
 }

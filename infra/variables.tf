@@ -1,8 +1,3 @@
-variable "environment" {
-  description = "Deployment environment name (used for DD_ENV)"
-  type        = string
-}
-
 variable "region" {
   description = "AWS region for the provider and resources"
   type        = string
