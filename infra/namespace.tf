@@ -4,10 +4,10 @@
 
 resource "kubernetes_namespace" "oficina" {
   metadata {
-    name = "oficina-mecanica-${locals.environment}"
+    name = "oficina-mecanica-${local.environment}"
     labels = {
-      name        = "oficina-${locals.environment}"
-      environment = locals.environment
+      name        = "oficina-${local.environment}"
+      environment = local.environment
     }
   }
 

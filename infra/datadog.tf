@@ -2,7 +2,7 @@ module "datadog" {
   source  = "c0x12c/helm-datadog/aws"
   version = "~> 0.8.0"
 
-  environment  = locals.environment
+  environment  = local.environment
   cluster_name = data.aws_eks_cluster.oficina.name
 
   datadog_site    = "https://us5.datadoghq.com/"

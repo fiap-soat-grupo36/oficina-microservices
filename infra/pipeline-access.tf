@@ -4,7 +4,7 @@
 
 resource "kubernetes_cluster_role" "namespace_manager" {
   metadata {
-    name = "namespace-manager"
+    name = "namespace-manager-${local.environment}"
   }
 
   rule {
@@ -37,7 +37,7 @@ resource "kubernetes_cluster_role_binding" "pipeline_namespace_manager" {
 ##################################################################
 
 resource "aws_iam_policy" "pipeline_eks_describe" {
-  name        = "pipeline-eks-describe"
+  name        = "pipeline-${local.environment}-eks-describe"
   description = "Allow EKS describe operations needed to build kubeconfig"
 
   policy = jsonencode({
