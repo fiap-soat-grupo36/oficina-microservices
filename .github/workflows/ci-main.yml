@@ -2,10 +2,11 @@ name: CI - Oficina Microservices
 
 on:
   push:
-    branches: [ develop, feature/**, hotfix/**, main ]
+    branches: [develop, feature/**, hotfix/**]
   pull_request:
-    branches: [ main, develop ]
-    types: [ opened, synchronize, reopened ]
+    branches: [develop]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -34,62 +35,6 @@ jobs:
       maven_args: ''
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-  create_pr:
-    name: "Create PR to develop for feature branches"
-    runs-on: ubuntu-latest
-    needs: build_and_checks
-    # Only run on push events for branches matching feature/*
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature/')
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Create Pull Request to develop
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const branch = context.ref.replace('refs/heads/', '');
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-
-            // Check if an open PR from this branch to develop already exists
-            const { data: prs } = await github.rest.pulls.list({
-              owner,
-              repo,
-              state: 'open',
-              head: `${owner}:${branch}`,
-              base: 'develop'
-            });
-
-            if (prs.length > 0) {
-              console.log(`PR already exists: ${prs[0].html_url}`);
-              return;
-            }
-
-            const title = `Merge ${branch} into develop`;
-            const body = `Automated PR created after successful CI on branch ${branch}.`;
-
-            const pr = await github.rest.pulls.create({
-              owner,
-              repo,
-              head: branch,
-              base: 'develop',
-              title,
-              body,
-              draft: false
-            });
-
-            console.log(`Created PR ${pr.data.html_url}`);
-
-  create_pr_develop_main:
-    name: "Create PR from develop to main"
-    if: ${{ false }}
-    runs-on: ubuntu-latest
-    needs: sonarcloud
-    steps:
-      - run: echo "Desabilitado: PR automatico develop -> main"
 
   docker_eureka:
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
@@ -151,7 +96,31 @@ jobs:
     secrets: inherit
 
   terraform:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-    needs: [docker_rest]
+    name: CI - Infra
     uses: ./.github/workflows/_reusable-terraform.yml
-    secrets: inherit
+    with:
+      working_directory: "infra"
+      workspace: ${{ github.ref == 'refs/heads/develop' && 'dev' || 'prod' }}
+      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || 'prod' }}
+      auto_apply: false
+      tfvars_file: "environments/${{ github.ref == 'refs/heads/develop' && 'dev' || 'prod' }}.tfvars"
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+      DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY }}
+
+  create_pr_to_develop:
+    name: Create PR to Develop
+    uses: ./.github/workflows/_reusable-create-pr.yml
+    needs: [docker_rest, terraform]
+    if: github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/feature/' ) || startsWith(github.ref, 'refs/heads/hotfix/'))
+    with:
+      base: develop
+
+  create_pr_develop_main:
+    uses: ./.github/workflows/_reusable-create-pr.yml
+    needs: [docker_rest, terraform]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    with:
+      base: "main"
