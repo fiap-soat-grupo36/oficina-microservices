@@ -22,17 +22,17 @@ module "datadog" {
     value = "true"
   }]
 
-  node_selector = {
-    "service-type" = "backbone"
-  }
+  #node_selector = {
+  #  "service-type" = "backbone"
+  #}
 
   tolerations = [
-    {
-      key      = "service-type"
-      operator = "Equal"
-      value    = "backbone"
-      effect   = "NoSchedule"
-    },
+    #{
+    #  key      = "service-type"
+    #  operator = "Equal"
+    #  value    = "backbone"
+    #  effect   = "NoSchedule"
+    #},
     {
       key      = "eks.amazonaws.com/compute-type"
       operator = "Equal"
