@@ -32,6 +32,12 @@ module "datadog" {
       operator = "Equal"
       value    = "backbone"
       effect   = "NoSchedule"
+    },
+    {
+      key      = "eks.amazonaws.com/compute-type"
+      operator = "Equal"
+      value    = "fargate"
+      effect   = "NoSchedule"
     }
   ]
 
