@@ -1,0 +1,43 @@
+apiVersion: datadoghq.com/v2alpha1
+kind: DatadogAgent
+metadata:
+  name: datadog
+  namespace: datadog-agent
+spec:
+  global:
+    # Nome do cluster EKS
+    clusterName: eks-fiap-oficina-mecanica
+    # Registry privado do AWS ECR (caso necessário)
+    # registry: <PRIVATE_EKS_REGISTRY_PATH>
+    credentials:
+      apiSecret:
+        secretName: datadog-secret
+        keyName: api-key
+      appSecret:
+        secretName: datadog-secret
+        keyName: app-key
+    # Site do Datadog (padrão US1)
+    site: datadoghq.com
+  features:
+    # Ativa coleta de métricas
+    apm:
+      enabled: true
+      hostPortConfig:
+        enabled: true
+        hostPort: 8126
+    # Ativa coleta de logs
+    logCollection:
+      enabled: true
+      containerCollectAll: true
+    # Ativa Process Monitoring
+    liveProcessCollection:
+      enabled: true
+    # Ativa Orchestrator Explorer
+    orchestratorExplorer:
+      enabled: true
+    # Ativa Kubernetes State Metrics
+    kubeStateMetricsCore:
+      enabled: true
+    # Ativa Network Performance Monitoring
+    npm:
+      enabled: true

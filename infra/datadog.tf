@@ -19,7 +19,7 @@ module "datadog" {
   namespace = kubernetes_namespace.oficina.metadata[0].name
   datadog_envs = [{
     name  = "DD_EKS_FARGATE"
-    value = "true"
+    value = "false"
   }]
 
   node_selector = {
@@ -31,12 +31,6 @@ module "datadog" {
       key      = "service-type"
       operator = "Equal"
       value    = "backbone"
-      effect   = "NoSchedule"
-    },
-    {
-      key      = "eks.amazonaws.com/compute-type"
-      operator = "Equal"
-      value    = "fargate"
       effect   = "NoSchedule"
     }
   ]
