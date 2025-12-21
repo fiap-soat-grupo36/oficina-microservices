@@ -34,6 +34,7 @@ on:
 
 jobs:
   build:
+    name: Build ${{ matrix.service }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -42,7 +43,22 @@ jobs:
         include: ${{ fromJSON(inputs.services_json) }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Docker build decision log
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🐳 Docker Build Configuration"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Service: ${{ matrix.service }}"
+          echo "Dockerfile: ${{ matrix.dockerfile }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Push to registry: ${{ inputs.push_images }}"
+          echo "Branch tag: ${{ inputs.branch_tag }}"
+          echo "Ref prefix: ${{ inputs.ref_name_for_sha }}"
+          echo "SHA: ${{ inputs.sha_short }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -97,3 +113,28 @@ jobs:
             ${{ format('{0}/{1}:{2}-{3}', env.REGISTRY_NAMESPACE, matrix.service, env.REF_PREFIX, env.SHA_SHORT) }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+      - name: Docker build summary
+        if: always()
+        run: |
+          cat << 'EOF' >> $GITHUB_STEP_SUMMARY
+          ## 🐳 Docker Build: ${{ matrix.service }}
+
+          **Status:** ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}
+          **Service:** \`${{ matrix.service }}\`
+          **Pushed:** ${{ inputs.push_images && '✅ Yes' || '❌ No (build only)' }}
+
+          ### Tags
+          - \`${{ env.REGISTRY_NAMESPACE }}/${{ matrix.service }}:${{ env.BRANCH_TAG }}\`
+          - \`${{ env.REGISTRY_NAMESPACE }}/${{ matrix.service }}:${{ env.REF_PREFIX }}-${{ env.SHA_SHORT }}\`
+
+          ### Configuration
+          - **Branch:** ${{ github.ref_name }}
+          - **Commit:** ${{ env.SHA_SHORT }}
+          - **Dockerfile:** ${{ matrix.dockerfile }}
+
+          EOF
+
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Docker build completed for ${{ matrix.service }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
