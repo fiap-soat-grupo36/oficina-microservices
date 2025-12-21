@@ -2,10 +2,11 @@ name: CI - Oficina Microservices
 
 on:
   push:
-    branches: [ develop, feature/**, hotfix/**, main ]
+    branches: [develop, feature/**, hotfix/**]
   pull_request:
-    branches: [ main, develop ]
-    types: [ opened, synchronize, reopened ]
+    branches: [develop]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -229,3 +230,33 @@ jobs:
       push_images: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
       max_parallel: 4
     secrets: inherit
+
+  terraform:
+    name: CI - Infra
+    uses: ./.github/workflows/_reusable-terraform.yml
+    with:
+      working_directory: "infra"
+      workspace: ${{ github.ref == 'refs/heads/develop' && 'dev' || 'prod' }}
+      environment: ${{ github.ref == 'refs/heads/develop' && 'dev' || 'prod' }}
+      auto_apply: false
+      tfvars_file: "environments/${{ github.ref == 'refs/heads/develop' && 'dev' || 'prod' }}.tfvars"
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+      DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY }}
+
+  create_pr_to_develop:
+    name: Create PR to Develop
+    uses: ./.github/workflows/_reusable-create-pr.yml
+    needs: [docker_rest, terraform]
+    if: github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/feature/' ) || startsWith(github.ref, 'refs/heads/hotfix/'))
+    with:
+      base: develop
+
+  create_pr_develop_main:
+    uses: ./.github/workflows/_reusable-create-pr.yml
+    needs: [docker_rest, terraform]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    with:
+      base: "main"
