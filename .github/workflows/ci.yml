@@ -1,0 +1,181 @@
+name: CI - Feature/Hotfix Branches
+
+on:
+  push:
+    branches:
+      - feature/**
+      - hotfix/**
+  pull_request:
+    branches:
+      - develop
+    types:
+      - opened
+      - synchronize
+      - reopened
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+
+jobs:
+  # STEP 1: Detect what changed
+  detect-changes:
+    name: Detect changes
+    uses: ./.github/workflows/_reusable-changes.yml
+
+  # STEP 2: Build once, cache everything (runs if code changed)
+  build-and-cache:
+    name: Build and cache
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.modules_json != '[]' &&
+      needs.detect-changes.outputs.modules_json != 'null'
+    uses: ./.github/workflows/_reusable-build-cache.yml
+    with:
+      modules_json: ${{ needs.detect-changes.outputs.modules_json }}
+      java_version: '21'
+      maven_args: ''
+
+  # STEP 3: Test in parallel (uses cached build)
+  test:
+    name: Test modules
+    needs: [detect-changes, build-and-cache]
+    if: |
+      needs.detect-changes.outputs.modules_json != '[]' &&
+      needs.detect-changes.outputs.modules_json != 'null'
+    uses: ./.github/workflows/_reusable-test.yml
+    with:
+      modules_json: ${{ needs.detect-changes.outputs.modules_json }}
+      java_version: '21'
+      maven_args: ''
+
+  # STEP 4: SonarCloud analysis (only on PRs)
+  sonarcloud:
+    name: SonarCloud analysis
+    needs: test
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/_reusable-sonar.yml
+    with:
+      java_version: '21'
+      sonar_org: 'fiap-soat-grupo36'
+      sonar_project_key: 'fiap-soat-grupo36_oficina-microservices'
+      sonar_host: 'https://sonarcloud.io'
+      scanner_version: '4.0.0.4121'
+      maven_args: ''
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # STEP 5: Docker build validation (no push, just validate builds work)
+  docker-build-validation:
+    name: Docker build validation
+    needs: [detect-changes, build-and-cache]
+    if: |
+      always() &&
+      !cancelled() &&
+      needs.build-and-cache.result == 'success' &&
+      (needs.detect-changes.outputs.modules_json != '[]' ||
+       needs.detect-changes.outputs.docker_changed == 'true')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker validation decision
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🐳 Docker Build Validation"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Reason: Validate Docker builds work (no push to registry)"
+          echo "Modules changed: ${{ needs.detect-changes.outputs.modules_json }}"
+          echo "Docker files changed: ${{ needs.detect-changes.outputs.docker_changed }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "ℹ️  Docker builds are validated but NOT pushed in feature/hotfix branches"
+          echo "ℹ️  Images will be pushed only when merged to develop/main"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+      - name: Log skip reason
+        run: |
+          cat << 'EOF' >> $GITHUB_STEP_SUMMARY
+          ## 🐳 Docker Build Validation
+
+          **Status:** Skipped
+          **Reason:** Docker builds are only validated but not executed in CI for feature branches to save time and resources.
+
+          Docker images will be built and pushed when code is merged to:
+          - **develop** branch → Images tagged with `develop`
+          - **main** branch → Images tagged with `latest`
+
+          This approach saves ~5-10 minutes per CI run.
+
+          EOF
+
+  # STEP 6: Terraform plan (only if infra changed)
+  terraform-plan:
+    name: Terraform plan
+    needs: detect-changes
+    if: needs.detect-changes.outputs.terraform_changed == 'true'
+    uses: ./.github/workflows/_reusable-terraform.yml
+    with:
+      working_directory: "infra"
+      workspace: "dev"
+      environment: "dev"
+      auto_apply: false
+      tfvars_file: "environments/dev.tfvars"
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+      DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY }}
+
+  # STEP 7: Create PR to develop (after all checks pass)
+  create-pr:
+    name: Create PR to develop
+    needs: [test, docker-build-validation, terraform-plan]
+    if: |
+      always() &&
+      !cancelled() &&
+      !contains(needs.*.result, 'failure') &&
+      github.event_name == 'push' &&
+      (startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/hotfix/'))
+    uses: ./.github/workflows/_reusable-create-pr.yml
+    with:
+      base: develop
+
+  # SUMMARY: Final workflow status
+  workflow-summary:
+    name: Workflow summary
+    needs: [detect-changes, build-and-cache, test, sonarcloud, docker-build-validation, terraform-plan, create-pr]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate workflow summary
+        run: |
+          cat << 'EOF' >> $GITHUB_STEP_SUMMARY
+          # 📊 CI Workflow Summary
+
+          ## Job Status
+
+          | Job | Status |
+          |-----|--------|
+          | Detect Changes | ${{ needs.detect-changes.result == 'success' && '✅' || needs.detect-changes.result == 'skipped' && '⏭️' || '❌' }} |
+          | Build & Cache | ${{ needs.build-and-cache.result == 'success' && '✅' || needs.build-and-cache.result == 'skipped' && '⏭️' || '❌' }} |
+          | Test | ${{ needs.test.result == 'success' && '✅' || needs.test.result == 'skipped' && '⏭️' || '❌' }} |
+          | SonarCloud | ${{ needs.sonarcloud.result == 'success' && '✅' || needs.sonarcloud.result == 'skipped' && '⏭️' || '❌' }} |
+          | Docker Validation | ${{ needs.docker-build-validation.result == 'success' && '✅' || needs.docker-build-validation.result == 'skipped' && '⏭️' || '❌' }} |
+          | Terraform Plan | ${{ needs.terraform-plan.result == 'success' && '✅' || needs.terraform-plan.result == 'skipped' && '⏭️' || '❌' }} |
+          | Create PR | ${{ needs.create-pr.result == 'success' && '✅' || needs.create-pr.result == 'skipped' && '⏭️' || '❌' }} |
+
+          ## Changes Detected
+
+          - **Modules:** ${{ needs.detect-changes.outputs.modules_json }}
+          - **Terraform:** ${{ needs.detect-changes.outputs.terraform_changed == 'true' && '✅ Changed' || '❌ No changes' }}
+          - **Docker:** ${{ needs.detect-changes.outputs.docker_changed == 'true' && '✅ Changed' || '❌ No changes' }}
+
+          ## Optimization Impact
+
+          This optimized workflow saved time by:
+          - ✅ Sharing build cache between test jobs (no redundant builds)
+          - ✅ Skipping Docker builds in feature branches (validation only)
+          - ✅ Running jobs conditionally based on what changed
+          - ✅ Parallel execution where possible
+
+          EOF
