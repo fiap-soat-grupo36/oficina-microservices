@@ -2,6 +2,8 @@ data "aws_eks_cluster" "oficina" {
   name = "eks-fiap-oficina-mecanica"
 }
 
+data "aws_caller_identity" "current" {}
+
 data "aws_iam_user" "deploy_user" {
   user_name = "terraform-user"
 }
