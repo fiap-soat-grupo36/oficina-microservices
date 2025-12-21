@@ -10,20 +10,100 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  actions: read
 
 jobs:
+  detect_changes:
+    name: Detect changed modules
+    runs-on: ubuntu-latest
+    outputs:
+      modules_json: ${{ steps.set-modules.outputs.modules_json }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Filter paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            root:
+              - 'pom.xml'
+              - '.github/workflows/**'
+              - 'docker-compose.yml'
+              - 'k8s/**'
+            shared-library:
+              - 'shared-library/**'
+            eureka-server:
+              - 'eureka-server/**'
+            auth-service:
+              - 'auth-service/**'
+            customer-service:
+              - 'customer-service/**'
+            catalog-service:
+              - 'catalog-service/**'
+            inventory-service:
+              - 'inventory-service/**'
+            budget-service:
+              - 'budget-service/**'
+            work-order-service:
+              - 'work-order-service/**'
+            notification-service:
+              - 'notification-service/**'
+
+      - name: Set modules matrix
+        id: set-modules
+        uses: actions/github-script@v6
+        env:
+          FILTERS: ${{ toJSON(steps.filter.outputs) }}
+        with:
+          script: |
+            const ref = context.ref;
+            const forceAllBranches = new Set(['refs/heads/main', 'refs/heads/develop']);
+            const filters = JSON.parse(process.env.FILTERS);
+            const allModules = [
+              'eureka-server',
+              'shared-library',
+              'customer-service',
+              'catalog-service',
+              'inventory-service',
+              'budget-service',
+              'auth-service',
+              'work-order-service',
+              'notification-service'
+            ];
+
+            const forceAll =
+              forceAllBranches.has(ref) ||
+              filters.root === 'true' ||
+              filters['shared-library'] === 'true';
+            let modules = forceAll
+              ? allModules
+              : allModules.filter((moduleName) => filters[moduleName] === 'true');
+
+            if (modules.length === 0) {
+              modules = allModules;
+            }
+
+            core.setOutput('modules_json', JSON.stringify(modules));
+            console.log(`Modules selected: ${modules.join(', ')}`);
+
   build_and_checks:
     uses: ./.github/workflows/_reusable-build.yml
+    needs: detect_changes
     with:
       java_version: '21'
       coverage_min_pr: '0.50'
       coverage_min_main: '0.70'
       maven_args: ''
+      modules_json: ${{ needs.detect_changes.outputs.modules_json }}
       skip_coverage_checks: true
     secrets: inherit
 
   sonarcloud:
     needs: build_and_checks
+    if: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
     uses: ./.github/workflows/_reusable-sonar.yml
     with:
       java_version: '21'
