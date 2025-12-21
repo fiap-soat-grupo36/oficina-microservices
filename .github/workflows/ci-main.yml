@@ -169,7 +169,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: sonarcloud
     steps:
-      - run: echo "Desabilitado: PR automatico develop -> main"
+      - run: 'echo "Desabilitado: PR automatico develop -> main"'
 
   docker_eureka:
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
