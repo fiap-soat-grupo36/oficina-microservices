@@ -1,43 +1,43 @@
-apiVersion: datadoghq.com/v2alpha1
-kind: DatadogAgent
+kind: "DatadogAgent"
+apiVersion: "datadoghq.com/v2alpha1"
 metadata:
-  name: datadog
-  namespace: datadog-agent
+  name: "datadog"
 spec:
   global:
-    # Nome do cluster EKS
-    clusterName: eks-fiap-oficina-mecanica
-    # Registry privado do AWS ECR (caso necessário)
-    # registry: <PRIVATE_EKS_REGISTRY_PATH>
+    clusterName: "eks-fiap-oficina-mecanica"
+    site: "us5.datadoghq.com"
     credentials:
       apiSecret:
-        secretName: datadog-secret
-        keyName: api-key
-      appSecret:
-        secretName: datadog-secret
-        keyName: app-key
-    # Site do Datadog (padrão US1)
-    site: datadoghq.com
+        secretName: "datadog"
+        keyName: "api-key"
+    tags:
+      - "env:dev"
   features:
-    # Ativa coleta de métricas
-    apm:
+    clusterChecks:
       enabled: true
-      hostPortConfig:
+    orchestratorExplorer:
+      enabled: true
+    apm:
+      instrumentation:
         enabled: true
-        hostPort: 8126
-    # Ativa coleta de logs
+        targets:
+          - name: "default-target"
+            ddTraceVersions:
+              java: "1"
+              python: "4"
+              js: "5"
+              php: "1"
+              dotnet: "3"
+              ruby: "2"
     logCollection:
       enabled: true
       containerCollectAll: true
-    # Ativa Process Monitoring
-    liveProcessCollection:
+    otelCollector:
       enabled: true
-    # Ativa Orchestrator Explorer
-    orchestratorExplorer:
-      enabled: true
-    # Ativa Kubernetes State Metrics
-    kubeStateMetricsCore:
-      enabled: true
-    # Ativa Network Performance Monitoring
-    npm:
-      enabled: true
+      ports:
+        - containerPort: 4317
+          hostPort: 4317
+          name: "otel-grpc"
+        - containerPort: 4318
+          hostPort: 4318
+          name: "otel-http"
