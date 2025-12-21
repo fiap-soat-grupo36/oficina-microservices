@@ -51,55 +51,15 @@ jobs:
       !cancelled() &&
       needs.test.result == 'success' &&
       needs.detect-changes.outputs.modules_json != '[]'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Prepare services JSON for Docker
-        id: prepare-services
-        run: |
-          MODULES_JSON='${{ needs.detect-changes.outputs.modules_json }}'
-
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🐳 Preparing Docker builds for develop environment"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "Modules to build: $MODULES_JSON"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-          # Convert modules JSON to services JSON format for Docker workflow
-          SERVICES_JSON=$(echo "$MODULES_JSON" | python3 << 'PYTHON'
-          import json
-          import sys
-
-          modules = json.load(sys.stdin)
-          services = []
-
-          for module in modules:
-              # Skip shared-library (not a deployable service)
-              if module == "shared-library":
-                  continue
-
-              services.append({
-                  "service": module,
-                  "dockerfile": f"./{module}/Dockerfile"
-              })
-
-          print(json.dumps(services))
-          PYTHON
-          )
-
-          echo "services_json=${SERVICES_JSON}" >> $GITHUB_OUTPUT
-          echo "Services JSON: $SERVICES_JSON"
-
-      - name: Build and push Docker images
-        if: steps.prepare-services.outputs.services_json != '[]'
-        uses: ./.github/workflows/_reusable-dockerhub.yml
-        with:
-          services_json: ${{ steps.prepare-services.outputs.services_json }}
-          branch_tag: develop
-          ref_name_for_sha: develop
-          sha_short: ${{ github.sha }}
-          push_images: true
-          max_parallel: 8
-        secrets: inherit
+    uses: ./.github/workflows/_reusable-dockerhub.yml
+    with:
+      modules_json: ${{ needs.detect-changes.outputs.modules_json }}
+      branch_tag: develop
+      ref_name_for_sha: develop
+      sha_short: ${{ github.sha }}
+      push_images: true
+      max_parallel: 8
+    secrets: inherit
 
   # STEP 5: Terraform apply (if infra changed OR after successful deployment)
   terraform-apply:
