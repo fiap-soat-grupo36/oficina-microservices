@@ -39,3 +39,15 @@
 #
 #}
 #
+
+resource "kubernetes_secret" "datadog" {
+  metadata {
+    name      = "datadog"
+    namespace = kubernetes_namespace.oficina.metadata[0].name
+  }
+
+  data = {
+    "api-key" = var.datadog_api_key
+    "app-key" = var.datadog_app_key
+  }
+}   
