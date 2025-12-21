@@ -26,13 +26,12 @@ resource "kubectl_manifest" "metrics" {
 ######################### APPLICATION ############################
 ##################################################################
 
-#data "kubectl_path_documents" "app_docs" {
-#  pattern = "../../k8s/app/*.yaml"
-#}
+data "kubectl_path_documents" "dd_agent" {
+  pattern = "../../k8s/datadog/datadog-agent.yaml"
+}
 
-#resource "kubectl_manifest" "app_manifest" {
-#  for_each   = data.kubectl_path_documents.app_docs.manifests
-#  yaml_body  = each.value
-#  depends_on = [kubectl_manifest.metrics, kubectl_manifest.db_manifest, kubectl_manifest.namespace_manifest]
-#}
+resource "kubectl_manifest" "dd_agent_manifest" {
+  for_each   = data.kubectl_path_documents.dd_agent.manifests
+  yaml_body  = each.value
+}
 
