@@ -27,7 +27,7 @@ resource "kubectl_manifest" "metrics" {
 ##################################################################
 
 data "kubectl_path_documents" "dd_agent" {
-  pattern = "../../k8s/datadog/datadog-agent.yaml"
+  pattern = "../k8s/datadog/datadog-agent.yaml"
 }
 
 resource "kubectl_manifest" "dd_agent_manifest" {
