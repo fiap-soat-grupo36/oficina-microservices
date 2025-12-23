@@ -62,17 +62,18 @@ jobs:
           if [ "$MODULES_JSON" != "[]" ] && [ -n "$MODULES_JSON" ] && [ "$MODULES_JSON" != "" ]; then
             echo "Converting modules_json to services_json..."
 
-            SERVICES_JSON=$(python3 -c "
+            # Create a temporary Python script
+            cat > /tmp/convert.py << 'EOFPYTHON'
 import json
 import sys
+import os
 
 try:
-    modules_str = '''${MODULES_JSON}'''
+    modules_str = os.environ.get('MODULES_JSON', '[]')
     modules = json.loads(modules_str)
     services = []
 
     for module in modules:
-        # Skip shared-library (not a deployable service)
         if module == 'shared-library':
             continue
 
@@ -86,7 +87,9 @@ except Exception as e:
     print(f'Error: {e}', file=sys.stderr)
     print('[]')
     sys.exit(1)
-")
+EOFPYTHON
+
+            SERVICES_JSON=$(MODULES_JSON="${MODULES_JSON}" python3 /tmp/convert.py)
           fi
 
           echo "services_json=${SERVICES_JSON}" >> $GITHUB_OUTPUT
