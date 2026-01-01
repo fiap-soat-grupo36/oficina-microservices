@@ -238,6 +238,11 @@ Cada serviço também expõe sua documentação OpenAPI de forma independente:
 - Budget Service: http://localhost:8085/swagger-ui.html
 - Work Order Service: http://localhost:8086/swagger-ui.html
 
+### Documentação de Arquitetura
+Para facilitar a compreensão da arquitetura do projeto, bem como de suas decisões técnicas e fluxos principais, foi elaborado um conjunto de documentos contendo RFCs (Request for Comments) e ADRs (Architecture Decision Records), além de diagramas de sequência e diagramas de componentes, que auxiliam na visualização e interpretação da solução proposta.
+
+Acesso: [Documentação de Arquitetura](https://docs.google.com/document/d/1BJv2nIDOKriRwlTEJ9iOY2RmmLvybxRxWNIyOAQBavE/edit?usp=sharing)
+
 ## 🔍 Troubleshooting
 
 ### Serviços não aparecem no Eureka
