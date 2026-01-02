@@ -27,10 +27,6 @@ resource "kubernetes_secret_v1" "postgres_credentials" {
   }
 
   type = "Opaque"
-
-  depends_on = [
-    kubectl_manifest.kustomization
-  ]
 }
 
 # Secret: jwt-secrets
@@ -47,10 +43,6 @@ resource "kubernetes_secret_v1" "jwt_secrets" {
   }
 
   type = "Opaque"
-
-  depends_on = [
-    kubectl_manifest.kustomization
-  ]
 }
 
 # Secret: notification-service-secrets
@@ -69,8 +61,4 @@ resource "kubernetes_secret_v1" "notification_secrets" {
   }
 
   type = "Opaque"
-
-  depends_on = [
-    kubectl_manifest.kustomization
-  ]
 }

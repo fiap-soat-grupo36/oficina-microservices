@@ -56,6 +56,9 @@ resource "kubectl_manifest" "kustomization" {
   wait              = true
 
   depends_on = [
-    kubernetes_namespace.oficina
+    kubernetes_namespace.oficina,
+    kubernetes_secret_v1.jwt_secrets,
+    kubernetes_secret_v1.notification_secrets,
+    kubernetes_secret_v1.postgres_credentials
   ]
 }
