@@ -81,22 +81,30 @@ spec:
                   key: MAIL_PORT
             - name: MANAGEMENT_HEALTH_MAIL_ENABLED
               value: "false"
-          livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: http
-            initialDelaySeconds: 60
-            periodSeconds: 15
-            timeoutSeconds: 5
-            failureThreshold: 6
-          readinessProbe:
+          startupProbe:
             httpGet:
               path: /actuator/health
               port: http
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
-            failureThreshold: 6
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           resources:
             requests:
               cpu: 150m
