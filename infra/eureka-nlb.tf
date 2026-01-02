@@ -2,7 +2,6 @@
 ##################### EUREKA NLB SERVICE #########################
 ##################################################################
 
-# Template do Service do Eureka com Target Group criado pelo Terraform
 locals {
   eureka_service_yaml = templatefile("${path.module}/templates/eureka-nlb-service.yaml.tpl", {
     namespace        = local.namespace
@@ -11,7 +10,6 @@ locals {
   })
 }
 
-# Cria o Service do Eureka via Terraform (gerenciado como código)
 resource "kubectl_manifest" "eureka_nlb_service" {
   yaml_body = local.eureka_service_yaml
 
@@ -20,26 +18,5 @@ resource "kubectl_manifest" "eureka_nlb_service" {
     helm_release.aws_load_balancer_controller,
     aws_lb.eureka,
     aws_lb_target_group.eureka
-  ]
-}
-
-# ConfigMap do Eureka com DNS do NLB - Sobrescreve oficina-shared-config
-resource "kubernetes_config_map_v1_data" "eureka_nlb_config" {
-  metadata {
-    name      = "oficina-shared-config"
-    namespace = local.namespace
-  }
-
-  data = {
-    EUREKA_HOSTNAME                      = aws_lb.eureka.dns_name
-    EUREKA_URL                           = "http://${aws_lb.eureka.dns_name}:8761/eureka/"
-    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE = "http://${aws_lb.eureka.dns_name}:8761/eureka/"
-  }
-
-  force = true
-
-  depends_on = [
-    kubernetes_config_map_v1.oficina_shared,
-    aws_lb.eureka
   ]
 }
