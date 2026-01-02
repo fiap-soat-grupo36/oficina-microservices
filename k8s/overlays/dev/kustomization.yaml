@@ -9,7 +9,6 @@ resources:
   - ../../base
 
   # Dev-specific resources
-  # namespace.yaml removido - gerenciado pelo Terraform
   - secrets.yaml
   - ingress.yaml
 
