@@ -10,7 +10,7 @@ locals {
   # Parse JSON dos secrets do Secrets Manager
   db_credentials    = jsondecode(data.aws_secretsmanager_secret_version.db_password.secret_string)
   jwt_secret        = var.secrets_manager_jwt_secret_name != "" ? data.aws_secretsmanager_secret_version.jwt_secret.secret_string : "dev-jwt-secret-key-minimum-256-bits-for-hs256-algorithm-change-me"
-  email_credentials = var.secrets_manager_email_secret_name != "" ? jsondecode(data.aws_secretsmanager_secret_version.email_credentials[0].secret_string) : {}
+  email_credentials = var.secrets_manager_email_secret_name != "" ? jsondecode(data.aws_secretsmanager_secret_version.email_credentials.secret_string) : {}
 }
 
 # Secret: postgres-credentials
@@ -43,6 +43,7 @@ resource "kubernetes_secret_v1" "jwt_secrets" {
 
   data = {
     JWT_SECRET = local.jwt_secret
+    JWT_EXPIRATION = "3600"
   }
 
   type = "Opaque"
@@ -60,11 +61,11 @@ resource "kubernetes_secret_v1" "notification_secrets" {
   }
 
   data = {
-    EMAIL_HOST     = lookup(local.email_credentials, "host", "smtp.gmail.com")
-    EMAIL_PORT     = lookup(local.email_credentials, "port", "587")
+    MAIL_HOST     = lookup(local.email_credentials, "host", "smtp.gmail.com")
+    MAIL_PORT     = lookup(local.email_credentials, "port", "587")
     EMAIL_USERNAME = lookup(local.email_credentials, "username", "")
     EMAIL_PASSWORD = lookup(local.email_credentials, "password", "")
-    EMAIL_FROM     = lookup(local.email_credentials, "from", "")
+    EMAIL_SENDER     = lookup(local.email_credentials, "sender", "")
   }
 
   type = "Opaque"

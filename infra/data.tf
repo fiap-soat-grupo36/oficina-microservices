@@ -76,11 +76,9 @@ data "aws_secretsmanager_secret_version" "jwt_secret" {
 }
 
 data "aws_secretsmanager_secret" "email_credentials" {
-  count = var.secrets_manager_email_secret_name != "" ? 1 : 0
   name  = var.secrets_manager_email_secret_name
 }
 
 data "aws_secretsmanager_secret_version" "email_credentials" {
-  count     = var.secrets_manager_email_secret_name != "" ? 1 : 0
-  secret_id = data.aws_secretsmanager_secret.email_credentials[0].id
+  secret_id = data.aws_secretsmanager_secret.email_credentials.id
 }
