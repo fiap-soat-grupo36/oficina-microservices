@@ -22,10 +22,10 @@ resource "kubernetes_secret_v1" "postgres_credentials" {
   }
 
   data = {
-    POSTGRES_USER     = base64encode(lookup(local.db_credentials, "username", "postgres"))
-    POSTGRES_PASSWORD = base64encode(lookup(local.db_credentials, "password", ""))
-    DB_USERNAME       = base64encode(lookup(local.db_credentials, "username", "postgres"))
-    DB_PASSWORD       = base64encode(lookup(local.db_credentials, "password", ""))
+    POSTGRES_USER     = lookup(local.db_credentials, "username", "postgres")
+    POSTGRES_PASSWORD = lookup(local.db_credentials, "password", "")
+    DB_USERNAME       = lookup(local.db_credentials, "username", "postgres")
+    DB_PASSWORD       = lookup(local.db_credentials, "password", "")
   }
 
   type = "Opaque"
@@ -45,7 +45,7 @@ resource "kubernetes_secret_v1" "jwt_secrets" {
   }
 
   data = {
-    JWT_SECRET = base64encode(lookup(local.jwt_secret, "secret", ""))
+    JWT_SECRET = lookup(local.jwt_secret, "secret", "")
   }
 
   type = "Opaque"
@@ -65,11 +65,11 @@ resource "kubernetes_secret_v1" "notification_secrets" {
   }
 
   data = {
-    EMAIL_HOST     = base64encode(lookup(local.email_credentials, "host", "smtp.gmail.com"))
-    EMAIL_PORT     = base64encode(lookup(local.email_credentials, "port", "587"))
-    EMAIL_USERNAME = base64encode(lookup(local.email_credentials, "username", ""))
-    EMAIL_PASSWORD = base64encode(lookup(local.email_credentials, "password", ""))
-    EMAIL_FROM     = base64encode(lookup(local.email_credentials, "from", ""))
+    EMAIL_HOST     = lookup(local.email_credentials, "host", "smtp.gmail.com")
+    EMAIL_PORT     = lookup(local.email_credentials, "port", "587")
+    EMAIL_USERNAME = lookup(local.email_credentials, "username", "")
+    EMAIL_PASSWORD = lookup(local.email_credentials, "password", "")
+    EMAIL_FROM     = lookup(local.email_credentials, "from", "")
   }
 
   type = "Opaque"
