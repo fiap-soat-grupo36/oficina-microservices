@@ -9,7 +9,6 @@ resources:
   - ../../base
 
   # Prod-specific resources
-  - secrets.yaml
   - ingress.yaml
 
 # Sobrescrever tags das imagens para usar 'main' em produção

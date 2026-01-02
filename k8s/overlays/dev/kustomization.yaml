@@ -7,9 +7,6 @@ namespace: oficina-mecanica-dev
 resources:
   # Base resources (exceto postgres - usa RDS no EKS)
   - ../../base
-
-  # Dev-specific resources
-  - secrets.yaml
   - ingress.yaml
 
 # Exclui o PostgreSQL dos recursos base

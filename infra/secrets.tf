@@ -31,7 +31,6 @@ resource "kubernetes_secret_v1" "postgres_credentials" {
 
 # Secret: jwt-secrets
 resource "kubernetes_secret_v1" "jwt_secrets" {
-
   metadata {
     name      = "jwt-secrets"
     namespace = local.namespace
@@ -43,6 +42,10 @@ resource "kubernetes_secret_v1" "jwt_secrets" {
   }
 
   type = "Opaque"
+
+  depends_on = [
+    kubernetes_namespace.oficina
+  ]
 }
 
 # Secret: notification-service-secrets
@@ -53,12 +56,16 @@ resource "kubernetes_secret_v1" "notification_secrets" {
   }
 
   data = {
-    MAIL_HOST     = lookup(local.email_credentials, "host", "smtp.gmail.com")
-    MAIL_PORT     = lookup(local.email_credentials, "port", "587")
+    MAIL_HOST      = lookup(local.email_credentials, "host", "smtp.gmail.com")
+    MAIL_PORT      = lookup(local.email_credentials, "port", "587")
     EMAIL_USERNAME = lookup(local.email_credentials, "username", "")
     EMAIL_PASSWORD = lookup(local.email_credentials, "password", "")
-    EMAIL_SENDER     = lookup(local.email_credentials, "sender", "")
+    EMAIL_SENDER   = lookup(local.email_credentials, "sender", "")
   }
 
   type = "Opaque"
+
+  depends_on = [
+    kubernetes_namespace.oficina
+  ]
 }
