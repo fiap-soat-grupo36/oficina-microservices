@@ -28,4 +28,3 @@ spec:
 # NÃO edite manualmente. Para fazer alterações:
 # 1. Edite: infra/templates/eureka-nlb-service.yaml.tpl
 # 2. Execute: terraform apply
-      protocol: TCP
