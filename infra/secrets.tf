@@ -9,7 +9,7 @@ locals {
 
   # Parse JSON dos secrets do Secrets Manager
   db_credentials    = jsondecode(data.aws_secretsmanager_secret_version.db_password.secret_string)
-  jwt_secret        = var.secrets_manager_jwt_secret_name != "" ? jsondecode(data.aws_secretsmanager_secret_version.jwt_secret.secret_string) : {}
+  jwt_secret        = var.secrets_manager_jwt_secret_name != "" ? data.aws_secretsmanager_secret_version.jwt_secret.secret_string : "dev-jwt-secret-key-minimum-256-bits-for-hs256-algorithm-change-me"
   email_credentials = var.secrets_manager_email_secret_name != "" ? jsondecode(data.aws_secretsmanager_secret_version.email_credentials[0].secret_string) : {}
 }
 
