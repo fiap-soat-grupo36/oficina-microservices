@@ -12,7 +12,8 @@ resource "aws_lb" "eureka" {
   # Para uso com API Gateway, recomenda-se internal=true + VPC Link
   internal           = true # Ambos ambientes privados por segurança
   load_balancer_type = "network"
-  subnets            = data.aws_eks_cluster.oficina.vpc_config[0].subnet_ids
+  # Usa apenas subnets únicas por AZ (NLB não aceita múltiplas subnets na mesma AZ)
+  subnets            = local.nlb_subnets
 
   enable_deletion_protection       = local.environment == "prod" ? true : false
   enable_cross_zone_load_balancing = true

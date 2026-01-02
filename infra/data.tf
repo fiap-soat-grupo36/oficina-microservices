@@ -25,7 +25,24 @@ data "aws_vpc" "main" {
     values = ["fiap-oficina-mecanica"]
   }
 }
+# Busca todas as subnets privadas da VPC
+data "aws_subnets" "private" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.main.id]
+  }
 
+  filter {
+    name   = "tag:kubernetes.io/role/internal-elb"
+    values = ["1"]
+  }
+}
+
+# Busca informa\u00e7\u00f5es detalhadas de cada subnet para filtrar por AZ
+data "aws_subnet" "private" {
+  for_each = toset(data.aws_subnets.private.ids)
+  id       = each.value
+}
 # NLB e Target Group agora são CRIADOS pelo Terraform
 # Ver arquivo: nlb-per-environment.tf
 
