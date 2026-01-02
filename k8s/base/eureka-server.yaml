@@ -33,8 +33,8 @@ spec:
     spec:
       containers:
         - name: eureka-server
-          image: grecomilani/oficina-eureka-server:latest
-          imagePullPolicy: IfNotPresent
+          image: grecomilani/eureka-server:develop
+          imagePullPolicy: Always
           ports:
             - containerPort: 8761
               name: http

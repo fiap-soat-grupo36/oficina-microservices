@@ -63,6 +63,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Prepare short SHA
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Build and push ${{ matrix.service }}
         uses: docker/build-push-action@v5
         with:
@@ -71,7 +74,7 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service }}:develop
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service }}:develop-${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service }}:develop-${{ env.SHORT_SHA }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 

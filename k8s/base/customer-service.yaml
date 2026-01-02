@@ -33,8 +33,8 @@ spec:
     spec:
       containers:
         - name: customer-service
-          image: grecomilani/oficina-customer-service:latest
-          imagePullPolicy: IfNotPresent
+          image: grecomilani/customer-service:develop
+          imagePullPolicy: Always
           ports:
             - containerPort: 8081
               name: http
