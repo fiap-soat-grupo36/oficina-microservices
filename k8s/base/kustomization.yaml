@@ -7,7 +7,8 @@ resources:
 
   # Service Registry
   - eureka-server.yaml
-  - eureka-nlb-service.yaml
+  - eureka-service-internal.yaml
+  # eureka-nlb-service.yaml gerenciado pelo Terraform (infra/eureka-nlb.tf)
 
   # Microservices
   - auth-service.yaml

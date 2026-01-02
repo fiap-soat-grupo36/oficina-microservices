@@ -1,24 +1,7 @@
 ---
-# Service interno para comunicação dentro do cluster
-apiVersion: v1
-kind: Service
-metadata:
-  name: eureka-server-internal
-  namespace: ${namespace}
-  labels:
-    app: eureka-server
-    managed-by: terraform
-spec:
-  type: ClusterIP
-  selector:
-    app: eureka-server
-  ports:
-    - name: http
-      port: 8761
-      targetPort: 8761
----
 # Service externo usando Target Group EXISTENTE do NLB
 # Gerenciado pelo Terraform - ARN injetado automaticamente
+# O Service interno (eureka-server-internal) está em k8s/base/eureka-service-internal.yaml
 apiVersion: v1
 kind: Service
 metadata:
