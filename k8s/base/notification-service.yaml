@@ -33,8 +33,8 @@ spec:
     spec:
       containers:
         - name: notification-service
-          image: grecomilani/oficina-notification-service:latest
-          imagePullPolicy: IfNotPresent
+          image: grecomilani/notification-service:develop
+          imagePullPolicy: Always
           ports:
             - containerPort: 8087
               name: http

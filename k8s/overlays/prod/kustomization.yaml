@@ -12,6 +12,25 @@ resources:
   - secrets.yaml
   - ingress.yaml
 
+# Sobrescrever tags das imagens para usar 'main' em produção
+images:
+  - name: grecomilani/eureka-server
+    newTag: main
+  - name: grecomilani/auth-service
+    newTag: main
+  - name: grecomilani/customer-service
+    newTag: main
+  - name: grecomilani/catalog-service
+    newTag: main
+  - name: grecomilani/inventory-service
+    newTag: main
+  - name: grecomilani/budget-service
+    newTag: main
+  - name: grecomilani/work-order-service
+    newTag: main
+  - name: grecomilani/notification-service
+    newTag: main
+
 # Exclui o PostgreSQL dos recursos base
 patches:
   # Remove postgres StatefulSet
