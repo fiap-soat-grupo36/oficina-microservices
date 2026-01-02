@@ -12,7 +12,7 @@ resource "kubernetes_config_map_v1_data" "db_override" {
   }
 
   data = {
-    DB_URL = "jdbc:postgresql://${data.aws_rds_cluster.cluster.endpoint}/${var.rds_database_name}"
+    DB_URL  = "jdbc:postgresql://${data.aws_rds_cluster.cluster.endpoint}/${var.rds_database_name}"
     DB_NAME = var.rds_database_name
   }
 

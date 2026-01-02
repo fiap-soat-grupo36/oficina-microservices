@@ -50,7 +50,7 @@ resource "kubectl_manifest" "kustomization" {
   for_each = data.kubectl_file_documents.kustomization.manifests
 
   yaml_body = each.value
-  
+
   # Usa server-side apply para evitar conflitos com recursos do Terraform
   server_side_apply = true
   wait              = true

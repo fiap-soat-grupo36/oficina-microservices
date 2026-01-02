@@ -60,6 +60,22 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/imagePullPolicy
         value: Always
+  # Eureka Server - aumentar replicas em PROD
+  - target:
+      kind: Deployment
+      name: eureka-server
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+  # Eureka NLB - usar internet-facing para PROD
+  - target:
+      kind: Service
+      name: eureka-server-nlb
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/service.beta.kubernetes.io~1aws-load-balancer-scheme
+        value: internet-facing
 
 # Labels comuns para ambiente PROD
 commonLabels:

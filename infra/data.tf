@@ -12,6 +12,13 @@ data "aws_eks_cluster_auth" "oficina" {
   name = data.aws_eks_cluster.oficina.name
 }
 
+# Busca o OIDC Provider do cluster EKS
+data "aws_iam_openid_connect_provider" "eks" {
+  count = terraform.workspace != "default" ? 1 : 0
+  # Extrai a URL do OIDC issuer do cluster
+  url = data.aws_eks_cluster.oficina.identity[0].oidc[0].issuer
+}
+
 data "aws_vpc" "main" {
   filter {
     name   = "tag:Name"
@@ -19,19 +26,14 @@ data "aws_vpc" "main" {
   }
 }
 
-data "aws_lb" "nlb" {
-  name = "oficina-mecanica"
-}
+# NLB e Target Group agora são CRIADOS pelo Terraform
+# Ver arquivo: nlb-per-environment.tf
 
 data "aws_instances" "node_group_instances" {
   filter {
     name   = "tag:eks:cluster-name"
     values = ["eks-fiap-oficina-mecanica"]
   }
-}
-
-data "aws_lb_target_group" "nlb_tg" {
-  name = "oficina-mecanica-tg"
 }
 
 # Busca o cluster RDS já criado
