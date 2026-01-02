@@ -42,6 +42,16 @@ patches:
       metadata:
         name: postgres
       $patch: delete
+  # Remove ConfigMap (gerenciado pelo Terraform no EKS)
+  - target:
+      kind: ConfigMap
+      name: oficina-shared-config
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: oficina-shared-config
+      $patch: delete
   # Remove postgres Service
   - target:
       kind: Service
