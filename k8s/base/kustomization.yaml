@@ -20,7 +20,7 @@ resources:
   - notification-service.yaml
 
   # Shared Configuration
-  - configmap-shared.yaml
+  - configmap-shared.yaml  # Usado pelo overlay local; removido no overlay dev (Terraform gerencia)
 
   # Horizontal Pod Autoscalers
   - hpa.yaml
