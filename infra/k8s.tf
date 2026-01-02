@@ -8,7 +8,7 @@ data "http" "metrics_server_yaml" {
 }
 
 data "kubectl_file_documents" "docs" {
-  count   = terraform.workspace  == "dev" ? 1 : 0
+  count   = terraform.workspace == "dev" ? 1 : 0
   content = data.http.metrics_server_yaml[0].response_body
 }
 
@@ -26,21 +26,36 @@ resource "kubectl_manifest" "metrics" {
 ######################### APPLICATION ############################
 ##################################################################
 
-# Processa os manifestos Kustomize do overlay específico do ambiente
-data "external" "kustomize_build" {
+# Gera os manifestos com kubectl kustomize inline
+data "external" "kustomize_manifests" {
   program = ["bash", "-c", <<-EOT
     cd ${local.kustomize_path}
-    kubectl kustomize . | jq -Rs '{"manifests": .}'
+    MANIFESTS=$(kubectl kustomize . 2>/dev/null | base64 | tr -d '\n')
+    echo "{\"manifests\": \"$MANIFESTS\"}"
   EOT
   ]
 }
 
+# Decodifica e processa os manifestos
+locals {
+  kustomize_yaml = base64decode(data.external.kustomize_manifests.result.manifests)
+}
+
+# Lê os manifestos decodificados
 data "kubectl_file_documents" "kustomization" {
-  content = data.external.kustomize_build.result.manifests
+  content = local.kustomize_yaml
 }
 
 resource "kubectl_manifest" "kustomization" {
-  for_each   = data.kubectl_file_documents.kustomization.manifests
-  yaml_body  = each.value
-  depends_on = [kubernetes_namespace.oficina]
+  for_each = data.kubectl_file_documents.kustomization.manifests
+
+  yaml_body = each.value
+  
+  # Usa server-side apply para evitar conflitos com recursos do Terraform
+  server_side_apply = true
+  wait              = true
+
+  depends_on = [
+    kubernetes_namespace.oficina
+  ]
 }
