@@ -5,9 +5,16 @@ metadata:
   namespace: oficina
 data:
   SPRING_PROFILES_ACTIVE: k8s
-  EUREKA_URL: http://eureka-server:8761/eureka/
+  # Eureka Server Config
+  EUREKA_HOSTNAME: "eureka-server-internal"  # Será sobrescrito pelo Terraform com DNS do NLB
+  SERVER_PORT: "8761"
+  # URLs do Eureka (interna para comunicação entre pods)
+  EUREKA_URL: http://eureka-server-internal:8761/eureka/
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server-internal:8761/eureka/
+  # Database
   DB_URL: jdbc:postgresql://postgres:5432/oficina-db
   DB_NAME: oficina-db
+  # Service Ports
   SERVER_PORT_AUTH: "8082"
   SERVER_PORT_CUSTOMER: "8081"
   SERVER_PORT_CATALOG: "8083"

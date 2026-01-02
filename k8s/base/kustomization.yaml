@@ -8,7 +8,6 @@ resources:
   # Service Registry
   - eureka-server.yaml
   - eureka-nlb-service.yaml
-  - eureka-configmap.yaml
 
   # Microservices
   - auth-service.yaml

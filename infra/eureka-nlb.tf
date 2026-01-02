@@ -23,21 +23,23 @@ resource "kubectl_manifest" "eureka_nlb_service" {
   ]
 }
 
-# ConfigMap do Eureka com DNS do NLB
-resource "kubernetes_config_map" "eureka_config" {
+# ConfigMap do Eureka com DNS do NLB - Sobrescreve oficina-shared-config
+resource "kubernetes_config_map_v1_data" "eureka_nlb_config" {
   metadata {
-    name      = "eureka-server-config"
+    name      = "oficina-shared-config"
     namespace = local.namespace
   }
 
   data = {
     EUREKA_HOSTNAME                      = aws_lb.eureka.dns_name
-    SERVER_PORT                          = "8761"
+    EUREKA_URL                           = "http://${aws_lb.eureka.dns_name}:8761/eureka/"
     EUREKA_CLIENT_SERVICEURL_DEFAULTZONE = "http://${aws_lb.eureka.dns_name}:8761/eureka/"
   }
 
+  force = true
+
   depends_on = [
-    kubernetes_namespace.oficina,
+    kubernetes_config_map_v1.oficina_shared,
     aws_lb.eureka
   ]
 
