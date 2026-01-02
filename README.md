@@ -23,7 +23,508 @@ Todos os microserviços se registram automaticamente no **Eureka Server**, permi
 - **work-order-service** (porta 8086) - Ordens de serviço
 - **notification-service** (porta 8087) - Notificações por email
 
-## 🚀 Como Executar
+---
+
+## 🏠 Desenvolvimento Local - Guia Completo
+
+Este guia detalha **3 formas de rodar o projeto localmente** para desenvolvimento. Escolha a que melhor se adequa ao seu cenário.
+
+### 📋 Pré-requisitos
+
+Antes de começar, certifique-se de ter instalado:
+
+- ✅ **Java 21** - [Download](https://adoptium.net/)
+- ✅ **Maven 3.9+** - [Download](https://maven.apache.org/download.cgi)
+- ✅ **Docker & Docker Compose** - [Download](https://www.docker.com/products/docker-desktop)
+- ✅ **Git** - Para clonar o repositório
+
+**Verificar instalação:**
+```bash
+java -version    # Deve mostrar Java 21
+mvn -version     # Deve mostrar Maven 3.9+
+docker --version # Deve mostrar Docker 20.10+
+docker compose version
+```
+
+---
+
+### 🎯 Opção 1: Docker Compose (⭐ Recomendado)
+
+**Vantagens:** Rápido, isolado, não precisa configurar banco manualmente, simula ambiente de produção.
+
+#### Passo a Passo
+
+**1. Clonar o repositório**
+```bash
+git clone https://github.com/seu-usuario/oficina-microservices.git
+cd oficina-microservices
+```
+
+**2. Subir todos os serviços**
+```bash
+# Sobe PostgreSQL + Eureka + todos os 7 microserviços
+docker compose --profile dev up -d
+
+# Acompanhar os logs (Ctrl+C para sair)
+docker compose --profile dev logs -f
+```
+
+**3. Aguardar inicialização (⏱️ ~2-3 minutos)**
+
+O Docker Compose inicia os serviços na ordem correta:
+1. PostgreSQL (porta 5432)
+2. Eureka Server (porta 8761)
+3. Auth Service (porta 8082)
+4. Demais microserviços (portas 8081-8087)
+
+**4. Verificar se tudo está funcionando**
+
+```bash
+# Ver status de todos os containers
+docker compose --profile dev ps
+
+# Todos devem estar "healthy" ou "running"
+# Se algum estiver "unhealthy", veja os logs:
+docker compose --profile dev logs auth-service
+```
+
+**5. Acessar os serviços**
+
+🌐 **Eureka Dashboard (Service Registry):**
+- URL: http://localhost:8761
+- Aguarde até ver todos os 7 serviços registrados
+
+📖 **Swagger Agregado (Todas as APIs em um lugar):**
+- URL: http://localhost:8761/swagger-ui.html
+- Use o dropdown para selecionar cada serviço
+
+**6. Testar uma chamada (exemplo)**
+
+```bash
+# 1. Criar um usuário
+curl -X POST http://localhost:8082/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "João Silva",
+    "email": "joao@example.com",
+    "senha": "senha123",
+    "role": "MECANICO"
+  }'
+
+# 2. Fazer login
+curl -X POST http://localhost:8082/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "joao@example.com",
+    "senha": "senha123"
+  }'
+
+# Copie o token JWT retornado para usar nas próximas chamadas
+```
+
+**7. Parar tudo quando terminar**
+
+```bash
+# Parar mas manter os dados
+docker compose --profile dev stop
+
+# Parar e remover containers (mantém volumes/dados)
+docker compose --profile dev down
+
+# Parar e LIMPAR TUDO (incluindo banco de dados)
+docker compose --profile dev down -v
+```
+
+#### 🔧 Comandos Úteis - Docker Compose
+
+```bash
+# Ver logs de um serviço específico
+docker compose --profile dev logs -f customer-service
+
+# Reiniciar um serviço específico
+docker compose --profile dev restart auth-service
+
+# Rebuild após mudanças no código
+docker compose --profile dev up -d --build
+
+# Ver uso de recursos
+docker stats
+
+# Acessar terminal de um container
+docker exec -it customer-service bash
+```
+
+---
+
+### 🎯 Opção 2: Minikube (Kubernetes Local)
+
+**Vantagens:** Testa deploy em Kubernetes, mais próximo do ambiente de produção.
+
+#### Passo a Passo
+
+**1. Instalar Minikube**
+```bash
+# macOS
+brew install minikube
+
+# Linux
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+# Verificar
+minikube version
+```
+
+**2. Iniciar Minikube**
+```bash
+# Subir cluster local com recursos adequados
+minikube start --cpus=4 --memory=8192 --driver=docker
+
+# Habilitar addons necessários
+minikube addons enable ingress
+minikube addons enable metrics-server
+```
+
+**3. Build das imagens localmente (usar Docker do Minikube)**
+
+```bash
+# Configurar shell para usar Docker do Minikube
+eval $(minikube docker-env)
+
+# Build de todas as imagens
+cd oficina-microservices
+make build TAG=latest
+
+# Ou build manual
+mvn clean install -DskipTests
+docker build -t grecomilani/oficina-eureka-server:latest -f eureka-server/Dockerfile .
+docker build -t grecomilani/oficina-auth-service:latest -f auth-service/Dockerfile .
+# ... repetir para todos os serviços
+```
+
+**4. Aplicar manifestos Kubernetes**
+
+```bash
+# Usar o overlay local (namespace: oficina)
+kubectl apply -k k8s/overlays/local
+
+# Acompanhar os pods subindo
+kubectl -n oficina get pods -w
+```
+
+**5. Aguardar todos os pods ficarem Running (⏱️ ~3-5 minutos)**
+
+```bash
+# Verificar status
+kubectl -n oficina get pods
+
+# Todos devem estar 1/1 Running
+# Se algum estiver CrashLoopBackOff:
+kubectl -n oficina logs -f pod/<nome-do-pod>
+```
+
+**6. Acessar os serviços**
+
+**Opção A: Port-Forward (Recomendado para dev)**
+```bash
+# Eureka Dashboard
+kubectl -n oficina port-forward svc/eureka-server 8761:8761
+
+# Auth Service
+kubectl -n oficina port-forward svc/auth-service 8082:8082
+
+# Customer Service
+kubectl -n oficina port-forward svc/customer-service 8081:8081
+
+# Acesse: http://localhost:8761
+```
+
+**Opção B: Ingress (acesso via domínio)**
+```bash
+# Adicionar ao /etc/hosts
+echo "$(minikube ip) oficina.local" | sudo tee -a /etc/hosts
+
+# Acessar via:
+# http://oficina.local/eureka
+# http://oficina.local/auth
+# http://oficina.local/customer
+```
+
+**7. Limpar tudo**
+
+```bash
+# Deletar todos os recursos
+kubectl delete -k k8s/overlays/local
+
+# Parar Minikube
+minikube stop
+
+# Deletar cluster completamente
+minikube delete
+```
+
+---
+
+### 🎯 Opção 3: Maven Local (Sem Containers)
+
+**Vantagens:** Útil para debug, desenvolvimento isolado de um serviço, não precisa de Docker.
+
+**⚠️ Atenção:** Você precisará de um PostgreSQL rodando (pode usar Docker apenas para o banco).
+
+#### Passo a Passo
+
+**1. Subir PostgreSQL (via Docker)**
+```bash
+docker run -d \
+  --name postgres-oficina \
+  -e POSTGRES_DB=oficina-db \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -p 5432:5432 \
+  postgres:15-alpine
+
+# Verificar se está rodando
+docker ps | grep postgres-oficina
+```
+
+**2. Build do projeto**
+```bash
+cd oficina-microservices
+
+# Compilar todos os módulos (necessário por causa da shared-library)
+mvn clean install -DskipTests
+```
+
+**3. Iniciar Eureka Server (SEMPRE primeiro!)**
+```bash
+cd eureka-server
+mvn spring-boot:run
+
+# Aguarde ver a mensagem:
+# "Started EurekaServerApplication in X seconds"
+
+# Acesse: http://localhost:8761
+```
+
+**4. Iniciar serviços (cada um em um terminal separado)**
+
+```bash
+# Terminal 2 - Auth Service
+cd auth-service
+mvn spring-boot:run
+
+# Terminal 3 - Customer Service
+cd customer-service
+mvn spring-boot:run
+
+# Terminal 4 - Catalog Service
+cd catalog-service
+mvn spring-boot:run
+
+# Terminal 5 - Inventory Service
+cd inventory-service
+mvn spring-boot:run
+
+# Terminal 6 - Budget Service
+cd budget-service
+mvn spring-boot:run
+
+# Terminal 7 - Work Order Service
+cd work-order-service
+mvn spring-boot:run
+
+# Terminal 8 - Notification Service
+cd notification-service
+mvn spring-boot:run
+```
+
+**Dica:** Use **tmux** ou **screen** para gerenciar múltiplos terminais:
+```bash
+# Instalar tmux
+brew install tmux  # macOS
+sudo apt install tmux  # Linux
+
+# Criar sessão tmux
+tmux new -s oficina
+
+# Dividir em painéis: Ctrl+b então "
+# Navegar entre painéis: Ctrl+b então seta
+```
+
+**5. Verificar serviços no Eureka**
+
+Acesse http://localhost:8761 e confirme que todos os 7 serviços aparecem na lista "Instances currently registered with Eureka".
+
+**6. Parar tudo**
+
+```bash
+# Parar cada terminal com Ctrl+C
+
+# Parar PostgreSQL
+docker stop postgres-oficina
+docker rm postgres-oficina
+```
+
+---
+
+## ✅ Checklist de Verificação
+
+Após subir o ambiente (qualquer opção), verifique:
+
+- [ ] ✅ **Eureka Dashboard** (http://localhost:8761) mostra 7-8 serviços registrados
+- [ ] ✅ **Swagger Agregado** (http://localhost:8761/swagger-ui.html) abre corretamente
+- [ ] ✅ **Health checks** funcionando:
+  ```bash
+  curl http://localhost:8761/actuator/health  # Eureka
+  curl http://localhost:8082/actuator/health  # Auth
+  curl http://localhost:8081/actuator/health  # Customer
+  ```
+- [ ] ✅ **PostgreSQL** está acessível (porta 5432)
+- [ ] ✅ **Sem erros** nos logs dos serviços
+
+---
+
+## 🌐 Endpoints Importantes (Local)
+
+| Serviço | Porta | Swagger | Actuator Health |
+|---------|-------|---------|-----------------|
+| **Eureka Server** | 8761 | http://localhost:8761/swagger-ui.html | http://localhost:8761/actuator/health |
+| **Auth Service** | 8082 | http://localhost:8082/swagger-ui.html | http://localhost:8082/actuator/health |
+| **Customer Service** | 8081 | http://localhost:8081/swagger-ui.html | http://localhost:8081/actuator/health |
+| **Catalog Service** | 8083 | http://localhost:8083/swagger-ui.html | http://localhost:8083/actuator/health |
+| **Inventory Service** | 8084 | http://localhost:8084/swagger-ui.html | http://localhost:8084/actuator/health |
+| **Budget Service** | 8085 | http://localhost:8085/swagger-ui.html | http://localhost:8085/actuator/health |
+| **Work Order Service** | 8086 | http://localhost:8086/swagger-ui.html | http://localhost:8086/actuator/health |
+| **Notification Service** | 8087 | - | http://localhost:8087/actuator/health |
+
+---
+
+## 🐛 Troubleshooting - Problemas Comuns em Local
+
+### Serviço não registra no Eureka
+
+**Sintomas:** Serviço sobe mas não aparece em http://localhost:8761
+
+**Soluções:**
+```bash
+# 1. Verifique se o Eureka está rodando
+curl http://localhost:8761/actuator/health
+
+# 2. Aguarde 30 segundos (delay normal de registro)
+
+# 3. Veja os logs do serviço
+docker compose --profile dev logs auth-service | grep -i eureka
+
+# 4. Verifique se a porta do Eureka está correta
+# Deve estar acessível em localhost:8761
+```
+
+### Porta já em uso
+
+**Sintomas:** Erro "Address already in use" ou "bind: address already in use"
+
+**Soluções:**
+```bash
+# Ver o que está usando a porta
+lsof -i :8761  # Substitua pelo número da porta
+netstat -tulpn | grep 8761
+
+# Matar o processo
+kill -9 <PID>
+
+# Ou mudar a porta no application.yml do serviço
+```
+
+### Banco de dados não conecta
+
+**Sintomas:** Erros de "Connection refused" ou "Could not connect to database"
+
+**Soluções:**
+```bash
+# 1. Verificar se PostgreSQL está rodando
+docker ps | grep postgres
+
+# 2. Testar conexão diretamente
+docker exec -it postgres psql -U postgres -d oficina-db
+
+# 3. Verificar configuração no application.yml
+# URL deve ser: jdbc:postgresql://localhost:5432/oficina-db
+# Para Docker Compose: jdbc:postgresql://postgres:5432/oficina-db
+```
+
+### Serviços não se comunicam (Feign errors)
+
+**Sintomas:** Erros 404 ou "Load balancer does not have available server"
+
+**Soluções:**
+```bash
+# 1. Todos os serviços devem estar no Eureka
+curl http://localhost:8761/eureka/apps
+
+# 2. Aguarde 30-60 segundos após todos subirem
+
+# 3. Verifique se os nomes dos serviços estão corretos
+# Devem ser exatamente: auth-service, customer-service, etc.
+
+# 4. Veja logs de Feign no serviço
+docker compose --profile dev logs work-order-service | grep -i feign
+```
+
+### Build do Maven falha
+
+**Sintomas:** Erros de compilação, testes falhando, dependências não encontradas
+
+**Soluções:**
+```bash
+# 1. Limpar cache do Maven
+mvn clean
+
+# 2. Rebuild completo (do diretório raiz!)
+cd oficina-microservices
+mvn clean install -DskipTests
+
+# 3. Se shared-library não for encontrada
+cd shared-library
+mvn clean install
+cd ..
+
+# 4. Limpar cache local se necessário
+rm -rf ~/.m2/repository/br/com/fiap/oficina
+mvn clean install
+```
+
+### Containers ficam "unhealthy"
+
+**Sintomas:** `docker compose ps` mostra status "unhealthy"
+
+**Soluções:**
+```bash
+# 1. Ver logs do container
+docker compose --profile dev logs <service-name>
+
+# 2. Verificar health check manualmente
+docker exec <container-name> wget -qO- http://localhost:8082/actuator/health
+
+# 3. Aumentar tempo de inicialização
+# Edite docker-compose.yml e aumente start_period no healthcheck
+
+# 4. Rebuild a imagem
+docker compose --profile dev up -d --build <service-name>
+```
+
+---
+
+## 🎓 Próximos Passos Após Rodar Local
+
+1. 📖 **Explore a API** via Swagger: http://localhost:8761/swagger-ui.html
+2. 🧪 **Rode os testes**: `mvn test`
+3. 📊 **Monitore no Eureka**: http://localhost:8761
+4. 🔍 **Veja o CLAUDE.md** na raiz para entender a arquitetura completa
+5. 🚀 **Deploy em Dev/Prod**: Veja `k8s/README-OVERLAYS.md`
+
+---
+
+## 🚀 Outras Formas de Executar
 
 ### Pré-requisitos
 

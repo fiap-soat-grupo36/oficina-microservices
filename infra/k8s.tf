@@ -8,7 +8,7 @@ data "http" "metrics_server_yaml" {
 }
 
 data "kubectl_file_documents" "docs" {
-  count   = terraform.workspace  == "dev" ? 1 : 0
+  count   = terraform.workspace == "dev" ? 1 : 0
   content = data.http.metrics_server_yaml[0].response_body
 }
 
@@ -26,12 +26,36 @@ resource "kubectl_manifest" "metrics" {
 ######################### APPLICATION ############################
 ##################################################################
 
-data "kubectl_path_documents" "dd_agent" {
-  pattern = "../k8s/datadog/datadog-agent.yaml"
+# Gera os manifestos com kubectl kustomize inline
+data "external" "kustomize_manifests" {
+  program = ["bash", "-c", <<-EOT
+    cd ${local.kustomize_path}
+    MANIFESTS=$(kubectl kustomize . 2>/dev/null | base64 | tr -d '\n')
+    echo "{\"manifests\": \"$MANIFESTS\"}"
+  EOT
+  ]
 }
 
-resource "kubectl_manifest" "dd_agent_manifest" {
-  for_each   = data.kubectl_path_documents.dd_agent.manifests
-  yaml_body  = each.value
+# Decodifica e processa os manifestos
+locals {
+  kustomize_yaml = base64decode(data.external.kustomize_manifests.result.manifests)
 }
 
+# Lê os manifestos decodificados
+data "kubectl_file_documents" "kustomization" {
+  content = local.kustomize_yaml
+}
+
+resource "kubectl_manifest" "kustomization" {
+  for_each = data.kubectl_file_documents.kustomization.manifests
+
+  yaml_body = each.value
+  
+  # Usa server-side apply para evitar conflitos com recursos do Terraform
+  server_side_apply = true
+  wait              = true
+
+  depends_on = [
+    kubernetes_namespace.oficina
+  ]
+}

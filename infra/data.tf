@@ -33,3 +33,37 @@ data "aws_instances" "node_group_instances" {
 data "aws_lb_target_group" "nlb_tg" {
   name = "oficina-mecanica-tg"
 }
+
+# Busca o cluster RDS já criado
+data "aws_rds_cluster" "cluster" {
+  cluster_identifier = var.rds_identifier
+}
+
+# Recupera o secret com a senha do master user
+data "aws_secretsmanager_secret" "db_password" {
+  arn = data.aws_rds_cluster.cluster.master_user_secret[0].secret_arn
+}
+
+data "aws_secretsmanager_secret_version" "db_password" {
+  secret_id = data.aws_secretsmanager_secret.db_password.id
+}
+
+data "aws_secretsmanager_secret" "jwt_secret" {
+  count = var.secrets_manager_jwt_secret_name != "" ? 1 : 0
+  name  = var.secrets_manager_jwt_secret_name
+}
+
+data "aws_secretsmanager_secret_version" "jwt_secret" {
+  count     = var.secrets_manager_jwt_secret_name != "" ? 1 : 0
+  secret_id = data.aws_secretsmanager_secret.jwt_secret[0].id
+}
+
+data "aws_secretsmanager_secret" "email_credentials" {
+  count = var.secrets_manager_email_secret_name != "" ? 1 : 0
+  name  = var.secrets_manager_email_secret_name
+}
+
+data "aws_secretsmanager_secret_version" "email_credentials" {
+  count     = var.secrets_manager_email_secret_name != "" ? 1 : 0
+  secret_id = data.aws_secretsmanager_secret.email_credentials[0].id
+}

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oficina-shared-config
+data:
+  # Override DB_URL para usar RDS no ambiente DEV
+  # IMPORTANTE: Substitua o endpoint pelo seu RDS real após provisionamento
+  DB_URL: jdbc:postgresql://oficina-db-dev.XXXXX.us-east-2.rds.amazonaws.com:5432/oficina-db
+  DB_NAME: oficina-db
