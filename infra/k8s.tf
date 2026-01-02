@@ -26,12 +26,21 @@ resource "kubectl_manifest" "metrics" {
 ######################### APPLICATION ############################
 ##################################################################
 
-data "kubectl_path_documents" "dd_agent" {
-  pattern = "../k8s/datadog/datadog-agent.yaml"
+# Processa os manifestos Kustomize do overlay específico do ambiente
+data "external" "kustomize_build" {
+  program = ["bash", "-c", <<-EOT
+    cd ${local.kustomize_path}
+    kubectl kustomize . | jq -Rs '{"manifests": .}'
+  EOT
+  ]
 }
 
-resource "kubectl_manifest" "dd_agent_manifest" {
-  for_each   = data.kubectl_path_documents.dd_agent.manifests
+data "kubectl_file_documents" "kustomization" {
+  content = data.external.kustomize_build.result.manifests
+}
+
+resource "kubectl_manifest" "kustomization" {
+  for_each   = data.kubectl_file_documents.kustomization.manifests
   yaml_body  = each.value
+  depends_on = [kubernetes_namespace.oficina]
 }
-

@@ -1,0 +1,35 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace para desenvolvimento local (Minikube)
+namespace: oficina
+
+resources:
+  # Base resources
+  - ../../base
+
+  # Local-specific resources
+  - namespace.yaml
+  - secret-database.yaml
+  - secret-auth.yaml
+  - secret-notification.yaml
+  - ingress.yaml
+
+# Patches para ambiente local
+patches:
+  # Ajustar imagePullPolicy para desenvolvimento local
+  - target:
+      kind: Deployment
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: IfNotPresent
+
+# Labels comuns para ambiente local
+commonLabels:
+  environment: local
+  managed-by: kustomize
+
+# Annotations comuns
+commonAnnotations:
+  deployment-method: minikube

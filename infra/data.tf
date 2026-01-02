@@ -33,3 +33,7 @@ data "aws_instances" "node_group_instances" {
 data "aws_lb_target_group" "nlb_tg" {
   name = "oficina-mecanica-tg"
 }
+
+data "kubectl_path_documents" "kustomization" {
+  pattern = "../k8s/overlays/${terraform.workspace}/*.yaml"
+}

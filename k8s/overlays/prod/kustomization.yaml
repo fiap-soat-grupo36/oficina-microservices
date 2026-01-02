@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace para ambiente PROD no EKS (gerenciado pelo Terraform)
+namespace: oficina-mecanica-prod
+
+resources:
+  # Base resources
+  - ../../base
+
+  # Prod-specific resources
+  - namespace.yaml
+  - secrets.yaml
+  - ingress.yaml
+
+# Strategic merge patches para produção
+patchesStrategicMerge:
+  - patches/replicas.yaml
+  - patches/resources.yaml
+  - patches/hpa.yaml
+
+# Patches JSON para configurações específicas
+patches:
+  # Garantir que imagens sempre sejam puxadas (importante em prod para atualizações)
+  - target:
+      kind: Deployment
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+
+# Labels comuns para ambiente PROD
+commonLabels:
+  environment: prod
+  managed-by: terraform
+  deployed-via: kustomize
+
+# Annotations comuns
+commonAnnotations:
+  deployment-method: terraform-eks
+  cluster: eks-fiap-oficina-mecanica
+  criticality: high
