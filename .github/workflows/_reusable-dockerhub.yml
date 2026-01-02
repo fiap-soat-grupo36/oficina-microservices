@@ -64,38 +64,38 @@ jobs:
 
             # Create a temporary Python script
             cat > /tmp/convert.py << 'EOFPYTHON'
-import json
-import sys
-import os
+            import json
+            import sys
+            import os
 
-try:
-    modules_str = os.environ.get('MODULES_JSON', '[]')
-    modules = json.loads(modules_str)
-    services = []
+            try:
+                modules_str = os.environ.get('MODULES_JSON', '[]')
+                modules = json.loads(modules_str)
+                services = []
 
-    for module in modules:
-        if module == 'shared-library':
-            continue
+                for module in modules:
+                    if module == 'shared-library':
+                        continue
 
-        services.append({
-            'service': module,
-            'dockerfile': f'./{module}/Dockerfile'
-        })
+                    services.append({
+                        'service': module,
+                        'dockerfile': f'./{module}/Dockerfile'
+                    })
 
-    print(json.dumps(services))
-except Exception as e:
-    print(f'Error: {e}', file=sys.stderr)
-    print('[]')
-    sys.exit(1)
-EOFPYTHON
+                print(json.dumps(services))
+            except Exception as e:
+                print(f'Error: {e}', file=sys.stderr)
+                print('[]')
+                sys.exit(1)
+            EOFPYTHON
 
-            SERVICES_JSON=$(MODULES_JSON="${MODULES_JSON}" python3 /tmp/convert.py)
-          fi
+                        SERVICES_JSON=$(MODULES_JSON="${MODULES_JSON}" python3 /tmp/convert.py)
+                      fi
 
-          echo "services_json=${SERVICES_JSON}" >> $GITHUB_OUTPUT
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "Services to build: ${SERVICES_JSON}"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                      echo "services_json=${SERVICES_JSON}" >> $GITHUB_OUTPUT
+                      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                      echo "Services to build: ${SERVICES_JSON}"
+                      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
   build:
     name: Build ${{ matrix.service }}

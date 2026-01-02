@@ -68,13 +68,11 @@ data "aws_secretsmanager_secret_version" "db_password" {
 }
 
 data "aws_secretsmanager_secret" "jwt_secret" {
-  count = var.secrets_manager_jwt_secret_name != "" ? 1 : 0
   name  = var.secrets_manager_jwt_secret_name
 }
 
 data "aws_secretsmanager_secret_version" "jwt_secret" {
-  count     = var.secrets_manager_jwt_secret_name != "" ? 1 : 0
-  secret_id = data.aws_secretsmanager_secret.jwt_secret[0].id
+  secret_id = data.aws_secretsmanager_secret.jwt_secret.id
 }
 
 data "aws_secretsmanager_secret" "email_credentials" {
