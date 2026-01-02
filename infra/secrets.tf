@@ -22,8 +22,10 @@ resource "kubernetes_secret_v1" "postgres_credentials" {
   }
 
   data = {
-    DB_USERNAME       = lookup(local.db_credentials, "username", "postgres")
-    DB_PASSWORD       = lookup(local.db_credentials, "password", "")
+    DB_USERNAME   = lookup(local.db_credentials, "username", "postgres")
+    DB_PASSWORD   = lookup(local.db_credentials, "password", "")
+    POSTGRES_USER = lookup(local.db_credentials, "username", "postgres")
+    POSTGRES_PASSWORD = lookup(local.db_credentials, "password", "")
   }
 
   type = "Opaque"
