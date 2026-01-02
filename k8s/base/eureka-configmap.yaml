@@ -1,4 +1,10 @@
 ---
+# DEPRECATED: Este ConfigMap foi consolidado no oficina-shared-config
+# Mantido apenas para referência histórica
+# As configurações do Eureka agora estão em:
+# - k8s/base/configmap-shared.yaml (valores padrão)
+# - infra/configmap.tf (criado pelo Terraform)
+# - infra/eureka-nlb.tf (sobrescreve com DNS do NLB)
 apiVersion: v1
 kind: ConfigMap
 metadata:

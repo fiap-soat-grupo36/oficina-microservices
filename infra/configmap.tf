@@ -2,7 +2,7 @@
 ###################### CONFIGMAP OVERRIDE ########################
 ##################################################################
 
-# Criar o ConfigMap base primeiro
+# ConfigMap unificado com informações corretas desde o início
 resource "kubernetes_config_map_v1" "oficina_shared" {
   metadata {
     name      = "oficina-shared-config"
@@ -11,9 +11,16 @@ resource "kubernetes_config_map_v1" "oficina_shared" {
 
   data = {
     SPRING_PROFILES_ACTIVE = "k8s"
-    EUREKA_URL = "http://eureka-server:8761/eureka/"
-    DB_URL = "jdbc:postgresql://postgres:5432/oficina-db"
-    DB_NAME = "oficina-db"
+    EUREKA_HOSTNAME                      = aws_lb.eureka.dns_name
+    EUREKA_URL                           = "http://${aws_lb.eureka.dns_name}:8761/eureka/"
+    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE = "http://${aws_lb.eureka.dns_name}:8761/eureka/"
+
+    SERVER_PORT = "8761"
+    # Database 
+    DB_URL = "jdbc:postgresql://${data.aws_rds_cluster.cluster.endpoint}/${var.rds_database_name}"
+    DB_NAME = var.rds_database_name
+
+    # Service Ports
     SERVER_PORT_AUTH = "8082"
     SERVER_PORT_CUSTOMER = "8081"
     SERVER_PORT_CATALOG = "8083"
@@ -24,28 +31,7 @@ resource "kubernetes_config_map_v1" "oficina_shared" {
   }
 
   depends_on = [
-    kubernetes_namespace.oficina
-  ]
-}
-
-# ConfigMap para sobrescrever DB_URL com endpoint real do RDS
-resource "kubernetes_config_map_v1_data" "db_override" {
-  count = var.rds_identifier != "" && terraform.workspace != "default" ? 1 : 0
-
-  metadata {
-    name      = "oficina-shared-config"
-    namespace = local.namespace
-  }
-
-  data = {
-    DB_URL = "jdbc:postgresql://${data.aws_rds_cluster.cluster.endpoint}/${var.rds_database_name}"
-    DB_NAME = var.rds_database_name
-  }
-
-  force = true
-
-  depends_on = [
-    kubernetes_config_map_v1.oficina_shared,
-    kubectl_manifest.kustomization
+    kubernetes_namespace.oficina,
+     aws_lb.eureka
   ]
 }

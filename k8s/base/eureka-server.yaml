@@ -32,12 +32,12 @@ spec:
             - name: EUREKA_HOSTNAME
               valueFrom:
                 configMapKeyRef:
-                  name: eureka-server-config
+                  name: oficina-shared-config
                   key: EUREKA_HOSTNAME
             - name: SERVER_PORT
               valueFrom:
                 configMapKeyRef:
-                  name: eureka-server-config
+                  name: oficina-shared-config
                   key: SERVER_PORT
                   optional: true
           livenessProbe:
