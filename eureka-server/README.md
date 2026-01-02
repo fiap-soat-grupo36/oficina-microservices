@@ -2,9 +2,25 @@
 
 Netflix Eureka Server para Service Discovery dos microserviços da Oficina.
 
+## 📚 Documentação Completa
+
+- **[QUICKSTART-NLB.md](QUICKSTART-NLB.md)** - Guia rápido para deploy com NLB
+- **[README-NLB.md](README-NLB.md)** - Documentação completa da integração com NLB
+- **[../ENVIRONMENT-SETUP-GUIDE.md](../ENVIRONMENT-SETUP-GUIDE.md)** - Configuração por ambiente (local/dev/prod)
+- **[../USING-EXISTING-NLB.md](../USING-EXISTING-NLB.md)** - Como usar um NLB existente
+- **[../EUREKA-CLIENT-SETUP.md](../EUREKA-CLIENT-SETUP.md)** - Como conectar microservices ao Eureka
+
 ## Descrição
 
 Este módulo implementa o Eureka Server que atua como um registro de serviços (Service Registry) permitindo que todos os microserviços da arquitetura se registrem dinamicamente e se comuniquem entre si sem a necessidade de URLs hardcoded.
+
+### 🌐 Deployment por Ambiente
+
+| Ambiente | Service Discovery | Alta Disponibilidade | Acesso Externo |
+|----------|------------------|---------------------|----------------|
+| **Local (Minikube)** | ClusterIP interno | ❌ | Port-forward |
+| **Dev (EKS)** | NLB Internal | ✅ | Apenas VPC |
+| **Prod (EKS)** | NLB Internet-facing | ✅✅ (2 replicas) | Público + Route53 |
 
 ## Tecnologias
 

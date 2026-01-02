@@ -24,6 +24,24 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/imagePullPolicy
         value: IfNotPresent
+  # Remover NLB Service (não suportado no Minikube)
+  - target:
+      kind: Service
+      name: eureka-server-nlb
+    patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: eureka-server-nlb
+      $patch: delete
+
+# ConfigMap para usar service interno no Minikube
+configMapGenerator:
+  - name: eureka-server-config
+    behavior: merge
+    literals:
+      - EUREKA_HOSTNAME=eureka-server-internal.oficina.svc.cluster.local
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server-internal.oficina.svc.cluster.local:8761/eureka/
 
 # Labels comuns para ambiente local
 commonLabels:

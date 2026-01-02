@@ -41,6 +41,14 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/imagePullPolicy
         value: Always
+  # Eureka NLB - usar internal para DEV
+  - target:
+      kind: Service
+      name: eureka-server-nlb
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/service.beta.kubernetes.io~1aws-load-balancer-scheme
+        value: internal
 
 # Labels comuns para ambiente DEV
 commonLabels:
