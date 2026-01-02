@@ -9,7 +9,7 @@ locals {
 
   # Parse JSON dos secrets do Secrets Manager
   db_credentials    = jsondecode(data.aws_secretsmanager_secret_version.db_password.secret_string)
-  jwt_secret        = var.secrets_manager_jwt_secret_name != "" ? jsondecode(data.aws_secretsmanager_secret_version.jwt_secret[0].secret_string) : {}
+  jwt_secret        = var.secrets_manager_jwt_secret_name != "" ? jsondecode(data.aws_secretsmanager_secret_version.jwt_secret.secret_string) : {}
   email_credentials = var.secrets_manager_email_secret_name != "" ? jsondecode(data.aws_secretsmanager_secret_version.email_credentials[0].secret_string) : {}
 }
 
@@ -35,7 +35,6 @@ resource "kubernetes_secret_v1" "postgres_credentials" {
 
 # Secret: jwt-secrets
 resource "kubernetes_secret_v1" "jwt_secrets" {
-  count = var.secrets_manager_jwt_secret_name != "" && terraform.workspace != "default" ? 1 : 0
 
   metadata {
     name      = "jwt-secrets"
@@ -43,7 +42,7 @@ resource "kubernetes_secret_v1" "jwt_secrets" {
   }
 
   data = {
-    JWT_SECRET = lookup(local.jwt_secret, "secret", "")
+    JWT_SECRET = local.jwt_secret
   }
 
   type = "Opaque"
@@ -55,8 +54,6 @@ resource "kubernetes_secret_v1" "jwt_secrets" {
 
 # Secret: notification-service-secrets
 resource "kubernetes_secret_v1" "notification_secrets" {
-  count = var.secrets_manager_email_secret_name != "" && terraform.workspace != "default" ? 1 : 0
-
   metadata {
     name      = "notification-service-secrets"
     namespace = local.namespace
