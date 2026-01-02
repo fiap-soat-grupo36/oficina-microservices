@@ -136,7 +136,7 @@ jobs:
       !cancelled() &&
       !contains(needs.*.result, 'failure') &&
       github.event_name == 'push' &&
-      (startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/hotfix/'))
+      (startsWith(github.ref, 'refs/heads/feature/') || startsWith(github.ref, 'refs/heads/hotfix/')|| startsWith(github.ref, 'refs/heads/fix/')|| startsWith(github.ref, 'refs/heads/feat/'))
     uses: ./.github/workflows/_reusable-create-pr.yml
     with:
       base: develop
