@@ -8,7 +8,7 @@ resources:
   # Service Registry
   - eureka-server.yaml
   - eureka-service-internal.yaml
-  # eureka-nlb-service.yaml gerenciado pelo Terraform (infra/eureka-nlb.tf)
+  - eureka-nlb-service.yaml  # NLB gerenciado pelo AWS Load Balancer Controller
 
   # Microservices
   - auth-service.yaml

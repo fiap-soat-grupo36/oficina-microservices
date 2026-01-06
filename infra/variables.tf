@@ -31,11 +31,11 @@ variable "rds_database_name" {
 variable "secrets_manager_jwt_secret_name" {
   description = "Name of the AWS Secrets Manager secret containing JWT secret key. Leave empty to use Kustomize defaults."
   type        = string
-  default     = ""
+  default     = "jwt_secret"
 }
 
 variable "secrets_manager_email_secret_name" {
   description = "Name of the AWS Secrets Manager secret containing email credentials (JSON with host, port, username, password, from keys). Leave empty to use Kustomize defaults."
   type        = string
-  default     = ""
+  default     = "email_credentials"
 }
