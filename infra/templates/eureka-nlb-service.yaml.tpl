@@ -17,6 +17,9 @@ metadata:
     # Tipo de target (IP mode para pods direto)
     service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
     
+    # Informa ao AWS LB Controller para NÃO gerenciar este service
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    
     # Metadata do NLB existente
     terraform.io/nlb-dns: "${nlb_dns}"
 spec:
