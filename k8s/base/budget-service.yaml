@@ -85,6 +85,7 @@ spec:
               port: http
             failureThreshold: 30
             periodSeconds: 10
+            timeoutSeconds: 10
           livenessProbe:
             httpGet:
               path: /actuator/health
