@@ -30,7 +30,7 @@ images:
   - name: grecomilani/notification-service
     newTag: main
 
-# Exclui o PostgreSQL dos recursos base
+# Exclui PostgreSQL e ConfigMap dos recursos base (gerenciados pelo Terraform)
 patches:
   # Remove postgres StatefulSet
   - target:
@@ -61,6 +61,16 @@ patches:
       kind: Service
       metadata:
         name: postgres
+      $patch: delete
+  # Remove ConfigMap (gerenciado por configmap.tf)
+  - target:
+      kind: ConfigMap
+      name: oficina-shared-config
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: oficina-shared-config
       $patch: delete
   # Garantir que imagens sempre sejam puxadas (importante em prod para atualizações)
   - target:

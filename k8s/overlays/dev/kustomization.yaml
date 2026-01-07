@@ -9,7 +9,7 @@ resources:
   - ../../base
   - ingress.yaml
 
-# Exclui o PostgreSQL dos recursos base
+# Exclui PostgreSQL e ConfigMap dos recursos base (gerenciados pelo Terraform)
 patches:
   # Remove postgres StatefulSet
   - target:
@@ -56,6 +56,17 @@ patches:
       - op: replace
         path: /metadata/annotations/service.beta.kubernetes.io~1aws-load-balancer-scheme
         value: internal
+  # Aumentar startup probe timeout para microservices (exceto eureka)
+  - target:
+      kind: Deployment
+      name: "(auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service)"
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/startupProbe/initialDelaySeconds
+        value: 60
+      - op: replace
+        path: /spec/template/spec/containers/0/startupProbe/failureThreshold
+        value: 20
 
 # Labels comuns para ambiente DEV
 commonLabels:
