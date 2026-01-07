@@ -20,10 +20,12 @@ resource "kubernetes_config_map_v1" "oficina_shared" {
     # Database 
     DB_URL = "jdbc:postgresql://${data.aws_rds_cluster.cluster.endpoint}/${var.rds_database_name}"
     DB_NAME = var.rds_database_name
-    # Database initialization (update em ambos ambientes para preservar dados)
-    DDL_AUTO = "update"
+    # Database initialization
+    # DEV: create-drop recria schema toda vez, seed sempre roda
+    # PROD: update preserva dados, seed desabilitado
+    DDL_AUTO      = local.environment == "dev" ? "create-drop" : "update"
     SQL_INIT_MODE = local.environment == "dev" ? "always" : "never"
-    SHOW_SQL = "false"
+    SHOW_SQL      = "false"
     # Logging configuration
     LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB = local.environment == "dev" ? "DEBUG" : "INFO"
     LOGGING_LEVEL_BR_COM_FIAP_OFICINA = local.environment == "dev" ? "DEBUG" : "INFO"
