@@ -7,9 +7,6 @@ namespace: oficina-mecanica-dev
 resources:
   # Base resources (exceto postgres - usa RDS no EKS)
   - ../../base
-
-  # Dev-specific resources
-  - secrets.yaml
   - ingress.yaml
 
 # Exclui o PostgreSQL dos recursos base
@@ -33,6 +30,16 @@ patches:
       kind: Service
       metadata:
         name: postgres
+      $patch: delete
+  # Remove ConfigMap (gerenciado pelo Terraform no EKS)
+  - target:
+      kind: ConfigMap
+      name: oficina-shared-config
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: oficina-shared-config
       $patch: delete
   # Garantir que imagens sempre sejam puxadas (evita cache em dev)
   - target:

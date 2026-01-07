@@ -53,9 +53,13 @@ resource "kubectl_manifest" "kustomization" {
 
   # Usa server-side apply para evitar conflitos com recursos do Terraform
   server_side_apply = true
+  force_conflicts   = true  # Permite sobrescrever campos gerenciados por outros controllers (ex: HPA)
   wait              = true
 
   depends_on = [
-    kubernetes_namespace.oficina
+    kubernetes_namespace.oficina,
+    kubernetes_secret_v1.jwt_secrets,
+    kubernetes_secret_v1.notification_secrets,
+    kubernetes_secret_v1.postgres_credentials
   ]
 }

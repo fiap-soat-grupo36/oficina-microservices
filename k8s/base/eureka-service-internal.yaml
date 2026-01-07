@@ -1,0 +1,17 @@
+---
+# Service interno para comunicação dentro do cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka-server-internal
+  namespace: oficina
+  labels:
+    app: eureka-server
+spec:
+  type: ClusterIP
+  selector:
+    app: eureka-server
+  ports:
+    - name: http
+      port: 8761
+      targetPort: 8761

@@ -11,12 +11,13 @@ resource "kubernetes_config_map_v1" "oficina_shared" {
 
   data = {
     SPRING_PROFILES_ACTIVE = "k8s"
-    # Eureka (valores padrão para comunicação interna)
-    EUREKA_HOSTNAME = "eureka-server-internal"
+    # Eureka Server Config (para o próprio Eureka Server usar)
+    EUREKA_HOSTNAME                      = aws_lb.eureka.dns_name
     SERVER_PORT = "8761"
-    EUREKA_URL = "http://eureka-server-internal:8761/eureka/"
+    # URLs do Eureka para os microservices (usa service interno)
+    EUREKA_URL                           = "http://eureka-server-internal:8761/eureka/"
     EUREKA_CLIENT_SERVICEURL_DEFAULTZONE = "http://eureka-server-internal:8761/eureka/"
-    # Database - usa RDS se disponível, senão postgres local
+    # Database 
     DB_URL = "jdbc:postgresql://${data.aws_rds_cluster.cluster.endpoint}/${var.rds_database_name}"
     DB_NAME = var.rds_database_name
     # Database initialization (update em ambos ambientes para preservar dados)
@@ -37,6 +38,7 @@ resource "kubernetes_config_map_v1" "oficina_shared" {
   }
 
   depends_on = [
-    kubernetes_namespace.oficina
+    kubernetes_namespace.oficina,
+     aws_lb.eureka
   ]
 }

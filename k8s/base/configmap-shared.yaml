@@ -1,3 +1,6 @@
+# ConfigMap compartilhado para todos os serviços
+# No EKS (dev/prod): Este ConfigMap é REMOVIDO pelo overlay e gerenciado pelo Terraform
+# No Minikube (local): Este ConfigMap é usado normalmente pelo Kustomize
 apiVersion: v1
 kind: ConfigMap
 metadata:

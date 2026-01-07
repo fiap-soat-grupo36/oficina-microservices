@@ -2,7 +2,6 @@
 ##################### EUREKA NLB SERVICE #########################
 ##################################################################
 
-# Template do Service do Eureka com Target Group criado pelo Terraform
 locals {
   eureka_service_yaml = templatefile("${path.module}/templates/eureka-nlb-service.yaml.tpl", {
     namespace        = local.namespace
@@ -11,7 +10,6 @@ locals {
   })
 }
 
-# Cria o Service do Eureka via Terraform (gerenciado como código)
 resource "kubectl_manifest" "eureka_nlb_service" {
   yaml_body = local.eureka_service_yaml
 
