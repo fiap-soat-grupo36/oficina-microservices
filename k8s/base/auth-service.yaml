@@ -79,6 +79,21 @@ spec:
                 secretKeyRef:
                   name: jwt-secrets
                   key: JWT_EXPIRATION
+            - name: DDL_AUTO
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-shared-config
+                  key: DDL_AUTO
+            - name: SQL_INIT_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-shared-config
+                  key: SQL_INIT_MODE
+            - name: SHOW_SQL
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-shared-config
+                  key: SHOW_SQL
           startupProbe:
             httpGet:
               path: /actuator/health

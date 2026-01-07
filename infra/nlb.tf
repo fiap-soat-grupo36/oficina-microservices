@@ -8,9 +8,8 @@
 # NLB por Ambiente
 resource "aws_lb" "eureka" {
   name = "oficina-mecanica-${local.environment}"
-  # Internal: true = Privado (apenas VPC), false = Público (internet)
-  # Para uso com API Gateway, recomenda-se internal=true + VPC Link
-  internal           = true # Ambos ambientes privados por segurança
+  # Internal: true = Privado (apenas VPC), false = Publico (internet)
+  internal           = false
   load_balancer_type = "network"
   # Usa apenas subnets únicas por AZ (NLB não aceita múltiplas subnets na mesma AZ)
   subnets            = local.nlb_subnets
