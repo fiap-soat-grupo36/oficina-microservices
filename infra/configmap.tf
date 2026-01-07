@@ -19,6 +19,10 @@ resource "kubernetes_config_map_v1" "oficina_shared" {
     # Database - usa RDS se disponível, senão postgres local
     DB_URL = "jdbc:postgresql://${data.aws_rds_cluster.cluster.endpoint}/${var.rds_database_name}"
     DB_NAME = var.rds_database_name
+    # Database initialization (update em ambos ambientes para preservar dados)
+    DDL_AUTO = "update"
+    SQL_INIT_MODE = local.environment == "dev" ? "always" : "never"
+    SHOW_SQL = "false"
     # Service Ports
     SERVER_PORT_AUTH = "8082"
     SERVER_PORT_CUSTOMER = "8081"
