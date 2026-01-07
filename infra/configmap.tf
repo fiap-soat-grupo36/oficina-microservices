@@ -23,6 +23,9 @@ resource "kubernetes_config_map_v1" "oficina_shared" {
     DDL_AUTO = "update"
     SQL_INIT_MODE = local.environment == "dev" ? "always" : "never"
     SHOW_SQL = "false"
+    # Logging configuration
+    LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB = local.environment == "dev" ? "DEBUG" : "INFO"
+    LOGGING_LEVEL_BR_COM_FIAP_OFICINA = local.environment == "dev" ? "DEBUG" : "INFO"
     # Service Ports
     SERVER_PORT_AUTH = "8082"
     SERVER_PORT_CUSTOMER = "8081"
