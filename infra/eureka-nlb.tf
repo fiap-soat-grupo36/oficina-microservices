@@ -20,3 +20,29 @@ resource "kubectl_manifest" "eureka_nlb_service" {
     aws_lb_target_group.eureka
   ]
 }
+
+# ConfigMap do Eureka com DNS do NLB - COMENTADO
+# IMPORTANTE: Os serviços INTERNOS devem usar eureka-server-internal (ClusterIP)
+# O NLB é apenas para acesso EXTERNO ao Eureka
+#
+# resource "kubernetes_config_map_v1_data" "eureka_nlb_config" {
+#   metadata {
+#     name      = "oficina-shared-config"
+#     namespace = local.namespace
+#   }
+#
+#   data = {
+#     EUREKA_HOSTNAME                      = aws_lb.eureka.dns_name
+#     EUREKA_URL                           = "http://${aws_lb.eureka.dns_name}:8761/eureka/"
+#     EUREKA_CLIENT_SERVICEURL_DEFAULTZONE = "http://${aws_lb.eureka.dns_name}:8761/eureka/"
+#   }
+#
+#   force = true
+#
+#   depends_on = [
+#     kubernetes_config_map_v1.oficina_shared,
+#     aws_lb.eureka
+#   ]
+#
+#   # kubernetes_config_map_v1_data does not expose metadata labels/annotations.
+# }
