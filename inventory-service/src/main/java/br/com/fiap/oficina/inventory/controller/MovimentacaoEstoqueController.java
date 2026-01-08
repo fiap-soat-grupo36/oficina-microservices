@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/estoque/movimentacoes")
+@RequestMapping("/api/estoque/movimentacoes")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
 public class MovimentacaoEstoqueController {

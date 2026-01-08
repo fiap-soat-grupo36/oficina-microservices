@@ -59,7 +59,7 @@ class ProdutoEstoqueControllerTest {
         when(produtoEstoqueService.listarTodos()).thenReturn(produtos);
 
         // Act & Assert
-        mockMvc.perform(get("/estoque"))
+        mockMvc.perform(get("/api/estoque"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -76,7 +76,7 @@ class ProdutoEstoqueControllerTest {
         when(produtoEstoqueService.listarTodos()).thenReturn(Collections.emptyList());
 
         // Act & Assert
-        mockMvc.perform(get("/estoque"))
+        mockMvc.perform(get("/api/estoque"))
                 .andExpect(status().isNoContent());
 
         verify(produtoEstoqueService, times(1)).listarTodos();
@@ -95,7 +95,7 @@ class ProdutoEstoqueControllerTest {
         when(produtoEstoqueService.buscarPorId(1L)).thenReturn(produto);
 
         // Act & Assert
-        mockMvc.perform(get("/estoque/1"))
+        mockMvc.perform(get("/api/estoque/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.produtoCatalogoId").value(100));
@@ -111,7 +111,7 @@ class ProdutoEstoqueControllerTest {
                 .thenThrow(new RecursoNaoEncontradoException("Produto não encontrado"));
 
         // Act & Assert
-        mockMvc.perform(get("/estoque/999"))
+        mockMvc.perform(get("/api/estoque/999"))
                 .andExpect(status().isNotFound());
 
         verify(produtoEstoqueService, times(1)).buscarPorId(999L);
@@ -129,7 +129,7 @@ class ProdutoEstoqueControllerTest {
         when(produtoEstoqueService.buscarPorProdutoCatalogo(100L)).thenReturn(produto);
 
         // Act & Assert
-        mockMvc.perform(get("/estoque/produto/100"))
+        mockMvc.perform(get("/api/estoque/produto/100"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.produtoCatalogoId").value(100));
 
@@ -147,7 +147,7 @@ class ProdutoEstoqueControllerTest {
         when(produtoEstoqueService.buscarPorTermo("filtro")).thenReturn(Arrays.asList(produto));
 
         // Act & Assert
-        mockMvc.perform(get("/estoque/buscar").param("termo", "filtro"))
+        mockMvc.perform(get("/api/estoque/buscar").param("termo", "filtro"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1));
@@ -168,7 +168,7 @@ class ProdutoEstoqueControllerTest {
         when(produtoEstoqueService.listarBaixoEstoque()).thenReturn(Arrays.asList(produto));
 
         // Act & Assert
-        mockMvc.perform(get("/estoque/baixo-estoque"))
+        mockMvc.perform(get("/api/estoque/baixo-estoque"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -188,7 +188,7 @@ class ProdutoEstoqueControllerTest {
         when(produtoEstoqueService.atualizarEstoqueMinimo(1L, 20)).thenReturn(produto);
 
         // Act & Assert
-        mockMvc.perform(put("/estoque/1").param("estoqueMinimo", "20"))
+        mockMvc.perform(put("/api/estoque/1").param("estoqueMinimo", "20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.estoqueMinimo").value(20));
@@ -209,7 +209,7 @@ class ProdutoEstoqueControllerTest {
         when(produtoEstoqueService.getSaldoConsolidado(100L)).thenReturn(saldo);
 
         // Act & Assert
-        mockMvc.perform(get("/estoque/saldo/100"))
+        mockMvc.perform(get("/api/estoque/saldo/100"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.produtoCatalogoId").value(100))
                 .andExpect(jsonPath("$.quantidadeTotal").value(50));
