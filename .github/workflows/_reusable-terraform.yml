@@ -27,6 +27,11 @@ on:
         required: false
         type: boolean
         default: false
+      commit_sha:
+        description: 'Git commit SHA to trigger deployment updates'
+        required: false
+        type: string
+        default: 'unknown'
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true

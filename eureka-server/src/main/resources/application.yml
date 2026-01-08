@@ -30,21 +30,14 @@ management:
 
 springdoc:
   swagger-ui:
-    urls:
-      - name: Auth Service
-        url: http://localhost:8082/v3/api-docs
-      - name: Customer Service
-        url: http://localhost:8081/v3/api-docs
-      - name: Catalog Service
-        url: http://localhost:8083/v3/api-docs
-      - name: Inventory Service
-        url: http://localhost:8084/v3/api-docs
-      - name: Budget Service
-        url: http://localhost:8085/v3/api-docs
-      - name: Work Order Service
-        url: http://localhost:8086/v3/api-docs
     path: /swagger-ui.html
     config-url: /v3/api-docs/swagger-config
+    urls-primary-name: Auth Service
+    display-request-duration: true
+    filter: true
+  api-docs:
+    path: /v3/api-docs
+  show-actuator: false
 
 logging:
   level:
