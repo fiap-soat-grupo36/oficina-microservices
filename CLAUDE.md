@@ -243,17 +243,46 @@ Profile-specific configurations are in `application-{profile}.yml` files.
 
 ### API Documentation
 
-**Aggregated Swagger UI** at Eureka Server: http://localhost:8761/swagger-ui.html
+**🎯 Unified Swagger UI** at Eureka Server: http://localhost:8761/swagger-ui.html
 
-This single interface exposes all service APIs via a dropdown selector.
+The Eureka Server provides a **dynamic Swagger aggregator** that automatically discovers all registered microservices and exposes their API documentation in a single unified interface with a dropdown selector.
 
-Individual service docs:
+**Features:**
+- ✅ **Auto-discovery**: Services appear automatically when registered in Eureka
+- ✅ **Dynamic URLs**: No hardcoded URLs - uses service discovery
+- ✅ **Multi-environment**: Works in local, Docker, and Kubernetes
+- ✅ **Single interface**: One Swagger UI for all services
+
+**Utility Endpoints:**
+- Health check: http://localhost:8761/swagger/health
+- List services: http://localhost:8761/swagger/services
+- Swagger config: http://localhost:8761/v3/api-docs/swagger-config
+
+**Testing:**
+```bash
+# Test the aggregator
+./scripts/test-swagger-aggregation.sh
+
+# Or manually check discovered services
+curl http://localhost:8761/swagger/health | jq '.'
+```
+
+**How it works:**
+1. Microservices register with Eureka
+2. Eureka Server discovers registered services
+3. For each service, obtains base URL via service discovery
+4. Generates dynamic Swagger UI configuration
+5. User selects service from dropdown to view its documentation
+
+**Individual service docs** (if you prefer direct access):
 - Auth: http://localhost:8082/swagger-ui.html
 - Customer: http://localhost:8081/swagger-ui.html
 - Catalog: http://localhost:8083/swagger-ui.html
 - Inventory: http://localhost:8084/swagger-ui.html
 - Budget: http://localhost:8085/swagger-ui.html
 - Work Order: http://localhost:8086/swagger-ui.html
+
+**📚 Full documentation:** See `docs/SWAGGER-AGGREGATION.md` for complete details on implementation, usage, and troubleshooting.
 
 ## Project Structure
 
@@ -390,14 +419,16 @@ Each microservice follows this pattern:
 1. Add module to root `pom.xml` `<modules>` section
 2. Create service directory with standard structure
 3. Add `shared-library` dependency in service POM
-4. Register with Eureka via `@EnableEurekaClient` or auto-configuration
-5. Configure `application.yml` with service name and port
-6. Add Dockerfile using multi-stage build pattern (see existing services)
-7. Add service to `docker-compose.yml` (dev profile)
-8. Add deployment/service manifests to `k8s/`
-9. Update `kustomization.yaml` with new manifests
-10. Add service to Makefile `SERVICES` list
-11. Add Swagger URL to `eureka-server/application.yml`
+4. Add `springdoc-openapi-starter-webmvc-ui` dependency for API documentation
+5. Register with Eureka via `@EnableEurekaClient` or auto-configuration
+6. Configure `application.yml` with service name and port
+7. Add Dockerfile using multi-stage build pattern (see existing services)
+8. Add service to `docker-compose.yml` (dev profile)
+9. Add deployment/service manifests to `k8s/`
+10. Update `kustomization.yaml` with new manifests
+11. Add service to Makefile `SERVICES` list
+
+**Note:** Swagger documentation is automatically discovered! Once the service registers with Eureka, it will appear in the unified Swagger UI dropdown at http://localhost:8761/swagger-ui.html. No manual configuration needed.
 
 ### Adding Feign Client
 

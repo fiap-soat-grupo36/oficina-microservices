@@ -91,10 +91,52 @@ jobs:
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY }}
 
+  # STEP 7: Rollout deployments to force image pull
+  rollout-deployments:
+    name: Rollout deployments (prod)
+    needs: terraform-apply
+    if: needs.terraform-apply.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5.0.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name eks-fiap-oficina-mecanica --region us-east-2
+
+      - name: Rollout all services
+        run: |
+          echo "🔄 Rolling out all deployments to pull latest images..."
+          kubectl -n oficina-mecanica-prod rollout restart deployment/eureka-server
+          kubectl -n oficina-mecanica-prod rollout restart deployment/auth-service
+          kubectl -n oficina-mecanica-prod rollout restart deployment/customer-service
+          kubectl -n oficina-mecanica-prod rollout restart deployment/catalog-service
+          kubectl -n oficina-mecanica-prod rollout restart deployment/inventory-service
+          kubectl -n oficina-mecanica-prod rollout restart deployment/budget-service
+          kubectl -n oficina-mecanica-prod rollout restart deployment/work-order-service
+          kubectl -n oficina-mecanica-prod rollout restart deployment/notification-service
+
+          echo "⏳ Waiting for rollouts to complete..."
+          kubectl -n oficina-mecanica-prod rollout status deployment/eureka-server --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/auth-service --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/customer-service --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/catalog-service --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/inventory-service --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/budget-service --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/work-order-service --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/notification-service --timeout=5m
+
+          echo "✅ All deployments rolled out successfully!"
+
   # SUMMARY: Production deployment status
   deployment-summary:
     name: Deployment summary
-    needs: [detect-changes, build-and-cache, test, sonarcloud, docker-build-and-push, terraform-apply]
+    needs: [detect-changes, build-and-cache, test, sonarcloud, docker-build-and-push, terraform-apply, rollout-deployments]
     if: always()
     runs-on: ubuntu-latest
     steps:
