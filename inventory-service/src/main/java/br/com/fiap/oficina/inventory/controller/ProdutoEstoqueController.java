@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/estoque")
+@RequestMapping("/api/estoque")
 @RequiredArgsConstructor
 @Tag(name = "Produto Estoque", description = "Gerenciamento de produtos em estoque")
 @SecurityRequirement(name = "bearerAuth")

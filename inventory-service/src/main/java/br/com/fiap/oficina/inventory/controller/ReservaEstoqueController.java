@@ -14,7 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/reservas")
+@RequestMapping("/api/reservas")
 @RequiredArgsConstructor
 @Profile({"dev", "local"})
 @SecurityRequirement(name = "bearerAuth")
