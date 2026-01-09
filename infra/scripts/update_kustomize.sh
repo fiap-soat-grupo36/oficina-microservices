@@ -30,5 +30,9 @@ for SERVICE in "${SERVICES[@]}"; do
   kustomize edit set image "grecomilani/${SERVICE}=grecomilani/${SERVICE}:${IMAGE_TAG}"
 done
 
-# Gera o manifesto final para o stdout, que será capturado pelo Terraform
-kustomize build .
+# Gera o manifesto final, codifica em base64 e o envolve em um objeto JSON
+MANIFEST=$(kustomize build .)
+MANIFEST_B64=$(echo "$MANIFEST" | base64 | tr -d '\n')
+
+# A saída DEVE ser um JSON válido para o data.external do Terraform
+echo "{\"manifest\": \"$MANIFEST_B64\"}"

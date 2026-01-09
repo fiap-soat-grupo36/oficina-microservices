@@ -35,9 +35,9 @@ data "external" "kustomize_manifests" {
   ]
 }
 
-# A saída do script agora é YAML puro, não precisa mais de base64
+# O script retorna um JSON com a chave "manifest", que está em base64.
 locals {
-  kustomize_yaml = data.external.kustomize_manifests.result.stdout
+  kustomize_yaml = base64decode(data.external.kustomize_manifests.result.manifest)
 }
 
 # Lê os manifestos decodificados
