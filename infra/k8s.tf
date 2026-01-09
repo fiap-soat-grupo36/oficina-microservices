@@ -30,7 +30,7 @@ resource "kubectl_manifest" "metrics" {
 data "external" "kustomize_manifests" {
   program = [
     "${path.module}/scripts/update_kustomize.sh",
-    "develop-${var.commit_sha}",
+    var.image_tag,
     local.kustomize_path
   ]
 }

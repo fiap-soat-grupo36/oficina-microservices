@@ -38,7 +38,7 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     outputs:
-      SHORT_SHA: ${{ steps.short_sha.outputs.SHA }}
+      IMAGE_TAG: develop-${{ steps.short_sha.outputs.SHA }}
     strategy:
       fail-fast: false
       max-parallel: 8
@@ -92,7 +92,7 @@ jobs:
       environment: "dev"
       auto_apply: true
       tfvars_file: "environments/dev.tfvars"
-      commit_sha: ${{ needs.docker-build-and-push.outputs.SHORT_SHA }}
+      image_tag: ${{ needs.docker-build-and-push.outputs.IMAGE_TAG }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
