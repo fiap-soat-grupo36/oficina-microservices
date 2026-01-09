@@ -28,36 +28,16 @@ resource "kubectl_manifest" "metrics" {
 
 # Gera os manifestos com kubectl kustomize inline
 data "external" "kustomize_manifests" {
-  program = ["bash", "-c", <<-EOT
-    set -e
-    cd ${local.kustomize_path}
-
-    SERVICES=(
-      "eureka-server"
-      "auth-service"
-      "customer-service"
-      "catalog-service"
-      "inventory-service"
-      "budget-service"
-      "work-order-service"
-      "notification-service"
-    )
-
-    IMAGE_TAG="develop-${var.commit_sha}"
-
-    for SERVICE in "${SERVICES[@]}"; do
-      kustomize edit set image "grecomilani/${SERVICE}=grecomilani/${SERVICE}:${IMAGE_TAG}"
-    done
-
-    MANIFESTS=$(kustomize build . 2>/dev/null | base64 | tr -d '\n')
-    echo "{\"manifests\": \"$MANIFESTS\"}"
-  EOT
+  program = [
+    "${path.module}/scripts/update_kustomize.sh",
+    "develop-${var.commit_sha}",
+    local.kustomize_path
   ]
 }
 
-# Decodifica e processa os manifestos
+# A saída do script agora é YAML puro, não precisa mais de base64
 locals {
-  kustomize_yaml = base64decode(data.external.kustomize_manifests.result.manifests)
+  kustomize_yaml = data.external.kustomize_manifests.result.stdout
 }
 
 # Lê os manifestos decodificados
