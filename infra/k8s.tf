@@ -28,18 +28,16 @@ resource "kubectl_manifest" "metrics" {
 
 # Gera os manifestos com kubectl kustomize inline
 data "external" "kustomize_manifests" {
-  program = ["bash", "-c", <<-EOT
-    cd ${local.kustomize_path}
-    export IMAGE_TAG="develop-${var.commit_sha}"
-    MANIFESTS=$(kubectl kustomize . 2>/dev/null | base64 | tr -d '\n')
-    echo "{\"manifests\": \"$MANIFESTS\"}"
-  EOT
+  program = [
+    "${path.module}/scripts/update_kustomize.sh",
+    "develop-${var.commit_sha}",
+    local.kustomize_path
   ]
 }
 
-# Decodifica e processa os manifestos
+# O script retorna um JSON com a chave "manifest", que está em base64.
 locals {
-  kustomize_yaml = base64decode(data.external.kustomize_manifests.result.manifests)
+  kustomize_yaml = base64decode(data.external.kustomize_manifests.result.manifest)
 }
 
 # Lê os manifestos decodificados
