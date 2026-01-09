@@ -30,6 +30,7 @@ resource "kubectl_manifest" "metrics" {
 data "external" "kustomize_manifests" {
   program = ["bash", "-c", <<-EOT
     cd ${local.kustomize_path}
+    export IMAGE_TAG="develop-${var.commit_sha}"
     MANIFESTS=$(kubectl kustomize . 2>/dev/null | base64 | tr -d '\n')
     echo "{\"manifests\": \"$MANIFESTS\"}"
   EOT

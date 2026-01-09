@@ -37,6 +37,8 @@ jobs:
     name: Docker build and push
     needs: build-and-test
     runs-on: ubuntu-latest
+    outputs:
+      SHORT_SHA: ${{ steps.short_sha.outputs.SHA }}
     strategy:
       fail-fast: false
       max-parallel: 8
@@ -64,7 +66,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Prepare short SHA
-        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+        id: short_sha
+        run: echo "SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
 
       - name: Build and push ${{ matrix.service }}
         uses: docker/build-push-action@v5
@@ -74,7 +77,7 @@ jobs:
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service }}:develop
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service }}:develop-${{ env.SHORT_SHA }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service }}:develop-${{ steps.short_sha.outputs.SHA }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
@@ -89,57 +92,17 @@ jobs:
       environment: "dev"
       auto_apply: true
       tfvars_file: "environments/dev.tfvars"
+      commit_sha: ${{ needs.docker-build-and-push.outputs.SHORT_SHA }}
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
       DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY }}
 
-  # Rollout deployments to force image pull
-  rollout-deployments:
-    name: Rollout deployments (dev)
-    needs: terraform-apply
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5.0.0
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
-
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig --name eks-fiap-oficina-mecanica --region us-east-2
-
-      - name: Rollout all services
-        run: |
-          echo "🔄 Rolling out all deployments to pull latest images..."
-          kubectl -n oficina-mecanica-dev rollout restart deployment/eureka-server
-          kubectl -n oficina-mecanica-dev rollout restart deployment/auth-service
-          kubectl -n oficina-mecanica-dev rollout restart deployment/customer-service
-          kubectl -n oficina-mecanica-dev rollout restart deployment/catalog-service
-          kubectl -n oficina-mecanica-dev rollout restart deployment/inventory-service
-          kubectl -n oficina-mecanica-dev rollout restart deployment/budget-service
-          kubectl -n oficina-mecanica-dev rollout restart deployment/work-order-service
-          kubectl -n oficina-mecanica-dev rollout restart deployment/notification-service
-
-          echo "⏳ Waiting for rollouts to complete..."
-          kubectl -n oficina-mecanica-dev rollout status deployment/eureka-server --timeout=5m
-          kubectl -n oficina-mecanica-dev rollout status deployment/auth-service --timeout=5m
-          kubectl -n oficina-mecanica-dev rollout status deployment/customer-service --timeout=5m
-          kubectl -n oficina-mecanica-dev rollout status deployment/catalog-service --timeout=5m
-          kubectl -n oficina-mecanica-dev rollout status deployment/inventory-service --timeout=5m
-          kubectl -n oficina-mecanica-dev rollout status deployment/budget-service --timeout=5m
-          kubectl -n oficina-mecanica-dev rollout status deployment/work-order-service --timeout=5m
-          kubectl -n oficina-mecanica-dev rollout status deployment/notification-service --timeout=5m
-
-          echo "✅ All deployments rolled out successfully!"
-
   # Create PR to main
   create-pr-to-main:
     name: Create PR to main
-    needs: rollout-deployments
+    needs: terraform-apply
     uses: ./.github/workflows/_reusable-create-pr.yml
     with:
       base: main
