@@ -27,11 +27,11 @@ on:
         required: false
         type: boolean
         default: false
-      commit_sha:
-        description: 'Git commit SHA to trigger deployment updates'
+      image_tag:
+        description: 'Docker image tag to trigger deployment updates'
         required: false
         type: string
-        default: 'unknown'
+        default: 'develop'
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -93,6 +93,7 @@ jobs:
       - name: Terraform plan
         id: plan
         env:
+          TF_VAR_image_tag: ${{ inputs.image_tag }}
           TF_VAR_datadog_api_key: ${{ secrets.DATADOG_API_KEY }}
           TF_VAR_datadog_app_key: ${{ secrets.DATADOG_APP_KEY }}
           TF_VAR_aws_region: ${{ inputs.aws_region }}
@@ -137,6 +138,7 @@ jobs:
       - name: Terraform Apply
         if: ${{ inputs.auto_apply && github.event_name == 'push' }}
         env:
+          TF_VAR_image_tag: ${{ inputs.image_tag }}
           TF_VAR_datadog_api_key: ${{ secrets.DATADOG_API_KEY }}
           TF_VAR_datadog_app_key: ${{ secrets.DATADOG_APP_KEY }}
           TF_VAR_aws_region: ${{ inputs.aws_region }}

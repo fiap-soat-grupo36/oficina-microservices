@@ -40,8 +40,8 @@ variable "secrets_manager_email_secret_name" {
   default     = ""
 }
 
-variable "commit_sha" {
-  description = "Git commit SHA to use for tagging Docker images"
+variable "image_tag" {
+  description = "The Docker image tag to deploy, passed from the CI/CD pipeline."
   type        = string
   default     = "develop"
 }
