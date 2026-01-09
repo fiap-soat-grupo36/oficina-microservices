@@ -29,9 +29,27 @@ resource "kubectl_manifest" "metrics" {
 # Gera os manifestos com kubectl kustomize inline
 data "external" "kustomize_manifests" {
   program = ["bash", "-c", <<-EOT
+    set -e
     cd ${local.kustomize_path}
-    export IMAGE_TAG="develop-${var.commit_sha}"
-    MANIFESTS=$(kubectl kustomize . 2>/dev/null | base64 | tr -d '\n')
+
+    SERVICES=(
+      "eureka-server"
+      "auth-service"
+      "customer-service"
+      "catalog-service"
+      "inventory-service"
+      "budget-service"
+      "work-order-service"
+      "notification-service"
+    )
+
+    IMAGE_TAG="develop-${var.commit_sha}"
+
+    for SERVICE in "${SERVICES[@]}"; do
+      kustomize edit set image "grecomilani/${SERVICE}=grecomilani/${SERVICE}:${IMAGE_TAG}"
+    done
+
+    MANIFESTS=$(kustomize build . 2>/dev/null | base64 | tr -d '\n')
     echo "{\"manifests\": \"$MANIFESTS\"}"
   EOT
   ]
