@@ -25,11 +25,6 @@ spec:
           - name: "default-target"
             ddTraceVersions:
               java: "1"
-              python: "4"
-              js: "5"
-              php: "1"
-              dotnet: "3"
-              ruby: "2"
     logCollection:
       enabled: true
       containerCollectAll: true
@@ -42,3 +37,19 @@ spec:
         - containerPort: 4318
           hostPort: 4318
           name: "otel-http"
+    # Live Processes
+    liveProcessCollection:
+      enabled: true
+    
+    # Live Containers
+    liveContainerCollection:
+      enabled: true
+    
+    # Network Performance Monitoring
+    npm:
+      enabled: false  # Pode habilitar se necessário
+    
+    # Prometheus metrics
+    prometheusScrape:
+      enabled: true
+      enableServiceEndpoints: true

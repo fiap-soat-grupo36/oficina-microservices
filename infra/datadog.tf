@@ -22,7 +22,7 @@ resource "kubernetes_secret" "datadog" {
 
 # DatadogAgent CRD - só aplica se o Datadog Operator (do infra-kubernetes) já instalou o CRD
 data "kubectl_path_documents" "dd_agent" {
-  pattern = "../k8s/datadog/datadog-agent.yaml"
+  pattern = "${path.module}/../k8s/datadog/datadog-agent.yaml"
 }
 
 resource "kubectl_manifest" "dd_agent_manifest" {
