@@ -39,3 +39,9 @@ variable "secrets_manager_email_secret_name" {
   type        = string
   default     = ""
 }
+
+variable "commit_sha" {
+  description = "Git commit SHA to use for tagging Docker images"
+  type        = string
+  default     = "develop"
+}

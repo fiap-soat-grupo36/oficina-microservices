@@ -19,8 +19,23 @@ resources:
   - work-order-service.yaml
   - notification-service.yaml
 
-  # Shared Configuration
-  - configmap-shared.yaml  # Usado pelo overlay local; removido no overlay dev (Terraform gerencia)
-
   # Horizontal Pod Autoscalers
   - hpa.yaml
+
+images:
+  - name: grecomilani/eureka-server
+    newTag: $(IMAGE_TAG)
+  - name: grecomilani/auth-service
+    newTag: $(IMAGE_TAG)
+  - name: grecomilani/customer-service
+    newTag: $(IMAGE_TAG)
+  - name: grecomilani/catalog-service
+    newTag: $(IMAGE_TAG)
+  - name: grecomilani/inventory-service
+    newTag: $(IMAGE_TAG)
+  - name: grecomilani/budget-service
+    newTag: $(IMAGE_TAG)
+  - name: grecomilani/work-order-service
+    newTag: $(IMAGE_TAG)
+  - name: grecomilani/notification-service
+    newTag: $(IMAGE_TAG)
