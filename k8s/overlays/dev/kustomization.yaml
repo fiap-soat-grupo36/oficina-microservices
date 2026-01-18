@@ -89,6 +89,19 @@ patches:
   target:
     kind: HorizontalPodAutoscaler
     name: (auth-service-hpa|customer-service-hpa|catalog-service-hpa|inventory-service-hpa|budget-service-hpa|work-order-service-hpa|notification-service-hpa)
+# Adicionar variável API_GATEWAY_BASE_URL do ConfigMap
+- patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: API_GATEWAY_BASE_URL
+        valueFrom:
+          configMapKeyRef:
+            name: oficina-shared-config
+            key: API_GATEWAY_BASE_URL
+  target:
+    kind: Deployment
+    name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service)
 
 # Labels comuns para ambiente DEV
 commonLabels:

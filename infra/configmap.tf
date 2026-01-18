@@ -15,6 +15,8 @@ resource "kubernetes_config_map_v1" "oficina_shared" {
     EUREKA_URL                           = "http://eureka-server-internal:8761/eureka/"
     EUREKA_CLIENT_SERVICEURL_DEFAULTZONE = "http://eureka-server-internal:8761/eureka/"
     EUREKA_HOSTNAME                      = "eureka-server-internal"
+    # API Gateway URL base para Swagger - usa referência do recurso Terraform
+    API_GATEWAY_BASE_URL = "${aws_apigatewayv2_api.api.api_endpoint}/${local.environment}"
     # Database 
     DB_URL  = "jdbc:postgresql://${data.aws_rds_cluster.cluster.endpoint}/${var.rds_database_name}"
     DB_NAME = var.rds_database_name
