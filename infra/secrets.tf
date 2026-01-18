@@ -39,7 +39,7 @@ resource "kubernetes_secret_v1" "jwt_secrets" {
   }
 
   data = {
-    JWT_SECRET = local.jwt_secret
+    JWT_SECRET     = local.jwt_secret
     JWT_EXPIRATION = "3600"
   }
 

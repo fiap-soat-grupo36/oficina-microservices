@@ -4,77 +4,179 @@ kind: Kustomization
 # Namespace para ambiente DEV no EKS (gerenciado pelo Terraform)
 namespace: oficina-mecanica-dev
 
-resources:
   # Base resources (exceto postgres - usa RDS no EKS)
-  - ../../base
-  - ingress.yaml
+resources:
+- ../../base
+- ingress.yaml
 
 # Exclui PostgreSQL e ConfigMap dos recursos base (gerenciados pelo Terraform)
-patches:
   # Remove postgres StatefulSet
-  - target:
-      kind: StatefulSet
-      name: postgres
-    patch: |-
-      apiVersion: apps/v1
-      kind: StatefulSet
-      metadata:
-        name: postgres
-      $patch: delete
   # Remove postgres Service
-  - target:
-      kind: Service
-      name: postgres
-    patch: |-
-      apiVersion: v1
-      kind: Service
-      metadata:
-        name: postgres
-      $patch: delete
   # Remove ConfigMap (gerenciado pelo Terraform no EKS)
-  - target:
-      kind: ConfigMap
-      name: oficina-shared-config
-    patch: |-
-      apiVersion: v1
-      kind: ConfigMap
-      metadata:
-        name: oficina-shared-config
-      $patch: delete
   # Garantir que imagens sempre sejam puxadas (evita cache em dev)
-  - target:
-      kind: Deployment
-    patch: |-
-      - op: replace
-        path: /spec/template/spec/containers/0/imagePullPolicy
-        value: Always
   # Eureka NLB - usar internal para DEV
-  - target:
-      kind: Service
-      name: eureka-server-nlb
-    patch: |-
-      - op: replace
-        path: /metadata/annotations/service.beta.kubernetes.io~1aws-load-balancer-scheme
-        value: internal
   # Aumentar startup probe timeout para microservices (exceto eureka)
-  - target:
-      kind: Deployment
-      name: "(auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service)"
-    patch: |-
-      - op: replace
-        path: /spec/template/spec/containers/0/startupProbe/initialDelaySeconds
-        value: 60
-      - op: replace
-        path: /spec/template/spec/containers/0/startupProbe/failureThreshold
-        value: 20
+patches:
+- patch: |-
+    apiVersion: apps/v1
+    kind: StatefulSet
+    metadata:
+      name: postgres
+    $patch: delete
+  target:
+    kind: StatefulSet
+    name: postgres
+- patch: |-
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: postgres
+    $patch: delete
+  target:
+    kind: Service
+    name: postgres
+- patch: |-
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: oficina-shared-config
+    $patch: delete
+  target:
+    kind: ConfigMap
+    name: oficina-shared-config
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/imagePullPolicy
+      value: Always
+  target:
+    kind: Deployment
+- patch: |-
+    - op: replace
+      path: /metadata/annotations/service.beta.kubernetes.io~1aws-load-balancer-scheme
+      value: internal
+  target:
+    kind: Service
+    name: eureka-server-nlb
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/startupProbe/initialDelaySeconds
+      value: 60
+    - op: replace
+      path: /spec/template/spec/containers/0/startupProbe/failureThreshold
+      value: 20
+  target:
+    kind: Deployment
+    name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service)
+# Aumentar resources (CPU e memória) - microservices básicos
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/cpu
+      value: 500m
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: 512Mi
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/cpu
+      value: 1000m
+  target:
+    kind: Deployment
+    name: (catalog-service|inventory-service|budget-service|work-order-service)
+# Serviços críticos (customer, auth) com mais recursos
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/cpu
+      value: 750m
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: 768Mi
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/cpu
+      value: 1500m
+  target:
+    kind: Deployment
+    name: (auth-service|customer-service)
+# Eureka Server precisa de recursos robustos
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/cpu
+      value: 750m
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: 768Mi
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/cpu
+      value: 1500m
+  target:
+    kind: Deployment
+    name: eureka-server
+# Notification service precisa de mais CPU para processar eventos
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/cpu
+      value: 750m
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: 512Mi
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/cpu
+      value: 1500m
+  target:
+    kind: Deployment
+    name: notification-service
+# Aumentar HPA threshold para 80%
+- patch: |-
+    - op: replace
+      path: /spec/metrics/0/resource/target/averageUtilization
+      value: 80
+  target:
+    kind: HorizontalPodAutoscaler
+    name: (auth-service-hpa|customer-service-hpa|catalog-service-hpa|inventory-service-hpa|budget-service-hpa|work-order-service-hpa|notification-service-hpa)
+# Adicionar variável API_GATEWAY_BASE_URL do ConfigMap
+- patch: |-
+    - op: add
+      path: /spec/template/spec/containers/0/env/-
+      value:
+        name: API_GATEWAY_BASE_URL
+        valueFrom:
+          configMapKeyRef:
+            name: oficina-shared-config
+            key: API_GATEWAY_BASE_URL
+  target:
+    kind: Deployment
+    name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service|eureka-server)
 
 # Labels comuns para ambiente DEV
 commonLabels:
+  deployed-via: kustomize
   environment: dev
   managed-by: terraform
-  deployed-via: kustomize
 
 # Annotations comuns
 commonAnnotations:
-  deployment-method: terraform-eks
   cluster: eks-fiap-oficina-mecanica
+  deployment-method: terraform-eks
+images:
+- name: grecomilani/auth-service
+  newName: grecomilani/auth-service
+  newTag: develop
+- name: grecomilani/budget-service
+  newName: grecomilani/budget-service
+  newTag: develop
+- name: grecomilani/catalog-service
+  newName: grecomilani/catalog-service
+  newTag: develop
+- name: grecomilani/customer-service
+  newName: grecomilani/customer-service
+  newTag: develop
+- name: grecomilani/eureka-server
+  newName: grecomilani/eureka-server
+  newTag: develop
+- name: grecomilani/inventory-service
+  newName: grecomilani/inventory-service
+  newTag: develop
+- name: grecomilani/notification-service
+  newName: grecomilani/notification-service
+  newTag: develop
+- name: grecomilani/work-order-service
+  newName: grecomilani/work-order-service
+  newTag: develop
