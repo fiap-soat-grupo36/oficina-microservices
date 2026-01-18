@@ -134,6 +134,19 @@ patches:
       - op: replace
         path: /spec/metrics/0/resource/target/averageUtilization
         value: 80
+  # Adicionar variável API_GATEWAY_BASE_URL do ConfigMap
+  - target:
+      kind: Deployment
+      name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service|eureka-server)
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/env/-
+        value:
+          name: API_GATEWAY_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: oficina-shared-config
+              key: API_GATEWAY_BASE_URL
 
 # Labels comuns para ambiente PROD
 commonLabels:
