@@ -95,6 +95,45 @@ patches:
       - op: replace
         path: /metadata/annotations/service.beta.kubernetes.io~1aws-load-balancer-scheme
         value: internet-facing
+  # Aumentar resources para produção (maior que dev)
+  - target:
+      kind: Deployment
+      name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service)
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 750m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 768Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 1500m
+  # Aumentar resources do Eureka em produção
+  - target:
+      kind: Deployment
+      name: eureka-server
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 500m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 1000m
+  # Ajustar HPA para produção (min 2, max 5, threshold 80%)
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: (auth-service-hpa|customer-service-hpa|catalog-service-hpa|inventory-service-hpa|budget-service-hpa|work-order-service-hpa|notification-service-hpa)
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 2
+      - op: replace
+        path: /spec/maxReplicas
+        value: 5
+      - op: replace
+        path: /spec/metrics/0/resource/target/averageUtilization
+        value: 80
 
 # Labels comuns para ambiente PROD
 commonLabels:

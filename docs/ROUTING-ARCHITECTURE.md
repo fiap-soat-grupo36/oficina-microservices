@@ -2,28 +2,41 @@
 
 ## Visão Geral
 
-Todos os microservices são expostos através de um **único ponto de entrada** (API Gateway / Load Balancer) usando **prefixos de path** para roteamento. Isso permite organização clara e facilita o gerenciamento de rotas.
+Todos os microservices são expostos através de um **único ponto de entrada** (API Gateway / Load Balancer) usando **prefixos de environment + path** para roteamento. Isso permite organização clara, isolamento por ambiente e facilita o gerenciamento de rotas.
 
 ## 🌐 URL Base
 
+### Development
 ```
-https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com
+https://xxxxx.execute-api.us-east-2.amazonaws.com/dev
+```
+
+### Production
+```
+https://xxxxx.execute-api.us-east-2.amazonaws.com/prod
+```
+
+### Local (Kubernetes)
+```
+http://oficina.local/local
 ```
 
 ## 📍 Mapeamento de Rotas
 
-Cada microservice tem seu **próprio prefixo** na URL:
+Cada microservice tem seu **próprio prefixo** na URL, precedido pelo **environment**:
 
-| Prefixo | Serviço | Porta Interna | Descrição |
-|---------|---------|---------------|-----------|
-| `/eureka` | eureka-server-internal | 8761 | Service Discovery & Swagger Agregado |
-| `/auth` | auth-service | 8082 | Autenticação JWT & Usuários |
-| `/customer` | customer-service | 8081 | Clientes & Veículos |
-| `/catalog` | catalog-service | 8083 | Catálogo de Produtos & Serviços |
-| `/inventory` | inventory-service | 8084 | Controle de Estoque |
-| `/budget` | budget-service | 8085 | Orçamentos |
-| `/work-order` | work-order-service | 8086 | Ordens de Serviço |
-| `/notification` | notification-service | 8087 | Notificações (evento-driven) |
+| Environment | Prefixo Service | Serviço | Porta Interna | Descrição |
+|-------------|-----------------|---------|---------------|-----------|
+| `/dev` | `/eureka` | eureka-server-internal | 8761 | Service Discovery & Swagger Agregado |
+| `/dev` | `/auth` | auth-service | 8082 | Autenticação JWT & Usuários |
+| `/dev` | `/customer` | customer-service | 8081 | Clientes & Veículos |
+| `/dev` | `/catalog` | catalog-service | 8083 | Catálogo de Produtos & Serviços |
+| `/dev` | `/inventory` | inventory-service | 8084 | Controle de Estoque |
+| `/dev` | `/budget` | budget-service | 8085 | Orçamentos |
+| `/dev` | `/work-order` | work-order-service | 8086 | Ordens de Serviço |
+| `/dev` | `/notification` | notification-service | 8087 | Notificações (evento-driven) |
+
+*Para produção (`/prod`) e local (`/local`), o padrão é o mesmo, apenas mudando o prefixo do environment.*
 
 ## 🔀 Como Funciona o Roteamento
 
@@ -52,8 +65,9 @@ spec:
 
 ### 2. Rewrite Rule Explicado
 
-**Pattern:** `/auth(/|$)(.*)`
+**Pattern:** `/dev/auth(/|$)(.*)`
 
+- **Prefixo Environment:** `/dev` - Identifica o ambiente
 - **Grupo 1:** `(/|$)` - Captura `/` ou fim da string
 - **Grupo 2:** `(.*)` - Captura tudo que vem depois
 
@@ -61,12 +75,12 @@ spec:
 
 **Exemplos:**
 
-| URL de Entrada | Match Pattern | Grupo 1 | Grupo 2 | URL Reescrita | Destino Final |
-|----------------|---------------|---------|---------|---------------|---------------|
-| `/auth/api/auth/login` | ✅ | `/` | `api/auth/login` | `/api/auth/login` | `auth-service:8082/api/auth/login` |
-| `/auth` | ✅ | (vazio) | (vazio) | `/` | `auth-service:8082/` |
-| `/customer/api/clientes/123` | ✅ | `/` | `api/clientes/123` | `/api/clientes/123` | `customer-service:8081/api/clientes/123` |
-| `/eureka/swagger-ui.html` | ✅ | `/` | `swagger-ui.html` | `/swagger-ui.html` | `eureka-server:8761/swagger-ui.html` |
+| URL de Entrada | Match Pattern | Env | Service | Path Capturado | URL Reescrita | Destino Final |
+|----------------|---------------|-----|---------|----------------|---------------|---------------|
+| `/dev/auth/api/auth/login` | ✅ | `dev` | `auth` | `api/auth/login` | `/api/auth/login` | `auth-service:8082/api/auth/login` |
+| `/prod/auth/api/auth/login` | ✅ | `prod` | `auth` | `api/auth/login` | `/api/auth/login` | `auth-service:8082/api/auth/login` |
+| `/dev/customer/api/clientes/123` | ✅ | `dev` | `customer` | `api/clientes/123` | `/api/clientes/123` | `customer-service:8081/api/clientes/123` |
+| `/prod/eureka/swagger-ui.html` | ✅ | `prod` | `eureka` | `swagger-ui.html` | `/swagger-ui.html` | `eureka-server:8761/swagger-ui.html` |
 
 ### 3. Fluxo Completo
 
@@ -74,25 +88,32 @@ spec:
 ┌─────────────┐
 │   Cliente   │
 └──────┬──────┘
-       │ 1. Request: https://api.com/auth/api/auth/login
+       │ 1. Request: https://api.com/dev/auth/api/auth/login
        ▼
 ┌─────────────────┐
 │  API Gateway    │
-│   (AWS ALB)     │
+│   (HTTP API)    │
 └──────┬──────────┘
-       │ 2. Forward para Load Balancer
+       │ 2. Route match: /dev/auth/{proxy+}
+       │    Forward via VPC Link
        ▼
 ┌─────────────────┐
-│ Load Balancer   │
-│  (AWS NLB/ELB)  │
+│    VPC Link     │
+│ (Private Conn)  │
 └──────┬──────────┘
-       │ 3. Route para Ingress Controller
+       │ 3. Forward para NLB interno
+       ▼
+┌─────────────────┐
+│ Network Load    │
+│    Balancer     │
+└──────┬──────────┘
+       │ 4. Route para Ingress
        ▼
 ┌─────────────────┐
 │ NGINX Ingress   │
 │  Controller     │
 └──────┬──────────┘
-       │ 4. Match: /auth(/|$)(.*)
+       │ 5. Match: /dev/auth(/|$)(.*)
        │    Rewrite: /api/auth/login
        ▼
 ┌─────────────────┐
@@ -106,89 +127,95 @@ spec:
 ### Auth Service
 
 ```bash
-# Login
-POST https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/auth/api/auth/login
+# Login - Development
+POST https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/auth/api/auth/login
 
-# Listar usuários
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/auth/api/usuarios
+# Login - Production
+POST https://xxxxx.execute-api.us-east-2.amazonaws.com/prod/auth/api/auth/login
 
-# Buscar usuário por ID
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/auth/api/usuarios/1
+# Listar usuários - Dev
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/auth/api/usuarios
+
+# Buscar usuário por ID - Prod
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/prod/auth/api/usuarios/1
 ```
 
 ### Customer Service
 
 ```bash
-# Listar clientes
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/customer/api/clientes
+# Listar clientes - Dev
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/customer/api/clientes
 
-# Criar cliente
-POST https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/customer/api/clientes
+# Criar cliente - Prod
+POST https://xxxxx.execute-api.us-east-2.amazonaws.com/prod/customer/api/clientes
 
-# Listar veículos
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/customer/api/veiculos
+# Listar veículos - Dev
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/customer/api/veiculos
 
-# Buscar veículo por placa
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/customer/api/veiculos/placa/ABC1234
+# Buscar veículo por placa - Prod
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/prod/customer/api/veiculos/placa/ABC1234
 ```
 
 ### Catalog Service
 
 ```bash
-# Listar produtos
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/catalog/api/catalogo-produtos
+# Listar produtos - Dev
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/catalog/api/catalogo-produtos
 
-# Listar serviços
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/catalog/api/servicos
+# Listar serviços - Prod
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/prod/catalog/api/servicos
 ```
 
 ### Inventory Service
 
 ```bash
-# Listar estoque
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/inventory/api/estoque
+# Listar estoque - Dev
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/inventory/api/estoque
 
-# Movimentar estoque
-POST https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/inventory/api/estoque/movimentacao
+# Movimentar estoque - Prod
+POST https://xxxxx.execute-api.us-east-2.amazonaws.com/prod/inventory/api/estoque/movimentacao
 ```
 
 ### Budget Service
 
 ```bash
-# Listar orçamentos
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/budget/api/orcamentos
+# Listar orçamentos - Dev
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/budget/api/orcamentos
 
-# Aprovar orçamento
-PUT https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/budget/api/orcamentos/1/aprovar
+# Aprovar orçamento - Prod
+PUT https://xxxxx.execute-api.us-east-2.amazonaws.com/prod/budget/api/orcamentos/1/aprovar
 ```
 
 ### Work Order Service
 
 ```bash
-# Listar ordens de serviço
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/work-order/api/ordens-servico
+# Listar ordens de serviço - Dev
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/work-order/api/ordens-servico
 
-# Iniciar ordem
-PUT https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/work-order/api/ordens-servico/1/iniciar
+# Iniciar ordem - Prod
+PUT https://xxxxx.execute-api.us-east-2.amazonaws.com/prod/work-order/api/ordens-servico/1/iniciar
 
-# Concluir ordem
-PUT https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/work-order/api/ordens-servico/1/concluir
+# Concluir ordem - Dev
+PUT https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/work-order/api/ordens-servico/1/concluir
 ```
 
 ### Eureka Server
 
 ```bash
-# Dashboard
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/eureka
+# Dashboard - Dev
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/eureka
 
-# Swagger Agregado
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/eureka/swagger-ui.html
+# Dashboard - Prod
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/prod/eureka
 
-# Health Check
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/eureka/actuator/health
+# Swagger Agregado - Dev
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/eureka/swagger-ui.html
 
-# API Docs Agregados
-GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/eureka/v3/api-docs/swagger-config
+# Health Check - Prod
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/prod/eureka/actuator/health
+
+# API Docs Agregados - Dev
+GET https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/eureka/v3/api-docs/swagger-config
 ```
 
 ## 🔒 Autenticação
@@ -198,7 +225,16 @@ A maioria dos endpoints requer autenticação JWT. Fluxo:
 ### 1. Obter Token
 
 ```bash
-curl -X POST https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/auth/api/auth/login \
+# Development
+curl -X POST https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/auth/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "admin123"
+  }'
+
+# Production
+curl -X POST https://xxxxx.execute-api.us-east-2.amazonaws.com/prod/auth/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "admin",
@@ -217,49 +253,67 @@ curl -X POST https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/auth/api/aut
 ### 2. Usar Token nos Requests
 
 ```bash
-curl -X GET https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/customer/api/clientes \
+# Development
+curl -X GET https://xxxxx.execute-api.us-east-2.amazonaws.com/dev/customer/api/clientes \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+# Production
+curl -X GET https://xxxxx.execute-api.us-east-2.amazonaws.com/prod/customer/api/clientes \
   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
 ## 🌍 Ambientes
 
-### Development (dev.oficina-mecanica.com)
-
-- **API Gateway:** `https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com`
-- **Load Balancer:** `http://k8s-ingressn-ingressn-485fd1044e-21c906f882317f33.elb.us-east-2.amazonaws.com`
-- **Hostname:** `http://dev.oficina-mecanica.com` (requer DNS)
+### Development
+- **API Gateway:** `https://xxxxx.execute-api.us-east-2.amazonaws.com/dev`
+- **Hostname:** `http://dev.oficina-mecanica.com/dev` (requer DNS)
 - **Namespace:** `oficina-mecanica-dev`
 
-### Production (oficina-mecanica.com)
-
-- **Hostname:** `https://oficina-mecanica.com` (quando configurado)
+### Production
+- **API Gateway:** `https://xxxxx.execute-api.us-east-2.amazonaws.com/prod`
+- **Hostname:** `https://oficina-mecanica.com/prod` (quando configurado)
 - **Namespace:** `oficina-mecanica-prod`
+
+### Local
+- **Hostname:** `http://oficina.local/local`
+- **Namespace:** `oficina`
 
 ## 📋 Vantagens dessa Arquitetura
 
+### ✅ Isolamento por Environment
+- URLs distintas para dev, staging, prod
+- Evita confusão entre ambientes
+- Permite testes independentes sem afetar produção
+- Facilita rollback e blue-green deployments
+
 ### ✅ Organização Clara
 - Cada serviço tem seu próprio "namespace" na URL
-- Fácil identificar qual serviço está sendo acessado
+- Fácil identificar qual serviço e ambiente está sendo acessado
+- Padrão consistente: `/{environment}/{service}/{path}`
 
 ### ✅ Segurança
 - Único ponto de entrada facilita controle de segurança
-- Possibilidade de aplicar rate limiting por prefixo
+- Possibilidade de aplicar rate limiting por prefixo e environment
 - WAF pode ser aplicado no API Gateway
+- Políticas diferentes por environment (dev mais permissivo, prod mais restritivo)
 
 ### ✅ Escalabilidade
 - Load balancing automático por serviço
 - Fácil adicionar novos serviços (basta adicionar novo prefixo)
+- Infraestrutura independente por environment
 
 ### ✅ Monitoramento
 - Logs centralizados no API Gateway
-- Métricas por prefixo/serviço
+- Métricas por prefixo/serviço/environment
 - Tracing distribuído facilitado
+- Troubleshooting simplificado por ambiente
 
 ### ✅ Versionamento Futuro
 Possibilita estratégias de versionamento:
 ```
-/auth/v1/api/auth/login
-/auth/v2/api/auth/login
+/dev/auth/v1/api/auth/login
+/dev/auth/v2/api/auth/login
+/prod/auth/v1/api/auth/login
 ```
 
 ## 🔧 Configuração no Código

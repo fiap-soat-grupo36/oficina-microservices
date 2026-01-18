@@ -68,7 +68,7 @@ data "aws_secretsmanager_secret_version" "db_password" {
 }
 
 data "aws_secretsmanager_secret" "jwt_secret" {
-  name  = var.secrets_manager_jwt_secret_name
+  name = var.secrets_manager_jwt_secret_name
 }
 
 data "aws_secretsmanager_secret_version" "jwt_secret" {
@@ -76,7 +76,7 @@ data "aws_secretsmanager_secret_version" "jwt_secret" {
 }
 
 data "aws_secretsmanager_secret" "email_credentials" {
-  name  = var.secrets_manager_email_secret_name
+  name = var.secrets_manager_email_secret_name
 }
 
 data "aws_secretsmanager_secret_version" "email_credentials" {
