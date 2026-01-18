@@ -1,27 +1,235 @@
 # Oficina Microservices
 
-Arquitetura de microserviços para sistema de gestão de oficina mecânica.
+Arquitetura de microserviços para sistema de gestão de oficina mecânica, deployada em AWS EKS com infraestrutura como código (Terraform) e gerenciamento de múltiplos ambientes via Kustomize.
 
 ## 📋 Arquitetura
 
-Este projeto utiliza uma arquitetura de microserviços com as seguintes características:
+Este projeto utiliza uma arquitetura de microserviços moderna com as seguintes características:
 
-### Service Discovery - Netflix Eureka
+### Visão Geral da Arquitetura
 
-Todos os microserviços se registram automaticamente no **Eureka Server**, permitindo comunicação dinâmica entre serviços sem URLs hardcoded.
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            CAMADA DE ACESSO                              │
+│                                                                           │
+│  Internet/VPN → AWS API Gateway (HTTP API) → VPC Link (Private)         │
+│                           ↓                                               │
+│                    AWS Network Load Balancer                             │
+│                  (Balanceamento L4 - Porta 8761)                         │
+└───────────────────────────────┬─────────────────────────────────────────┘
+                                ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         AWS EKS CLUSTER                                  │
+│                    (Kubernetes Gerenciado)                               │
+│                                                                           │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │              Namespace: oficina-mecanica-{env}                  │   │
+│  │                                                                  │   │
+│  │  ┌────────────────┐          ┌─────────────────────┐           │   │
+│  │  │ Eureka Server  │ ←──────→ │  Metrics Server     │           │   │
+│  │  │  (Port 8761)   │          │  (HPA Support)      │           │   │
+│  │  │                │          └─────────────────────┘           │   │
+│  │  │ • Service      │                                             │   │
+│  │  │   Discovery    │          ┌─────────────────────┐           │   │
+│  │  │ • Swagger      │          │   ConfigMaps &      │           │   │
+│  │  │   Agregado     │ ←──────→ │   Secrets           │           │   │
+│  │  └────────┬───────┘          │  (Terraform)        │           │   │
+│  │           │                  └─────────────────────┘           │   │
+│  │           │ Service Discovery via Feign Clients                │   │
+│  │           ↓                                                     │   │
+│  │  ┌────────────────────────────────────────────────────────┐   │   │
+│  │  │              MICROSERVIÇOS BACKEND                      │   │   │
+│  │  │                                                          │   │   │
+│  │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐             │   │   │
+│  │  │  │   Auth   │  │ Customer │  │ Catalog  │             │   │   │
+│  │  │  │  (8082)  │  │  (8081)  │  │  (8083)  │             │   │   │
+│  │  │  └─────┬────┘  └─────┬────┘  └─────┬────┘             │   │   │
+│  │  │        │              │              │                  │   │   │
+│  │  │  ┌─────┴──────┐ ┌────┴────┐  ┌─────┴────┐            │   │   │
+│  │  │  │ Inventory  │ │ Budget  │  │   Work   │            │   │   │
+│  │  │  │   (8084)   │ │ (8085)  │  │  Order   │            │   │   │
+│  │  │  └────────────┘ └─────────┘  │  (8086)  │            │   │   │
+│  │  │                               └─────┬────┘             │   │   │
+│  │  │                                     │                  │   │   │
+│  │  │                              ┌──────┴──────┐          │   │   │
+│  │  │                              │Notification │          │   │   │
+│  │  │                              │   (8087)    │          │   │   │
+│  │  │                              └──────┬──────┘          │   │   │
+│  │  └────────────────────────────────────┼──────────────────┘   │   │
+│  │                                        │                      │   │
+│  │  ┌─────────────────────────────────────┼──────────────────┐ │   │
+│  │  │         HORIZONTAL POD AUTOSCALER (HPA)                │ │   │
+│  │  │  • Min: 1-2 replicas (dev/prod)                        │ │   │
+│  │  │  • Max: 2-5 replicas (dev/prod)                        │ │   │
+│  │  │  • Target CPU: 70%                                     │ │   │
+│  │  └──────────────────────────────────────────────────────┘ │   │
+│  └──────────────────────────────────────────────────────────────┘   │
+│                                                                       │
+└────────────────────────────────┬──────────────────────────────────────┘
+                                 ↓
+┌─────────────────────────────────────────────────────────────────────────┐
+│                        CAMADA DE DADOS                                   │
+│                                                                           │
+│  • AWS RDS PostgreSQL (Dev/Prod) ou                                     │
+│  • PostgreSQL StatefulSet (Local)                                       │
+│  • AWS Secrets Manager (Prod - recomendado)                             │
+└───────────────────────────────────────────────────────────────────────────┘
+```
 
-**Dashboard do Eureka:** http://localhost:8761
+### �🏗️ Infraestrutura AWS
 
-### Microserviços
+A infraestrutura é provisionada automaticamente via **Terraform** e inclui:
 
-- **eureka-server** (porta 8761) - Service Registry
-- **auth-service** (porta 8082) - Autenticação e gerenciamento de usuários
+#### Kubernetes (EKS)
+- **EKS Cluster**: Cluster Kubernetes gerenciado pela AWS (assumido como pré-existente: `eks-fiap-oficina-mecanica`)
+- **Namespaces isolados**: `oficina-mecanica-dev` e `oficina-mecanica-prod`
+- **Metrics Server**: Auto-provisionado para suporte ao HPA (Horizontal Pod Autoscaler)
+- **AWS NLB Controller**: Gerencia Network Load Balancers para expor serviços
+
+#### Rede e Acesso
+- **Network Load Balancer (NLB)**: Balanceador L4 por ambiente (dev/prod) expondo o Eureka Server na porta 8761
+- **VPC Link**: Conecta o API Gateway ao NLB interno para acesso seguro aos microserviços
+- **Security Groups**: Isolamento de rede entre componentes (VPC Link, NLB, EKS)
+- **API Gateway (HTTP API)**: Ponto de entrada único via AWS API Gateway V2 (integração com NLB via VPC Link)
+
+#### Dados e Configuração
+- **RDS PostgreSQL** (assumido): Banco de dados gerenciado para ambientes dev/prod
+- **ConfigMaps**: Configurações compartilhadas injetadas dinamicamente via Terraform
+- **Secrets**: Gerenciados via Kubernetes Secrets (dev) e recomendado AWS Secrets Manager (prod)
+- **Datadog Integration**: Observabilidade com API key e chaves de aplicação configuráveis
+
+#### Deployment Automatizado
+- **Kustomize**: Orquestração de manifestos Kubernetes com overlays por ambiente
+- **Terraform Workspaces**: `dev` e `prod` isolados, cada um com seu próprio estado
+- **Script de atualização**: `update_kustomize.sh` injeta tags de imagem dinamicamente durante o deploy
+
+### 🎯 Organização dos Microserviços
+
+#### Service Discovery - Netflix Eureka
+
+Todos os microserviços se registram automaticamente no **Eureka Server**, permitindo comunicação dinâmica entre serviços sem URLs hardcoded. O Eureka também expõe um Swagger UI agregado que consolida a documentação de todos os microserviços.
+
+**Dashboard do Eureka:** http://localhost:8761 (local) ou via API Gateway (cloud)
+
+#### Serviços Backend
+
+- **eureka-server** (porta 8761) - Service Registry e Swagger agregado
+- **auth-service** (porta 8082) - Autenticação JWT e gerenciamento de usuários
 - **customer-service** (porta 8081) - Gestão de clientes e veículos
 - **catalog-service** (porta 8083) - Catálogo de serviços e produtos
 - **inventory-service** (porta 8084) - Controle de estoque
 - **budget-service** (porta 8085) - Gestão de orçamentos
-- **work-order-service** (porta 8086) - Ordens de serviço
-- **notification-service** (porta 8087) - Notificações por email
+- **work-order-service** (porta 8086) - Ordens de serviço e rastreamento
+- **notification-service** (porta 8087) - Notificações assíncronas por email
+
+#### Arquitetura de Comunicação
+
+```
+Internet → API Gateway → VPC Link → NLB (8761) → Eureka Server (K8s)
+                                              ↓
+                                         Service Mesh
+                                              ↓
+                      ┌───────────────────────┼───────────────────────┐
+                      ↓                       ↓                       ↓
+                 Auth Service          Customer Service       Catalog Service
+                  (Port 8082)            (Port 8081)            (Port 8083)
+                      ↓                       ↓                       ↓
+                 Inventory Service      Budget Service      Work Order Service
+                  (Port 8084)            (Port 8085)            (Port 8086)
+                                              ↓
+                                    Notification Service
+                                        (Port 8087)
+                                              ↓
+                                      PostgreSQL (RDS/Pod)
+```
+
+Todos os serviços se comunicam via **Feign Clients** usando service discovery (nomes lógicos como `auth-service`, `customer-service`), que o Eureka resolve para IPs dinâmicos dos pods.
+
+### 🔧 Kustomize: Gerenciamento Multi-Ambiente
+
+O projeto usa **Kustomize overlays** para suportar 3 ambientes distintos:
+
+#### Estrutura
+
+```
+k8s/
+├── base/                    # Manifestos comuns (Deployments, Services, HPA)
+│   ├── postgres.yaml        # StatefulSet PostgreSQL (apenas local)
+│   ├── eureka-server.yaml   # Deployment + Service + NLB annotations
+│   ├── *-service.yaml       # 7 microserviços (Deployment + Service)
+│   ├── configmap-shared.yaml
+│   └── hpa.yaml             # Horizontal Pod Autoscaler
+│
+└── overlays/
+    ├── local/               # Minikube (namespace: oficina)
+    │   └── Secrets hardcoded, Ingress local, PostgreSQL incluso
+    │
+    ├── dev/                 # EKS Dev (namespace: oficina-mecanica-dev)
+    │   └── NLB interno, sem PostgreSQL (usa RDS), ConfigMap via Terraform
+    │
+    └── prod/                # EKS Prod (namespace: oficina-mecanica-prod)
+        └── 2+ réplicas, mais recursos, NLB público, secrets externos
+```
+
+#### Diferenças Entre Ambientes
+
+| Característica       | Local (Minikube)       | Dev (EKS)                 | Prod (EKS)                |
+|---------------------|------------------------|---------------------------|---------------------------|
+| **Namespace**       | `oficina`              | `oficina-mecanica-dev`    | `oficina-mecanica-prod`   |
+| **PostgreSQL**      | Pod StatefulSet        | RDS (assumido)            | RDS (assumido)            |
+| **NLB Scheme**      | N/A (Ingress local)    | `internal`                | `internet-facing`         |
+| **Réplicas Base**   | 1                      | 1                         | 2                         |
+| **HPA Min/Max**     | 1-2                    | 1-2                       | 2-5                       |
+| **ConfigMap**       | Arquivo YAML           | Injetado via Terraform    | Injetado via Terraform    |
+| **Secrets**         | Hardcoded (OK p/ dev)  | Kubernetes Secrets        | AWS Secrets Manager       |
+| **Gerenciamento**   | `kubectl apply`        | Terraform (automático)    | Terraform (automático)    |
+
+#### Como o Kustomize é Aplicado
+
+**Local (Manual):**
+```bash
+kubectl apply -k k8s/overlays/local
+```
+
+**Dev/Prod (Terraform Automatizado):**
+1. Terraform executa `scripts/update_kustomize.sh` com a tag da imagem desejada
+2. Script atualiza `kustomization.yaml` com as novas tags usando `kustomize edit set image`
+3. Script executa `kubectl kustomize` e retorna os manifestos finais em base64
+4. Terraform aplica os manifestos via `kubectl_manifest` com **server-side apply** (evita conflitos com HPA)
+
+### 🌐 API Gateway: Roteamento Centralizado
+
+#### Fluxo de Requisições
+
+```
+Cliente → API Gateway (AWS) → VPC Link → NLB → Eureka Service (K8s) → Backend Services
+```
+
+#### Mapeamento de Rotas (Planejado)
+
+| Prefixo        | Serviço Backend       | Porta | Descrição                     |
+|----------------|----------------------|-------|-------------------------------|
+| `/eureka`      | eureka-server        | 8761  | Service Discovery & Swagger   |
+| `/auth`        | auth-service         | 8082  | Autenticação JWT              |
+| `/customer`    | customer-service     | 8081  | Clientes & Veículos           |
+| `/catalog`     | catalog-service      | 8083  | Catálogo de Produtos          |
+| `/inventory`   | inventory-service    | 8084  | Controle de Estoque           |
+| `/budget`      | budget-service       | 8085  | Orçamentos                    |
+| `/work-order`  | work-order-service   | 8086  | Ordens de Serviço             |
+| `/notification`| notification-service | 8087  | Notificações                  |
+
+**Exemplo de URL:**
+```
+https://api.oficina-mecanica.com/auth/api/auth/login
+```
+
+#### Componentes do Roteamento
+
+1. **AWS API Gateway (HTTP API)**: Ponto de entrada público/privado
+2. **VPC Link**: Conecta API Gateway à rede privada do EKS
+3. **Network Load Balancer**: Balanceador L4 expondo porta 8761 (Eureka)
+4. **Kubernetes Service (NLB)**: Service type `LoadBalancer` com annotations AWS
+5. **Eureka Server**: Roteia internamente para os microserviços via service discovery
 
 ---
 
@@ -524,6 +732,209 @@ docker compose --profile dev up -d --build <service-name>
 
 ---
 
+---
+
+## 🚀 Deploy em Produção (AWS EKS)
+
+### Pré-requisitos AWS
+
+- AWS CLI configurado (`aws configure`)
+- Terraform >= 1.5
+- EKS Cluster pré-existente (`eks-fiap-oficina-mecanica`)
+- RDS PostgreSQL configurado (ou usar PostgreSQL no Kubernetes)
+- Imagens Docker publicadas no Docker Hub
+
+### Deploy via Terraform
+
+```bash
+cd infra
+
+# 1. Inicializar Terraform (primeira vez)
+terraform init
+
+# 2. Selecionar workspace (dev ou prod)
+terraform workspace select dev
+# ou
+terraform workspace new prod
+terraform workspace select prod
+
+# 3. Planejar mudanças
+terraform plan -var-file=environments/dev.tfvars
+
+# 4. Aplicar infraestrutura
+terraform apply -var-file=environments/dev.tfvars
+
+# O Terraform irá:
+# ✓ Criar namespace (oficina-mecanica-dev ou oficina-mecanica-prod)
+# ✓ Criar ConfigMaps com URLs de banco e Eureka
+# ✓ Criar Secrets (JWT, database, notification)
+# ✓ Provisionar NLB para expor Eureka (porta 8761)
+# ✓ Criar VPC Link para integração com API Gateway
+# ✓ Aplicar Kustomize overlays (todos os deployments e services)
+# ✓ Instalar Metrics Server (apenas dev)
+# ✓ Configurar AWS NLB Controller
+
+# 5. Verificar recursos criados
+kubectl config use-context <contexto-do-eks>
+kubectl -n oficina-mecanica-dev get pods
+kubectl -n oficina-mecanica-dev get svc
+
+# 6. Obter URL do Load Balancer
+terraform output nlb_dns_name
+# ou
+kubectl -n oficina-mecanica-dev get svc eureka-server-nlb
+```
+
+### Atualizar Versão das Imagens
+
+```bash
+cd infra
+
+# Aplicar com nova tag
+terraform apply -var="image_tag=v2.0.0" -var-file=environments/dev.tfvars
+
+# O script update_kustomize.sh será executado automaticamente
+# e atualizará todas as imagens para a nova tag
+```
+
+### Destruir Infraestrutura
+
+```bash
+cd infra
+terraform workspace select dev
+terraform destroy -var-file=environments/dev.tfvars
+```
+
+### 🔑 Comandos Terraform Úteis
+
+```bash
+# Listar workspaces
+terraform workspace list
+
+# Ver estado atual
+terraform show
+
+# Ver outputs (URLs, ARNs, etc.)
+terraform output
+terraform output nlb_dns_name
+terraform output vpc_link_id
+
+# Validar configuração
+terraform validate
+
+# Formatar código
+terraform fmt -recursive
+
+# Ver plano detalhado
+terraform plan -var-file=environments/dev.tfvars -out=tfplan
+terraform show tfplan
+
+# Aplicar plano salvo
+terraform apply tfplan
+
+# Refresh state (sincronizar com recursos reais)
+terraform refresh -var-file=environments/dev.tfvars
+
+# Listar recursos no state
+terraform state list
+
+# Ver detalhes de um recurso
+terraform state show kubectl_manifest.kustomization[\"v1/Namespace/oficina-mecanica-dev\"]
+
+# Remover recurso do state (sem deletar o recurso real)
+terraform state rm kubernetes_namespace.oficina
+
+# Importar recurso existente
+terraform import kubernetes_namespace.oficina oficina-mecanica-dev
+
+# Unlock state se travado
+terraform force-unlock <LOCK_ID>
+```
+
+### 🔧 Comandos Kustomize Úteis
+
+```bash
+# Ver manifests finais sem aplicar (dry-run)
+kubectl kustomize k8s/overlays/dev
+kubectl kustomize k8s/overlays/prod > preview.yaml
+
+# Validar sintaxe
+kubectl kustomize k8s/overlays/dev --enable-helm
+
+# Comparar diferenças entre ambientes
+diff <(kubectl kustomize k8s/overlays/dev) <(kubectl kustomize k8s/overlays/prod)
+
+# Atualizar imagens manualmente
+cd k8s/overlays/dev
+kustomize edit set image \
+  grecomilani/oficina-eureka-server=grecomilani/oficina-eureka-server:v2.0.0 \
+  grecomilani/oficina-auth-service=grecomilani/oficina-auth-service:v2.0.0
+  
+# Verificar versão atual das imagens
+grep -r "newName:" k8s/overlays/dev/kustomization.yaml
+```
+
+### 🚀 Comandos Kubernetes Úteis
+
+```bash
+# Contexto e namespace
+kubectl config current-context
+kubectl config use-context <context-name>
+kubectl config set-context --current --namespace=oficina-mecanica-dev
+
+# Pods e logs
+kubectl -n oficina-mecanica-dev get pods -o wide
+kubectl -n oficina-mecanica-dev logs -f <pod-name>
+kubectl -n oficina-mecanica-dev logs -f deployment/auth-service
+kubectl -n oficina-mecanica-dev logs -f <pod-name> --previous  # logs do pod anterior (crash)
+
+# Executar comandos em pods
+kubectl -n oficina-mecanica-dev exec -it <pod-name> -- /bin/sh
+kubectl -n oficina-mecanica-dev exec -it <pod-name> -- curl http://localhost:8082/actuator/health
+
+# Deployments
+kubectl -n oficina-mecanica-dev get deployments
+kubectl -n oficina-mecanica-dev describe deployment auth-service
+kubectl -n oficina-mecanica-dev rollout status deployment/auth-service
+kubectl -n oficina-mecanica-dev rollout restart deployment/auth-service
+kubectl -n oficina-mecanica-dev rollout undo deployment/auth-service  # rollback
+
+# Services e endpoints
+kubectl -n oficina-mecanica-dev get svc
+kubectl -n oficina-mecanica-dev get endpoints
+kubectl -n oficina-mecanica-dev describe svc eureka-server-nlb
+
+# HPA (Horizontal Pod Autoscaler)
+kubectl -n oficina-mecanica-dev get hpa
+kubectl -n oficina-mecanica-dev describe hpa auth-service-hpa
+kubectl -n oficina-mecanica-dev top pods  # uso de CPU/memória
+
+# ConfigMaps e Secrets
+kubectl -n oficina-mecanica-dev get configmaps
+kubectl -n oficina-mecanica-dev describe configmap oficina-shared-config
+kubectl -n oficina-mecanica-dev get secrets
+kubectl -n oficina-mecanica-dev get secret auth-jwt-secret -o jsonpath='{.data.JWT_SECRET}' | base64 -d
+
+# Events (debug de problemas)
+kubectl -n oficina-mecanica-dev get events --sort-by='.lastTimestamp'
+kubectl -n oficina-mecanica-dev get events --field-selector type=Warning
+
+# Describe para troubleshooting
+kubectl -n oficina-mecanica-dev describe pod <pod-name>
+kubectl -n oficina-mecanica-dev describe node <node-name>
+
+# Delete recursos
+kubectl -n oficina-mecanica-dev delete pod <pod-name>  # recria automaticamente
+kubectl -n oficina-mecanica-dev delete deployment auth-service
+kubectl delete -k k8s/overlays/dev  # deleta todo o overlay
+
+# Port-forward para debug
+kubectl -n oficina-mecanica-dev port-forward svc/eureka-server 8761:8761
+kubectl -n oficina-mecanica-dev port-forward deployment/auth-service 8082:8082
+```
+
+---
+
 ## 🚀 Outras Formas de Executar
 
 ### Pré-requisitos
@@ -702,15 +1113,37 @@ Todos os serviços expõem endpoints de monitoramento:
 
 ## 🔧 Tecnologias
 
+### Backend & Framework
 - **Spring Boot 3.5.3** - Framework principal
 - **Spring Cloud 2025.0.0** - Cloud native patterns
 - **Netflix Eureka** - Service Discovery
 - **OpenFeign** - Comunicação entre microserviços
-- **PostgreSQL** - Banco de dados
-- **H2** - Banco de dados em memória (testes)
 - **Java 21** - Linguagem de programação
 - **Maven** - Gerenciamento de dependências
+
+### Infraestrutura & Cloud
+- **AWS EKS** - Kubernetes gerenciado
+- **AWS NLB** - Network Load Balancer (L4)
+- **AWS API Gateway V2** - HTTP API para roteamento centralizado
+- **AWS VPC Link** - Integração privada API Gateway ↔ VPC
+- **Terraform** - Infrastructure as Code (IaC)
+- **Kustomize** - Gerenciamento de manifestos Kubernetes
 - **Docker** - Containerização
+
+### Dados & Persistência
+- **PostgreSQL** - Banco de dados relacional (RDS ou pod StatefulSet)
+- **H2** - Banco de dados em memória (testes)
+- **Flyway** (planejado) - Migrations de banco
+
+### Observabilidade
+- **Spring Boot Actuator** - Endpoints de health, metrics, info
+- **Datadog** (opcional) - APM e logs centralizados
+- **Kubernetes Metrics Server** - Métricas para HPA
+
+### CI/CD
+- **GitHub Actions** (planejado) - Pipelines de build e deploy
+- **Docker Hub** - Registry de imagens
+- **Makefile** - Automação de build multi-arch (amd64/arm64)
 
 ## 📚 Documentação da API
 
@@ -718,7 +1151,7 @@ Todos os serviços expõem endpoints de monitoramento:
 
 Para facilitar o acesso à documentação de todos os microserviços em um único local, o **Eureka Server** disponibiliza um Swagger agregado:
 
-**🔗 Acesso único:** http://localhost:8761/swagger-ui.html
+**🔗 Acesso único:** http://localhost:8761/swagger-ui.html (local) ou via API Gateway (cloud)
 
 Através do Swagger agregado, você pode visualizar e testar as APIs de todos os serviços através de um dropdown, sem precisar acessar cada serviço individualmente.
 
@@ -738,6 +1171,18 @@ Cada serviço também expõe sua documentação OpenAPI de forma independente:
 - Inventory Service: http://localhost:8084/swagger-ui.html
 - Budget Service: http://localhost:8085/swagger-ui.html
 - Work Order Service: http://localhost:8086/swagger-ui.html
+
+### 📖 Documentação Técnica Adicional
+
+Para informações detalhadas sobre aspectos específicos da arquitetura, consulte:
+
+- **[ROUTING-ARCHITECTURE.md](docs/ROUTING-ARCHITECTURE.md)**: Fluxo completo de roteamento (API Gateway → VPC Link → NLB → Kubernetes), padrões de path, rewrite rules do NGINX Ingress
+- **[KUBERNETES-IMAGE-UPDATE-STRATEGY.md](docs/KUBERNETES-IMAGE-UPDATE-STRATEGY.md)**: Estratégias para atualização de imagens Docker no Kubernetes
+- **[SEED-DATA-AND-API-TESTS.md](docs/SEED-DATA-AND-API-TESTS.md)**: Dados de seed para testes e exemplos de chamadas de API
+- **[SWAGGER-AGGREGATION.md](docs/SWAGGER-AGGREGATION.md)**: Implementação do Swagger agregado no Eureka Server
+- **[k8s/README.md](k8s/README.md)**: Guia básico de deploy Kubernetes
+- **[k8s/README-OVERLAYS.md](k8s/README-OVERLAYS.md)**: Detalhes sobre Kustomize overlays e diferenças entre ambientes
+- **[AGENTS.md](AGENTS.md)**: Diretrizes para desenvolvimento e contribuição (estrutura, build, testes, commits)
 
 ## 🔍 Troubleshooting
 
@@ -766,23 +1211,222 @@ docker compose --profile dev down -v
 docker compose --profile dev up -d --force-recreate
 ```
 
+### Problemas com Terraform
+
+**Erro: "No changes detected" mas recursos não foram criados**
+```bash
+# Verificar se o workspace está correto
+terraform workspace list
+terraform workspace select dev
+
+# Forçar re-aplicação
+terraform taint kubectl_manifest.kustomization
+terraform apply -var-file=environments/dev.tfvars
+```
+
+**Erro: "Resource already exists" ou conflitos de ownership**
+```bash
+# Importar recursos existentes
+terraform import kubernetes_namespace.oficina oficina-mecanica-dev
+
+# Ou usar server-side apply (já configurado em k8s.tf)
+# O parâmetro force_conflicts=true sobrescreve campos gerenciados por outros controllers
+```
+
+**Erro: "Script update_kustomize.sh failed"**
+```bash
+# Verificar permissões do script
+chmod +x infra/scripts/update_kustomize.sh
+
+# Testar manualmente
+cd k8s/overlays/dev
+kustomize edit set image grecomilani/oficina-eureka-server=grecomilani/oficina-eureka-server:latest
+kubectl kustomize .
+```
+
+**Erro: VPC Link ou NLB não provisiona**
+```bash
+# Verificar se o EKS cluster existe
+aws eks describe-cluster --name eks-fiap-oficina-mecanica --region us-east-2
+
+# Verificar subnets e security groups
+terraform console
+> data.aws_eks_cluster.oficina.vpc_config[0].subnet_ids
+> data.aws_vpc.main.id
+```
+
+### Problemas com Kustomize
+
+**Erro: "Resource not found" ao aplicar overlays**
+```bash
+# Verificar se os recursos base existem
+kubectl kustomize k8s/base
+
+# Verificar se o overlay está correto
+kubectl kustomize k8s/overlays/dev
+
+# Aplicar base primeiro (debug)
+kubectl apply -k k8s/base
+```
+
+**Imagens não atualizam após deploy**
+```bash
+# Verificar se imagePullPolicy está configurado
+kubectl -n oficina-mecanica-dev get deploy auth-service -o jsonpath='{.spec.template.spec.containers[0].imagePullPolicy}'
+
+# Deve retornar "Always" para dev
+# Forçar pull da imagem
+kubectl -n oficina-mecanica-dev rollout restart deployment auth-service
+```
+
+**HPA não escala pods**
+```bash
+# Verificar se Metrics Server está rodando
+kubectl -n kube-system get pods -l k8s-app=metrics-server
+
+# Verificar métricas dos pods
+kubectl -n oficina-mecanica-dev top pods
+
+# Verificar configuração do HPA
+kubectl -n oficina-mecanica-dev get hpa
+kubectl -n oficina-mecanica-dev describe hpa auth-service-hpa
+```
+
+### Problemas com NLB e API Gateway
+
+**NLB não roteia tráfego para pods**
+```bash
+# Verificar targets registrados no Target Group
+aws elbv2 describe-target-health \
+  --target-group-arn $(terraform output -raw target_group_arn)
+
+# Verificar Service no Kubernetes
+kubectl -n oficina-mecanica-dev get svc eureka-server-nlb
+kubectl -n oficina-mecanica-dev describe svc eureka-server-nlb
+
+# Verificar annotations do NLB
+kubectl -n oficina-mecanica-dev get svc eureka-server-nlb -o yaml | grep annotations -A 10
+```
+
+**API Gateway retorna 503 ou timeout**
+```bash
+# Verificar VPC Link status
+aws apigatewayv2 get-vpc-link --vpc-link-id $(terraform output -raw vpc_link_id)
+# Status deve ser "AVAILABLE"
+
+# Verificar security groups
+aws ec2 describe-security-groups --group-ids $(terraform output -raw vpc_link_security_group_id)
+
+# Testar NLB diretamente (bypass API Gateway)
+NLB_DNS=$(terraform output -raw nlb_dns_name)
+curl http://${NLB_DNS}:8761/actuator/health
+```
+
 ## 📝 Estrutura do Projeto
 
 ```
 oficina-microservices/
-├── eureka-server/          # Service Discovery
-├── shared-library/         # Código compartilhado
-├── auth-service/           # Autenticação
-├── customer-service/       # Clientes e veículos
-├── catalog-service/        # Catálogo
-├── inventory-service/      # Estoque
-├── budget-service/         # Orçamentos
-├── work-order-service/     # Ordens de serviço
-├── notification-service/   # Notificações
-├── docker-compose.yml      # Configuração Docker (perfil dev)
-├── docker-compose.prod.yml # Overrides para perfil prod
-└── pom.xml                 # POM raiz
+├── infra/                       # Infraestrutura como Código (Terraform)
+│   ├── providers.tf             # AWS, Kubernetes, Kubectl, Helm providers
+│   ├── k8s.tf                   # Deploy Kustomize + Metrics Server
+│   ├── nlb.tf                   # Network Load Balancer por ambiente
+│   ├── apigateway-vpc-link.tf   # VPC Link para API Gateway
+│   ├── configmap.tf             # ConfigMaps dinâmicos injetados no K8s
+│   ├── secrets.tf               # Secrets (JWT, DB, notification)
+│   ├── namespace.tf             # Criação de namespace por workspace
+│   ├── datadog.tf               # Integração com Datadog (opcional)
+│   ├── environments/            # Variáveis por ambiente (.tfvars)
+│   │   ├── dev.tfvars
+│   │   └── prod.tfvars
+│   └── scripts/
+│       └── update_kustomize.sh  # Atualiza tags de imagem + aplica Kustomize
+│
+├── k8s/                         # Manifests Kubernetes (Kustomize)
+│   ├── base/                    # Recursos comuns a todos os ambientes
+│   │   ├── kustomization.yaml
+│   │   ├── postgres.yaml        # StatefulSet (apenas local)
+│   │   ├── eureka-server.yaml   # Service Discovery
+│   │   ├── auth-service.yaml    # Autenticação JWT
+│   │   ├── customer-service.yaml
+│   │   ├── catalog-service.yaml
+│   │   ├── inventory-service.yaml
+│   │   ├── budget-service.yaml
+│   │   ├── work-order-service.yaml
+│   │   ├── notification-service.yaml
+│   │   ├── configmap-shared.yaml
+│   │   └── hpa.yaml             # Horizontal Pod Autoscaler
+│   │
+│   └── overlays/                # Configurações específicas por ambiente
+│       ├── local/               # Minikube (namespace: oficina)
+│       │   ├── kustomization.yaml
+│       │   ├── namespace.yaml
+│       │   ├── secret-*.yaml    # Secrets hardcoded para dev local
+│       │   └── ingress.yaml     # Host: oficina.local
+│       │
+│       ├── dev/                 # EKS Dev (namespace: oficina-mecanica-dev)
+│       │   ├── kustomization.yaml
+│       │   ├── namespace.yaml
+│       │   └── ingress.yaml     # NLB interno, sem PostgreSQL
+│       │
+│       └── prod/                # EKS Prod (namespace: oficina-mecanica-prod)
+│           ├── kustomization.yaml
+│           ├── namespace.yaml
+│           ├── ingress.yaml
+│           └── patches/         # Patches para prod (réplicas, recursos)
+│
+├── shared-library/              # Código compartilhado (DTOs, security, mappers)
+│   └── src/main/java/br/com/fiap/oficina/shared/
+│       ├── dto/                 # Data Transfer Objects
+│       ├── validator/           # Validações customizadas
+│       ├── security/            # JWT, CORS, configs de segurança
+│       ├── exception/           # Exception handlers globais
+│       ├── mapper/              # MapStruct mappers
+│       └── constants/           # Constantes e enums
+│
+├── eureka-server/               # Service Discovery + Swagger agregado
+├── auth-service/                # Autenticação JWT + usuários
+├── customer-service/            # Clientes e veículos
+├── catalog-service/             # Catálogo de produtos/serviços
+├── inventory-service/           # Controle de estoque
+├── budget-service/              # Orçamentos
+├── work-order-service/          # Ordens de serviço
+├── notification-service/        # Notificações assíncronas (email)
+│
+├── docs/                        # Documentação técnica
+│   ├── ROUTING-ARCHITECTURE.md  # Detalhes do roteamento (API Gateway + NLB)
+│   ├── KUBERNETES-IMAGE-UPDATE-STRATEGY.md
+│   ├── SEED-DATA-AND-API-TESTS.md
+│   └── SWAGGER-AGGREGATION.md
+│
+├── api-docs/                    # OpenAPI specs (JSON) baixados dos serviços
+├── docker-compose.yml           # Dev local (perfil: dev)
+├── docker-compose.prod.yml      # Prod simulado (perfil: prod)
+├── Makefile                     # Comandos para build/push de imagens
+└── pom.xml                      # POM raiz (aggregator)
 ```
+
+### Conceitos Importantes
+
+#### Shared Library
+Módulo Maven compartilhado que contém código reutilizável entre todos os microserviços:
+- **DTOs**: Objetos de transferência de dados padronizados
+- **Security**: JWT token utils, CORS config, authentication filters
+- **Validators**: Validações customizadas (CPF, CNPJ, email)
+- **Exceptions**: Handlers globais para respostas de erro consistentes
+- **Mappers**: MapStruct para conversão entre entidades e DTOs
+- **Constants**: Enums, constantes, mensagens de erro
+
+Todos os microserviços dependem dessa biblioteca via Maven dependency.
+
+#### Kustomize Base + Overlays
+- **base/**: Define recursos Kubernetes comuns (Deployments, Services, ConfigMaps, HPA)
+- **overlays/**: Customiza a base para cada ambiente via patches (réplicas, recursos, secrets, ingress)
+- Permite reutilização de código e separação clara de ambientes sem duplicação
+
+#### Terraform Workspaces
+- **dev**: Ambiente de desenvolvimento (NLB interno, 1 réplica, secrets simples)
+- **prod**: Ambiente de produção (NLB público, 2+ réplicas, secrets gerenciados)
+- Cada workspace mantém estado isolado no S3 backend
 
 ## 🤝 Contribuindo
 
@@ -791,3 +1435,61 @@ oficina-microservices/
 3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
 4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
+
+### 📋 Diretrizes de Contribuição
+
+Antes de contribuir, leia [AGENTS.md](AGENTS.md) para entender:
+- Estrutura de pacotes e módulos
+- Convenções de código e nomenclatura
+- Como executar testes (`mvn test`, `mvn verify -Pverify-coverage`)
+- Requisitos de cobertura de código (≥50% PR, ≥70% main)
+- Padrão de commits e PRs
+
+## 🚀 Roadmap e Melhorias Futuras
+
+### CI/CD
+- [ ] GitHub Actions para build automático
+- [ ] Pipeline de deploy automatizado (dev → staging → prod)
+- [ ] Testes de integração automatizados
+- [ ] Validação de cobertura de código no PR
+
+### Infraestrutura
+- [ ] AWS Secrets Manager para prod (substituir Kubernetes Secrets)
+- [ ] RDS PostgreSQL provisionado via Terraform
+- [ ] Route53 + Certificate Manager para HTTPS
+- [ ] CloudWatch Logs integration
+- [ ] Backup automatizado de banco de dados
+
+### Observabilidade
+- [ ] Datadog APM completo
+- [ ] Distributed tracing (Sleuth + Zipkin ou OpenTelemetry)
+- [ ] Dashboards Grafana + Prometheus
+- [ ] Alertas proativos (SLA violations, latência, erros)
+
+### Segurança
+- [ ] OAuth2 / OpenID Connect integration
+- [ ] Rate limiting no API Gateway
+- [ ] WAF (Web Application Firewall)
+- [ ] Secrets rotation automatizado
+- [ ] Vulnerability scanning (Snyk, Trivy)
+
+### Features de Aplicação
+- [ ] Webhooks para notificações
+- [ ] Integração com sistemas de pagamento
+- [ ] Relatórios e analytics
+- [ ] Mobile app integration
+- [ ] Sistema de chat/suporte
+
+---
+
+## 📞 Suporte
+
+Para dúvidas ou problemas:
+1. Verifique a seção [Troubleshooting](#-troubleshooting)
+2. Consulte a [documentação técnica](docs/)
+3. Abra uma issue no GitHub
+4. Entre em contato com a equipe de desenvolvimento
+
+---
+
+**Desenvolvido com ❤️ pela equipe FIAP - Oficina Microservices**
