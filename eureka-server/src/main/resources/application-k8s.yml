@@ -19,19 +19,22 @@ springdoc:
   swagger-ui:
     urls:
       - name: Auth Service
-        url: https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/auth/v3/api-docs
+        url: ${API_GATEWAY_BASE_URL:https://d9vqmoflh9.execute-api.us-east-2.amazonaws.com/dev}/auth/v3/api-docs
       - name: Customer Service
-        url: https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/customer/v3/api-docs
+        url: ${API_GATEWAY_BASE_URL:https://d9vqmoflh9.execute-api.us-east-2.amazonaws.com/dev}/customer/v3/api-docs
       - name: Catalog Service
-        url: https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/catalog/v3/api-docs
+        url: ${API_GATEWAY_BASE_URL:https://d9vqmoflh9.execute-api.us-east-2.amazonaws.com/dev}/catalog/v3/api-docs
       - name: Inventory Service
-        url: https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/inventory/v3/api-docs
+        url: ${API_GATEWAY_BASE_URL:https://d9vqmoflh9.execute-api.us-east-2.amazonaws.com/dev}/inventory/v3/api-docs
       - name: Budget Service
-        url: https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/budget/v3/api-docs
+        url: ${API_GATEWAY_BASE_URL:https://d9vqmoflh9.execute-api.us-east-2.amazonaws.com/dev}/budget/v3/api-docs
       - name: Work Order Service
-        url: https://d6l9d5prg2.execute-api.us-east-2.amazonaws.com/work-order/v3/api-docs
+        url: ${API_GATEWAY_BASE_URL:https://d9vqmoflh9.execute-api.us-east-2.amazonaws.com/dev}/work-order/v3/api-docs
     path: /swagger-ui.html
     config-url: /v3/api-docs/swagger-config
+  servers:
+    - url: ${API_GATEWAY_BASE_URL:https://d9vqmoflh9.execute-api.us-east-2.amazonaws.com/dev}/eureka
+      description: API Gateway (${SPRING_PROFILES_ACTIVE:k8s})
 
 logging:
   level:
