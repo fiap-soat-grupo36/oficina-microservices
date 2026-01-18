@@ -95,10 +95,10 @@ patches:
       - op: replace
         path: /metadata/annotations/service.beta.kubernetes.io~1aws-load-balancer-scheme
         value: internet-facing
-  # Aumentar resources para produção (maior que dev)
+  # Aumentar resources para produção - serviços básicos
   - target:
       kind: Deployment
-      name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service)
+      name: (catalog-service|inventory-service|budget-service|work-order-service)
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/resources/requests/cpu
@@ -109,17 +109,48 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/resources/limits/cpu
         value: 1500m
-  # Aumentar resources do Eureka em produção
+  # Serviços críticos (auth, customer) em produção
+  - target:
+      kind: Deployment
+      name: (auth-service|customer-service)
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 1Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 2000m
+  # Notification service precisa de mais CPU para processar eventos em produção
+  - target:
+      kind: Deployment
+      name: notification-service
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 768Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 2000m
+  # Aumentar resources do Eureka em produção (serviço crítico)
   - target:
       kind: Deployment
       name: eureka-server
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/resources/requests/cpu
-        value: 500m
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 1Gi
       - op: replace
         path: /spec/template/spec/containers/0/resources/limits/cpu
-        value: 1000m
+        value: 2000m
   # Ajustar HPA para produção (min 2, max 5, threshold 80%)
   - target:
       kind: HorizontalPodAutoscaler

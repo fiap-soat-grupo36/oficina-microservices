@@ -67,7 +67,7 @@ patches:
   target:
     kind: Deployment
     name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service)
-# Aumentar resources (CPU e memória)
+# Aumentar resources (CPU e memória) - microservices básicos
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/cpu
@@ -80,7 +80,49 @@ patches:
       value: 1000m
   target:
     kind: Deployment
-    name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service)
+    name: (catalog-service|inventory-service|budget-service|work-order-service)
+# Serviços críticos (customer, auth) com mais recursos
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/cpu
+      value: 750m
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: 768Mi
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/cpu
+      value: 1500m
+  target:
+    kind: Deployment
+    name: (auth-service|customer-service)
+# Eureka Server precisa de recursos robustos
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/cpu
+      value: 750m
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: 768Mi
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/cpu
+      value: 1500m
+  target:
+    kind: Deployment
+    name: eureka-server
+# Notification service precisa de mais CPU para processar eventos
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/cpu
+      value: 750m
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests/memory
+      value: 512Mi
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/cpu
+      value: 1500m
+  target:
+    kind: Deployment
+    name: notification-service
 # Aumentar HPA threshold para 80%
 - patch: |-
     - op: replace
