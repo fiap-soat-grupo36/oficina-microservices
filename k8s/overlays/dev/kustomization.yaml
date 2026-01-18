@@ -9,6 +9,11 @@ resources:
 - ../../base
 - ingress.yaml
 
+# Patches estratégicos para sobrescrever resources e HPA
+patchesStrategicMerge:
+- patches/resources.yaml
+- patches/hpa.yaml
+
 # Exclui PostgreSQL e ConfigMap dos recursos base (gerenciados pelo Terraform)
   # Remove postgres StatefulSet
   # Remove postgres Service

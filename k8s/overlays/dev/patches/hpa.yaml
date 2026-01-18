@@ -1,12 +1,10 @@
-# Ajustar HPA para produção com mais réplicas máximas e threshold 80%
+# Ajustar HPA threshold para 80% (ao invés de 70%) em DEV
 
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: auth-service-hpa
 spec:
-  minReplicas: 2
-  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
@@ -21,8 +19,6 @@ kind: HorizontalPodAutoscaler
 metadata:
   name: customer-service-hpa
 spec:
-  minReplicas: 2
-  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
@@ -37,8 +33,6 @@ kind: HorizontalPodAutoscaler
 metadata:
   name: catalog-service-hpa
 spec:
-  minReplicas: 2
-  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
@@ -53,8 +47,6 @@ kind: HorizontalPodAutoscaler
 metadata:
   name: inventory-service-hpa
 spec:
-  minReplicas: 2
-  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
@@ -69,8 +61,6 @@ kind: HorizontalPodAutoscaler
 metadata:
   name: budget-service-hpa
 spec:
-  minReplicas: 2
-  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
@@ -85,8 +75,6 @@ kind: HorizontalPodAutoscaler
 metadata:
   name: work-order-service-hpa
 spec:
-  minReplicas: 2
-  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
@@ -101,8 +89,6 @@ kind: HorizontalPodAutoscaler
 metadata:
   name: notification-service-hpa
 spec:
-  minReplicas: 2
-  maxReplicas: 5
   metrics:
     - type: Resource
       resource:

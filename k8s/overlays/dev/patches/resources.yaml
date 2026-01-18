@@ -1,5 +1,5 @@
-# Aumentar resources para produção
-# Spring Boot em produção precisa de mais recursos para lidar com tráfego real
+# Aumentar resources para evitar throttling de CPU
+# Spring Boot precisa de mais CPU durante startup (JVM warmup, bean initialization)
 
 apiVersion: apps/v1
 kind: Deployment
@@ -12,11 +12,11 @@ spec:
         - name: auth-service
           resources:
             requests:
-              memory: "768Mi"  # aumentado de 512Mi
-              cpu: "750m"      # aumentado de 250m
+              cpu: 500m     # aumentado de 150m
+              memory: 512Mi # aumentado de 256Mi
             limits:
-              memory: "2Gi"
-              cpu: "1500m"     # aumentado de 1000m
+              cpu: 1000m    # aumentado de 500m
+              memory: 1Gi
 
 ---
 apiVersion: apps/v1
@@ -30,11 +30,11 @@ spec:
         - name: customer-service
           resources:
             requests:
-              memory: "768Mi"
-              cpu: "750m"
+              cpu: 500m
+              memory: 512Mi
             limits:
-              memory: "2Gi"
-              cpu: "1500m"
+              cpu: 1000m
+              memory: 1Gi
 
 ---
 apiVersion: apps/v1
@@ -48,11 +48,11 @@ spec:
         - name: catalog-service
           resources:
             requests:
-              memory: "768Mi"
-              cpu: "750m"
+              cpu: 500m
+              memory: 512Mi
             limits:
-              memory: "2Gi"
-              cpu: "1500m"
+              cpu: 1000m
+              memory: 1Gi
 
 ---
 apiVersion: apps/v1
@@ -66,11 +66,11 @@ spec:
         - name: inventory-service
           resources:
             requests:
-              memory: "768Mi"
-              cpu: "750m"
+              cpu: 500m
+              memory: 512Mi
             limits:
-              memory: "2Gi"
-              cpu: "1500m"
+              cpu: 1000m
+              memory: 1Gi
 
 ---
 apiVersion: apps/v1
@@ -84,11 +84,11 @@ spec:
         - name: budget-service
           resources:
             requests:
-              memory: "768Mi"
-              cpu: "750m"
+              cpu: 500m
+              memory: 512Mi
             limits:
-              memory: "2Gi"
-              cpu: "1500m"
+              cpu: 1000m
+              memory: 1Gi
 
 ---
 apiVersion: apps/v1
@@ -102,11 +102,11 @@ spec:
         - name: work-order-service
           resources:
             requests:
-              memory: "768Mi"
-              cpu: "750m"
+              cpu: 500m
+              memory: 512Mi
             limits:
-              memory: "2Gi"
-              cpu: "1500m"
+              cpu: 1000m
+              memory: 1Gi
 
 ---
 apiVersion: apps/v1
@@ -120,26 +120,8 @@ spec:
         - name: notification-service
           resources:
             requests:
-              memory: "768Mi"
-              cpu: "750m"
+              cpu: 500m
+              memory: 512Mi
             limits:
-              memory: "2Gi"
-              cpu: "1500m"
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: eureka-server
-spec:
-  template:
-    spec:
-      containers:
-        - name: eureka-server
-          resources:
-            requests:
-              memory: "512Mi"
-              cpu: "500m"
-            limits:
-              memory: "2Gi"
-              cpu: "1000m"
+              cpu: 1000m
+              memory: 1Gi

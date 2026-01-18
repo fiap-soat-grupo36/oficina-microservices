@@ -11,6 +11,11 @@ resources:
   # Prod-specific resources
   - ingress.yaml
 
+# Patches estratégicos para sobrescrever resources e HPA
+patchesStrategicMerge:
+  - patches/hpa.yaml
+  - patches/resources.yaml
+
 # Sobrescrever tags das imagens para usar 'main' em produção
 images:
   - name: grecomilani/eureka-server
