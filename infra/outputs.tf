@@ -1,50 +1,39 @@
-# Outputs do NLB e Target Group Existentes
+# Outputs do API Gateway e Infraestrutura
 
-# ARN do Target Group criado pelo Terraform (usado pelo Kubernetes Service)
-output "nlb_target_group_arn" {
-  description = "ARN do Target Group do NLB para uso no Kubernetes"
-  value       = aws_lb_target_group.eureka.arn
-}
-
-# DNS do NLB criado pelo Terraform
-output "nlb_dns_name" {
-  description = "DNS do Network Load Balancer"
-  value       = aws_lb.eureka.dns_name
-}
-
-# ARN do NLB criado pelo Terraform
-output "nlb_arn" {
-  description = "ARN do Network Load Balancer"
-  value       = aws_lb.eureka.arn
-}
-
-# IDs das instâncias do Node Group (para registro manual se necessário)
-output "node_group_instance_ids" {
-  description = "IDs das instâncias EC2 do node group do EKS"
-  value       = data.aws_instances.node_group_instances.ids
-}
-
-output "created_nlb_arn" {
-  description = "ARN do NLB criado pelo Terraform"
-  value       = aws_lb.eureka.arn
-}
-
-output "created_nlb_dns" {
-  description = "DNS do NLB criado pelo Terraform"
-  value       = aws_lb.eureka.dns_name
-}
-
-output "created_target_group_arn" {
-  description = "ARN do Target Group criado pelo Terraform"
-  value       = aws_lb_target_group.eureka.arn
-}
-
+# VPC Link
 output "vpc_link_id" {
   description = "VPC Link ID para usar no API Gateway"
-  value       = aws_apigatewayv2_vpc_link.eureka.id
+  value       = aws_apigatewayv2_vpc_link.api.id
 }
 
 output "vpc_link_arn" {
   description = "VPC Link ARN"
-  value       = aws_apigatewayv2_vpc_link.eureka.arn
+  value       = aws_apigatewayv2_vpc_link.api.arn
+}
+
+# Environment
+output "environment" {
+  description = "Environment atual (dev, prod, etc)"
+  value       = local.environment
+}
+
+# API Gateway Outputs
+output "api_gateway_id" {
+  description = "ID do API Gateway HTTP API"
+  value       = aws_apigatewayv2_api.api.id
+}
+
+output "api_gateway_endpoint" {
+  description = "Endpoint do API Gateway"
+  value       = aws_apigatewayv2_api.api.api_endpoint
+}
+
+output "api_gateway_invoke_url" {
+  description = "URL de invocação do API Gateway"
+  value       = aws_apigatewayv2_stage.default.invoke_url
+}
+
+output "api_gateway_url_with_env" {
+  description = "URL completa do API Gateway com prefixo do environment"
+  value       = "${aws_apigatewayv2_stage.default.invoke_url}/${local.environment}"
 }

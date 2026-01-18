@@ -45,3 +45,15 @@ variable "image_tag" {
   type        = string
   default     = "develop"
 }
+
+variable "ingress_host" {
+  description = "Host do Ingress Kubernetes (usado pelo API Gateway para rotear corretamente)"
+  type        = string
+  default     = ""
+}
+
+variable "project_name" {
+  description = "Nome do projeto para tags e nomes de recursos"
+  type        = string
+  default     = "oficina-microservices"
+}

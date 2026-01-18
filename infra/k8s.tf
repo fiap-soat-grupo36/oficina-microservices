@@ -52,7 +52,7 @@ resource "kubectl_manifest" "kustomization" {
 
   # Usa server-side apply para evitar conflitos com recursos do Terraform
   server_side_apply = true
-  force_conflicts   = true  # Permite sobrescrever campos gerenciados por outros controllers (ex: HPA)
+  force_conflicts   = true # Permite sobrescrever campos gerenciados por outros controllers (ex: HPA)
   wait              = true
 
   depends_on = [

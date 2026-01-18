@@ -19,7 +19,8 @@ spec:
     - host: oficina-mecanica.com  # Ajuste para seu domínio de produção
       http:
         paths:
-          - path: /eureka(/|$)(.*)
+          # Rotas com prefixo /prod
+          - path: /prod/eureka(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
@@ -27,7 +28,7 @@ spec:
                 port:
                   number: 8761
 
-          - path: /auth(/|$)(.*)
+          - path: /prod/auth(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
@@ -35,7 +36,7 @@ spec:
                 port:
                   number: 8082
 
-          - path: /customer(/|$)(.*)
+          - path: /prod/customer(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
@@ -43,7 +44,7 @@ spec:
                 port:
                   number: 8081
 
-          - path: /catalog(/|$)(.*)
+          - path: /prod/catalog(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
@@ -51,7 +52,7 @@ spec:
                 port:
                   number: 8083
 
-          - path: /inventory(/|$)(.*)
+          - path: /prod/inventory(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
@@ -59,7 +60,7 @@ spec:
                 port:
                   number: 8084
 
-          - path: /budget(/|$)(.*)
+          - path: /prod/budget(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
@@ -67,7 +68,7 @@ spec:
                 port:
                   number: 8085
 
-          - path: /work-order(/|$)(.*)
+          - path: /prod/work-order(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
@@ -75,7 +76,7 @@ spec:
                 port:
                   number: 8086
 
-          - path: /notification(/|$)(.*)
+          - path: /prod/notification(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
