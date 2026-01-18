@@ -44,6 +44,8 @@ spec:
             - containerPort: 8082
               name: http
           env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xms128m -Xmx300m"
             - name: SPRING_PROFILES_ACTIVE
               valueFrom:
                 configMapKeyRef:
