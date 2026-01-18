@@ -101,7 +101,7 @@ patches:
             key: API_GATEWAY_BASE_URL
   target:
     kind: Deployment
-    name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service)
+    name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service|eureka-server)
 
 # Labels comuns para ambiente DEV
 commonLabels:
