@@ -44,6 +44,8 @@ spec:
             - containerPort: 8086
               name: http
           env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xms128m -Xmx300m"
             - name: SPRING_PROFILES_ACTIVE
               valueFrom:
                 configMapKeyRef:
@@ -114,4 +116,4 @@ spec:
               memory: 256Mi
             limits:
               cpu: 500m
-              memory: 1Gi
+              memory: 500Mi

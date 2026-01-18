@@ -29,6 +29,8 @@ spec:
             - containerPort: 8761
               name: http
           env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xms128m -Xmx300m"
             - name: SPRING_PROFILES_ACTIVE
               valueFrom:
                 configMapKeyRef:
@@ -72,7 +74,7 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 512Mi
+              memory: 256Mi
             limits:
               cpu: 500m
-              memory: 1Gi
+              memory: 500Mi
