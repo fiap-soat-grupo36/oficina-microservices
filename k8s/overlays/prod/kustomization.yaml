@@ -137,7 +137,7 @@ patches:
   # Adicionar variável API_GATEWAY_BASE_URL do ConfigMap
   - target:
       kind: Deployment
-      name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service)
+      name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service|eureka-server)
     patch: |-
       - op: add
         path: /spec/template/spec/containers/0/env/-
