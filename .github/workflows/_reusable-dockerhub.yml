@@ -61,35 +61,16 @@ jobs:
           # If modules_json is provided, convert to services format
           if [ "$MODULES_JSON" != "[]" ] && [ -n "$MODULES_JSON" ] && [ "$MODULES_JSON" != "" ]; then
             echo "Converting modules_json to services_json..."
-
-            # Create a temporary Python script
-            cat > /tmp/convert.py << 'EOFPYTHON'
-            import json
-            import sys
-            import os
-
-            try:
-                modules_str = os.environ.get('MODULES_JSON', '[]')
-                modules = json.loads(modules_str)
-                services = []
-
-                for module in modules:
-                    if module == 'shared-library':
-                        continue
-
-                    services.append({
-                        'service': module,
-                        'dockerfile': f'./{module}/Dockerfile'
-                    })
-
-                print(json.dumps(services))
-            except Exception as e:
-                print(f'Error: {e}', file=sys.stderr)
-                print('[]')
-                sys.exit(1)
-          EOFPYTHON
-
-          SERVICES_JSON=$(MODULES_JSON="${MODULES_JSON}" python3 /tmp/convert.py)
+            
+            SERVICES_JSON=$(echo "$MODULES_JSON" | jq -c '
+              map(
+                select(. != "shared-library") | 
+                {
+                  service: .,
+                  dockerfile: ("./\(.)/Dockerfile")
+                }
+              )
+            ')
           fi
 
           echo "services_json=${SERVICES_JSON}" >> $GITHUB_OUTPUT
