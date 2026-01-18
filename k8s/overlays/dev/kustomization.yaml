@@ -71,13 +71,13 @@ patches:
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/cpu
-      value: 500m
+      value: 100m
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/memory
       value: 512Mi
     - op: replace
       path: /spec/template/spec/containers/0/resources/limits/cpu
-      value: 1000m
+      value: 500m
   target:
     kind: Deployment
     name: (catalog-service|inventory-service|budget-service|work-order-service)
@@ -85,13 +85,13 @@ patches:
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/cpu
-      value: 750m
+      value: 200m
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/memory
       value: 768Mi
     - op: replace
       path: /spec/template/spec/containers/0/resources/limits/cpu
-      value: 1500m
+      value: 500m
   target:
     kind: Deployment
     name: (auth-service|customer-service)
@@ -99,13 +99,13 @@ patches:
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/cpu
-      value: 750m
+      value: 100m
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/memory
       value: 768Mi
     - op: replace
       path: /spec/template/spec/containers/0/resources/limits/cpu
-      value: 1500m
+      value: 500m
   target:
     kind: Deployment
     name: eureka-server
@@ -113,13 +113,13 @@ patches:
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/cpu
-      value: 750m
+      value: 100m
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/memory
       value: 512Mi
     - op: replace
       path: /spec/template/spec/containers/0/resources/limits/cpu
-      value: 1500m
+      value: 500m
   target:
     kind: Deployment
     name: notification-service
