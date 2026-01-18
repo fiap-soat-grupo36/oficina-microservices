@@ -87,15 +87,15 @@ jobs:
                 print(f'Error: {e}', file=sys.stderr)
                 print('[]')
                 sys.exit(1)
-            EOFPYTHON
+          EOFPYTHON
 
-                        SERVICES_JSON=$(MODULES_JSON="${MODULES_JSON}" python3 /tmp/convert.py)
-                      fi
+          SERVICES_JSON=$(MODULES_JSON="${MODULES_JSON}" python3 /tmp/convert.py)
+          fi
 
-                      echo "services_json=${SERVICES_JSON}" >> $GITHUB_OUTPUT
-                      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-                      echo "Services to build: ${SERVICES_JSON}"
-                      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "services_json=${SERVICES_JSON}" >> $GITHUB_OUTPUT
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Services to build: ${SERVICES_JSON}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
   build:
     name: Build ${{ matrix.service }}
