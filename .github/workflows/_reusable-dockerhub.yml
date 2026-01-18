@@ -3,12 +3,28 @@ on:
   workflow_call:
     inputs:
       services_json:
+        description: "JSON array of services with dockerfile paths (legacy format)"
+        required: false
+        type: string
+        default: '[]'
+      modules_json:
+        description: "JSON array of module names (new format)"
+        required: false
+        type: string
+        default: '[]'
+      branch_tag:
         required: true
+        type: string
+      ref_name_for_sha:
+        required: true
+        type: string
+      sha_short:
+        required: false
         type: string
       build_tags_suffix:
         required: false
         type: string
-        default: 'ci'
+        default: ''
       push_images:
         required: false
         type: boolean
@@ -24,16 +40,90 @@ on:
         required: false
 
 jobs:
+  prepare:
+    name: Prepare services list
+    runs-on: ubuntu-latest
+    outputs:
+      services_json: ${{ steps.convert.outputs.services_json }}
+    steps:
+      - name: Convert modules to services format
+        id: convert
+        run: |
+          MODULES_JSON='${{ inputs.modules_json }}'
+          SERVICES_JSON='${{ inputs.services_json }}'
+
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔄 Preparing Docker services list"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Input modules_json: ${MODULES_JSON}"
+          echo "Input services_json: ${SERVICES_JSON}"
+
+          # If modules_json is provided, convert to services format
+          if [ "$MODULES_JSON" != "[]" ] && [ -n "$MODULES_JSON" ] && [ "$MODULES_JSON" != "" ]; then
+            echo "Converting modules_json to services_json..."
+
+            # Create a temporary Python script
+            cat > /tmp/convert.py << 'EOFPYTHON'
+            import json
+            import sys
+            import os
+
+            try:
+                modules_str = os.environ.get('MODULES_JSON', '[]')
+                modules = json.loads(modules_str)
+                services = []
+
+                for module in modules:
+                    if module == 'shared-library':
+                        continue
+
+                    services.append({
+                        'service': module,
+                        'dockerfile': f'./{module}/Dockerfile'
+                    })
+
+                print(json.dumps(services))
+            except Exception as e:
+                print(f'Error: {e}', file=sys.stderr)
+                print('[]')
+                sys.exit(1)
+            EOFPYTHON
+
+                        SERVICES_JSON=$(MODULES_JSON="${MODULES_JSON}" python3 /tmp/convert.py)
+                      fi
+
+                      echo "services_json=${SERVICES_JSON}" >> $GITHUB_OUTPUT
+                      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+                      echo "Services to build: ${SERVICES_JSON}"
+                      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
   build:
+    name: Build ${{ matrix.service }}
+    needs: prepare
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       max-parallel: ${{ inputs.max_parallel }}
       matrix:
-        include: ${{ fromJSON(inputs.services_json) }}
+        include: ${{ fromJSON(needs.prepare.outputs.services_json) }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Docker build decision log
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🐳 Docker Build Configuration"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "Service: ${{ matrix.service }}"
+          echo "Dockerfile: ${{ matrix.dockerfile }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Push to registry: ${{ inputs.push_images }}"
+          echo "Branch tag: ${{ inputs.branch_tag }}"
+          echo "Ref prefix: ${{ inputs.ref_name_for_sha }}"
+          echo "SHA: ${{ inputs.sha_short }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -42,6 +132,33 @@ jobs:
         run: |
           echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> "$GITHUB_ENV"
           echo "DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}" >> "$GITHUB_ENV"
+
+      - name: Validate Docker Hub credentials
+        if: ${{ inputs.push_images }}
+        run: |
+          if [ -z "${{ secrets.DOCKERHUB_USERNAME }}" ] || [ -z "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
+            echo "push_images=true, mas DOCKERHUB_USERNAME/DOCKERHUB_TOKEN não foram fornecidos."
+            exit 1
+          fi
+
+      - name: Prepare build metadata
+        run: |
+          SHA_INPUT="${{ inputs.sha_short }}"
+          if [ -z "$SHA_INPUT" ]; then
+            SHA_INPUT="${{ inputs.build_tags_suffix }}"
+          fi
+          if [ -z "$SHA_INPUT" ]; then
+            SHA_INPUT="${GITHUB_SHA}"
+          fi
+          echo "SHA_SHORT=${SHA_INPUT:0:7}" >> "$GITHUB_ENV"
+          echo "BRANCH_TAG=${{ inputs.branch_tag }}" >> "$GITHUB_ENV"
+          echo "REF_PREFIX=${{ inputs.ref_name_for_sha }}" >> "$GITHUB_ENV"
+
+          REGISTRY_NS="${{ env.DOCKERHUB_USERNAME }}"
+          if [ -z "$REGISTRY_NS" ]; then
+            REGISTRY_NS="grecomilani"
+          fi
+          echo "REGISTRY_NAMESPACE=${REGISTRY_NS}" >> "$GITHUB_ENV"
 
       - name: Login to Docker Hub (optional)
         if: ${{ inputs.push_images && env.DOCKERHUB_USERNAME != '' && env.DOCKERHUB_TOKEN != '' }}
@@ -56,6 +173,33 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: ${{ inputs.push_images }}
-          tags: ${{ env.DOCKERHUB_USERNAME != '' && format('{0}/{1}:{2}', env.DOCKERHUB_USERNAME, matrix.service, inputs.build_tags_suffix) || format('{0}:{1}', matrix.service, inputs.build_tags_suffix) }}
+          tags: |
+            ${{ format('{0}/{1}:{2}', env.REGISTRY_NAMESPACE, matrix.service, env.BRANCH_TAG) }}
+            ${{ format('{0}/{1}:{2}-{3}', env.REGISTRY_NAMESPACE, matrix.service, env.REF_PREFIX, env.SHA_SHORT) }}
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+      - name: Docker build summary
+        if: always()
+        run: |
+          cat << 'EOF' >> $GITHUB_STEP_SUMMARY
+          ## 🐳 Docker Build: ${{ matrix.service }}
+
+          **Status:** ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}
+          **Service:** \`${{ matrix.service }}\`
+          **Pushed:** ${{ inputs.push_images && '✅ Yes' || '❌ No (build only)' }}
+
+          ### Tags
+          - \`${{ env.REGISTRY_NAMESPACE }}/${{ matrix.service }}:${{ env.BRANCH_TAG }}\`
+          - \`${{ env.REGISTRY_NAMESPACE }}/${{ matrix.service }}:${{ env.REF_PREFIX }}-${{ env.SHA_SHORT }}\`
+
+          ### Configuration
+          - **Branch:** ${{ github.ref_name }}
+          - **Commit:** ${{ env.SHA_SHORT }}
+          - **Dockerfile:** ${{ matrix.dockerfile }}
+
+          EOF
+
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Docker build completed for ${{ matrix.service }}"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

@@ -1,0 +1,18 @@
+---
+# DEPRECATED: Este ConfigMap foi consolidado no oficina-shared-config
+# Mantido apenas para referência histórica
+# As configurações do Eureka agora estão em:
+# - k8s/base/configmap-shared.yaml (valores padrão)
+# - infra/configmap.tf (criado pelo Terraform)
+# - infra/eureka-nlb.tf (sobrescreve com DNS do NLB)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eureka-server-config
+  namespace: oficina
+data:
+  # Hostname do NLB (deve ser atualizado após criação do NLB)
+  EUREKA_HOSTNAME: "eureka-nlb.oficina.example.com"  # Substituir pelo DNS do NLB
+  SERVER_PORT: "8761"
+  # Para usar o NLB externo, os clientes devem apontar para este endereço
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: "http://eureka-nlb.oficina.example.com:8761/eureka/"

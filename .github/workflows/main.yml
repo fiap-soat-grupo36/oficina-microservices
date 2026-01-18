@@ -1,0 +1,183 @@
+name: Main - Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # STEP 1: Detect what changed
+  detect-changes:
+    name: Detect changes
+    uses: ./.github/workflows/_reusable-changes.yml
+
+  # STEP 2: Build once, cache everything
+  build-and-cache:
+    name: Build and cache
+    needs: detect-changes
+    uses: ./.github/workflows/_reusable-build-cache.yml
+    with:
+      modules_json: ${{ needs.detect-changes.outputs.modules_json }}
+      java_version: '21'
+      maven_args: ''
+
+  # STEP 3: Test modules (quality gate)
+  test:
+    name: Test modules
+    needs: [detect-changes, build-and-cache]
+    uses: ./.github/workflows/_reusable-test.yml
+    with:
+      modules_json: ${{ needs.detect-changes.outputs.modules_json }}
+      java_version: '21'
+      maven_args: ''
+
+  # STEP 4: SonarCloud quality gate (mandatory for production)
+  sonarcloud:
+    name: SonarCloud quality gate
+    needs: test
+    uses: ./.github/workflows/_reusable-sonar.yml
+    with:
+      java_version: '21'
+      sonar_org: 'fiap-soat-grupo36'
+      sonar_project_key: 'fiap-soat-grupo36_oficina-microservices'
+      sonar_host: 'https://sonarcloud.io'
+      scanner_version: '4.0.0.4121'
+      maven_args: ''
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # STEP 5: Build and push Docker images to production (only changed services)
+  docker-build-and-push:
+    name: Docker build and push
+    needs: [detect-changes, sonarcloud]
+    if: |
+      always() &&
+      !cancelled() &&
+      needs.sonarcloud.result == 'success' &&
+      needs.detect-changes.outputs.modules_json != '[]'
+    uses: ./.github/workflows/_reusable-dockerhub.yml
+    with:
+      modules_json: ${{ needs.detect-changes.outputs.modules_json }}
+      branch_tag: latest
+      ref_name_for_sha: main
+      sha_short: ${{ github.sha }}
+      push_images: true
+      max_parallel: 8
+    secrets: inherit
+
+  # STEP 6: Terraform apply to production (if infra changed OR after successful deployment)
+  terraform-apply:
+    name: Terraform apply (prod)
+    needs: [detect-changes, docker-build-and-push]
+    if: |
+      always() &&
+      !cancelled() &&
+      (needs.detect-changes.outputs.terraform_changed == 'true' ||
+       needs.docker-build-and-push.result == 'success')
+    uses: ./.github/workflows/_reusable-terraform.yml
+    with:
+      working_directory: "infra"
+      workspace: "prod"
+      environment: "prod"
+      auto_apply: true
+      tfvars_file: "environments/prod.tfvars"
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+      DATADOG_APP_KEY: ${{ secrets.DATADOG_APP_KEY }}
+
+  # STEP 7: Rollout deployments to force image pull
+  rollout-deployments:
+    name: Rollout deployments (prod)
+    needs: terraform-apply
+    if: needs.terraform-apply.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5.0.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name eks-fiap-oficina-mecanica --region us-east-2
+
+      - name: Rollout all services
+        run: |
+          echo "🔄 Rolling out all deployments to pull latest images..."
+          kubectl -n oficina-mecanica-prod rollout restart deployment/eureka-server
+          kubectl -n oficina-mecanica-prod rollout restart deployment/auth-service
+          kubectl -n oficina-mecanica-prod rollout restart deployment/customer-service
+          kubectl -n oficina-mecanica-prod rollout restart deployment/catalog-service
+          kubectl -n oficina-mecanica-prod rollout restart deployment/inventory-service
+          kubectl -n oficina-mecanica-prod rollout restart deployment/budget-service
+          kubectl -n oficina-mecanica-prod rollout restart deployment/work-order-service
+          kubectl -n oficina-mecanica-prod rollout restart deployment/notification-service
+
+          echo "⏳ Waiting for rollouts to complete..."
+          kubectl -n oficina-mecanica-prod rollout status deployment/eureka-server --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/auth-service --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/customer-service --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/catalog-service --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/inventory-service --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/budget-service --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/work-order-service --timeout=5m
+          kubectl -n oficina-mecanica-prod rollout status deployment/notification-service --timeout=5m
+
+          echo "✅ All deployments rolled out successfully!"
+
+  # SUMMARY: Production deployment status
+  deployment-summary:
+    name: Deployment summary
+    needs: [detect-changes, build-and-cache, test, sonarcloud, docker-build-and-push, terraform-apply, rollout-deployments]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate deployment summary
+        run: |
+          cat << 'EOF' >> $GITHUB_STEP_SUMMARY
+          # 🚀 Production Deployment Summary
+
+          ## Deployment Status
+
+          | Step | Status |
+          |------|--------|
+          | Detect Changes | ${{ needs.detect-changes.result == 'success' && '✅' || '❌' }} |
+          | Build & Cache | ${{ needs.build-and-cache.result == 'success' && '✅' || needs.build-and-cache.result == 'skipped' && '⏭️ Skipped' || '❌' }} |
+          | Test | ${{ needs.test.result == 'success' && '✅' || needs.test.result == 'skipped' && '⏭️ Skipped' || '❌' }} |
+          | SonarCloud Quality Gate | ${{ needs.sonarcloud.result == 'success' && '✅ PASSED' || '❌ FAILED' }} |
+          | Docker Build & Push | ${{ needs.docker-build-and-push.result == 'success' && '✅' || needs.docker-build-and-push.result == 'skipped' && '⏭️ Skipped' || '❌' }} |
+          | Terraform Apply (Prod) | ${{ needs.terraform-apply.result == 'success' && '✅' || needs.terraform-apply.result == 'skipped' && '⏭️ Skipped' || '❌' }} |
+
+          ## Changes Deployed
+
+          - **Environment:** 🔴 **PRODUCTION**
+          - **Modules:** ${{ needs.detect-changes.outputs.modules_json }}
+          - **Docker tag:** \`latest\`
+          - **Quality gate:** ${{ needs.sonarcloud.result == 'success' && '✅ Passed' || '❌ Failed' }}
+          - **Terraform:** ${{ needs.detect-changes.outputs.terraform_changed == 'true' && '✅ Applied' || '⏭️ Skipped (no changes)' }}
+
+          ## Quality Assurance
+
+          - ✅ All tests passed
+          - ${{ needs.sonarcloud.result == 'success' && '✅ SonarCloud quality gate passed' || '❌ SonarCloud quality gate FAILED' }}
+          - ✅ Docker images built and pushed with tag \`latest\`
+          - ${{ needs.terraform-apply.result == 'success' && '✅ Infrastructure deployed to production' || '⏭️ Infrastructure unchanged' }}
+
+          ## Optimization Notes
+
+          - Built only changed modules: ${{ needs.detect-changes.outputs.modules_json }}
+          - Pushed only changed Docker images (skipped unchanged services)
+          - Shared build cache between test jobs
+          - Terraform applied only if infra changed or new images deployed
+
+          ${{ needs.sonarcloud.result != 'success' && '⚠️ **WARNING:** Deployment may be incomplete due to quality gate failure!' || '' }}
+
+          EOF

@@ -1,0 +1,30 @@
+---
+# Service interno para comunicação dentro do cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: eureka-server-internal
+  namespace: oficina
+  labels:
+    app: eureka-server
+spec:
+  type: ClusterIP
+  selector:
+    app: eureka-server
+  ports:
+    - name: http
+      port: 8761
+      targetPort: 8761
+---
+# NOTA: Service eureka-server-nlb é gerenciado pelo TERRAFORM
+# Veja: infra/eureka-nlb.tf
+# 
+# O Terraform cria este service automaticamente usando o template:
+# infra/templates/eureka-nlb-service.yaml.tpl
+#
+# Para ambientes EKS (dev/prod), o service é criado via Terraform.
+# Para ambiente local (Minikube), este service é removido pelo overlay.
+#
+# NÃO edite manualmente. Para fazer alterações:
+# 1. Edite: infra/templates/eureka-nlb-service.yaml.tpl
+# 2. Execute: terraform apply

@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/estoque/entradas")
+@RequestMapping("/api/estoque/entradas")
 @RequiredArgsConstructor
 @Tag(name = "Produto Entrada Estoque", description = "Gerenciamento de entradas de produtos no estoque")
 @SecurityRequirement(name = "bearerAuth")

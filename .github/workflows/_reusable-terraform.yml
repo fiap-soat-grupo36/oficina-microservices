@@ -1,0 +1,151 @@
+name: _reusable-ci-terraform
+
+on:
+  workflow_call:
+    inputs:
+      workspace:
+        description: 'Terraform workspace name'
+        required: true
+        type: string
+      environment:
+        description: 'Environment to deploy (dev or prod)'
+        required: true
+        type: string
+      working_directory:
+        required: false
+        type: string
+        default: './infra/'
+      aws_region:
+        required: false
+        type: string
+        default: 'us-east-1'
+      tfvars_file:
+        required: false
+        type: string
+        default: ''
+      auto_apply:
+        required: false
+        type: boolean
+        default: false
+      image_tag:
+        description: 'Docker image tag to trigger deployment updates'
+        required: false
+        type: string
+        default: 'develop'
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      DATADOG_API_KEY:
+        required: true
+      DATADOG_APP_KEY:
+        required: true
+
+jobs:
+  ci-terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ inputs.working_directory }}
+        
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5.0.0
+        with:
+          aws-access-key-id: '${{ secrets.AWS_ACCESS_KEY_ID }}'
+          aws-secret-access-key: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Set up Terraform CLI
+        uses: hashicorp/setup-terraform@v3.1.2
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        id: init
+        env:
+          TF_VAR_aws_region: ${{ inputs.aws_region }}
+        run: |
+          terraform init -no-color
+
+      - name: Select Terraform Workspace
+        run: |
+          echo "🔍 Listing existing workspaces..."
+          terraform workspace list
+          
+          echo "📋 Selecting workspace: ${{ inputs.workspace }}"
+          terraform workspace select ${{ inputs.workspace }} || terraform workspace new ${{ inputs.workspace }}
+          
+          echo "✅ Current workspace:"
+          terraform workspace show
+
+      - name: Terraform Validate
+        id: validate
+        env:
+          TF_VAR_aws_region: ${{ inputs.aws_region }}
+        run: |
+          terraform validate -no-color || true
+
+      - name: Terraform plan
+        id: plan
+        env:
+          TF_VAR_image_tag: ${{ inputs.image_tag }}
+          TF_VAR_datadog_api_key: ${{ secrets.DATADOG_API_KEY }}
+          TF_VAR_datadog_app_key: ${{ secrets.DATADOG_APP_KEY }}
+          TF_VAR_aws_region: ${{ inputs.aws_region }}
+          TFVARS_FILE: ${{ inputs.tfvars_file }}
+        run: |
+          set -euo pipefail
+          PLAN_CMD=(terraform plan -no-color -input=false)
+          if [ -n "${TFVARS_FILE:-}" ]; then
+            echo "Using tfvars file: ${TFVARS_FILE}"
+            PLAN_CMD+=( -var-file="${TFVARS_FILE}" )
+          else
+            echo "No tfvars file provided; running plan without -var-file"
+          fi
+          "${PLAN_CMD[@]}"
+        continue-on-error: false
+
+      - uses: actions/github-script@v6
+        name: Comment PR with plan details
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+        
+      - name: Terraform Apply
+        if: ${{ inputs.auto_apply && github.event_name == 'push' }}
+        env:
+          TF_VAR_image_tag: ${{ inputs.image_tag }}
+          TF_VAR_datadog_api_key: ${{ secrets.DATADOG_API_KEY }}
+          TF_VAR_datadog_app_key: ${{ secrets.DATADOG_APP_KEY }}
+          TF_VAR_aws_region: ${{ inputs.aws_region }}
+          TFVARS_FILE: ${{ inputs.tfvars_file }}
+        run: |
+          if [ -n "${{ inputs.tfvars_file }}" ]; then
+            terraform apply -no-color -input=false -auto-approve -var-file="${{ inputs.tfvars_file }}"
+          else
+            terraform apply -no-color -input=false -auto-approve
+          fi

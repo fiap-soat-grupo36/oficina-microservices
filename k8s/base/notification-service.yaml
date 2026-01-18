@@ -23,6 +23,11 @@ metadata:
     app: notification-service
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: notification-service
@@ -33,8 +38,8 @@ spec:
     spec:
       containers:
         - name: notification-service
-          image: grecomilani/oficina-notification-service:latest
-          imagePullPolicy: IfNotPresent
+          image: grecomilani/notification-service:develop
+          imagePullPolicy: Always
           ports:
             - containerPort: 8087
               name: http
@@ -81,22 +86,30 @@ spec:
                   key: MAIL_PORT
             - name: MANAGEMENT_HEALTH_MAIL_ENABLED
               value: "false"
-          livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: http
-            initialDelaySeconds: 60
-            periodSeconds: 15
-            timeoutSeconds: 5
-            failureThreshold: 6
-          readinessProbe:
+          startupProbe:
             httpGet:
               path: /actuator/health
               port: http
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
-            failureThreshold: 6
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           resources:
             requests:
               cpu: 150m

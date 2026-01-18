@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Database
+  - postgres.yaml
+
+  # Service Registry
+  - eureka-server.yaml
+  - eureka-service-internal.yaml
+  # eureka-nlb-service.yaml gerenciado pelo Terraform (infra/eureka-nlb.tf)
+
+  # Microservices
+  - auth-service.yaml
+  - customer-service.yaml
+  - catalog-service.yaml
+  - inventory-service.yaml
+  - budget-service.yaml
+  - work-order-service.yaml
+  - notification-service.yaml
+
+  # Horizontal Pod Autoscalers
+  - hpa.yaml

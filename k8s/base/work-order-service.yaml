@@ -23,6 +23,11 @@ metadata:
     app: work-order-service
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: work-order-service
@@ -33,8 +38,8 @@ spec:
     spec:
       containers:
         - name: work-order-service
-          image: grecomilani/oficina-work-order-service:latest
-          imagePullPolicy: IfNotPresent
+          image: grecomilani/work-order-service:develop
+          imagePullPolicy: Always
           ports:
             - containerPort: 8086
               name: http
@@ -79,18 +84,30 @@ spec:
                 secretKeyRef:
                   name: jwt-secrets
                   key: JWT_EXPIRATION
-          livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: http
-            initialDelaySeconds: 60
-            periodSeconds: 15
-          readinessProbe:
+          startupProbe:
             httpGet:
               path: /actuator/health
               port: http
             initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
           resources:
             requests:
               cpu: 150m

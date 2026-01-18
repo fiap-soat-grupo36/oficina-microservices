@@ -43,16 +43,37 @@ jobs:
           distribution: temurin
           cache: maven
 
-      - name: Build project
-        run: mvn --batch-mode clean compile test-compile ${{ inputs.maven_args }}
+      - name: Download JaCoCo reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: jacoco-reports-*
+          merge-multiple: true
 
-      - name: Run tests and SonarCloud Scan
+      - name: Resolve JaCoCo XML paths
+        id: jacoco
+        run: |
+          mapfile -t files < <(find . -path "*/target/site/jacoco/jacoco.xml" -print)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "paths=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          joined=$(printf "%s," "${files[@]}")
+          joined=${joined%,}
+          echo "paths=$joined" >> "$GITHUB_OUTPUT"
+
+      - name: Run SonarCloud Scan (skip tests)
         env:
           GITHUB_TOKEN: ${{ github.token }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          JACOCO_XML_PATHS: ${{ steps.jacoco.outputs.paths }}
         run: |
-          mvn --batch-mode verify sonar:sonar \
+          EXTRA_ARGS=""
+          if [ -n "$JACOCO_XML_PATHS" ]; then
+            EXTRA_ARGS="-Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_XML_PATHS"
+          fi
+          mvn --batch-mode -DskipTests verify org.sonarsource.scanner.maven:sonar-maven-plugin:${{ inputs.scanner_version }}:sonar \
             -Dsonar.host.url="${{ inputs.sonar_host }}" \
             -Dsonar.organization="${{ inputs.sonar_org }}" \
             -Dsonar.projectKey="${{ inputs.sonar_project_key }}" \
+            $EXTRA_ARGS \
             ${{ inputs.maven_args }}
