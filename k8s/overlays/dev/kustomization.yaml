@@ -60,10 +60,10 @@ patches:
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/startupProbe/initialDelaySeconds
-      value: 60
+      value: 90
     - op: replace
       path: /spec/template/spec/containers/0/startupProbe/failureThreshold
-      value: 20
+      value: 30
   target:
     kind: Deployment
     name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service)
@@ -74,10 +74,10 @@ patches:
       value: 100m
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/memory
-      value: 512Mi
+      value: 384Mi
     - op: replace
       path: /spec/template/spec/containers/0/resources/limits/cpu
-      value: 500m
+      value: 1000m
   target:
     kind: Deployment
     name: (catalog-service|inventory-service|budget-service|work-order-service)
@@ -88,10 +88,10 @@ patches:
       value: 200m
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/memory
-      value: 768Mi
+      value: 384Mi
     - op: replace
       path: /spec/template/spec/containers/0/resources/limits/cpu
-      value: 500m
+      value: 1000m
   target:
     kind: Deployment
     name: (auth-service|customer-service)
@@ -102,10 +102,10 @@ patches:
       value: 100m
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/memory
-      value: 768Mi
+      value: 384Mi
     - op: replace
       path: /spec/template/spec/containers/0/resources/limits/cpu
-      value: 500m
+      value: 1000m
   target:
     kind: Deployment
     name: eureka-server
@@ -116,10 +116,10 @@ patches:
       value: 100m
     - op: replace
       path: /spec/template/spec/containers/0/resources/requests/memory
-      value: 512Mi
+      value: 384Mi
     - op: replace
       path: /spec/template/spec/containers/0/resources/limits/cpu
-      value: 500m
+      value: 1000m
   target:
     kind: Deployment
     name: notification-service
@@ -144,6 +144,87 @@ patches:
   target:
     kind: Deployment
     name: (auth-service|customer-service|catalog-service|inventory-service|budget-service|work-order-service|notification-service|eureka-server)
+# Adicionar labels do Datadog para tagueamento correto
+- patch: |-
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+      value: dev
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+      value: auth-service
+  target:
+    kind: Deployment
+    name: auth-service
+- patch: |-
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+      value: dev
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+      value: customer-service
+  target:
+    kind: Deployment
+    name: customer-service
+- patch: |-
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+      value: dev
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+      value: catalog-service
+  target:
+    kind: Deployment
+    name: catalog-service
+- patch: |-
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+      value: dev
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+      value: inventory-service
+  target:
+    kind: Deployment
+    name: inventory-service
+- patch: |-
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+      value: dev
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+      value: budget-service
+  target:
+    kind: Deployment
+    name: budget-service
+- patch: |-
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+      value: dev
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+      value: work-order-service
+  target:
+    kind: Deployment
+    name: work-order-service
+- patch: |-
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+      value: dev
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+      value: notification-service
+  target:
+    kind: Deployment
+    name: notification-service
+- patch: |-
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+      value: dev
+    - op: add
+      path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+      value: eureka-server
+  target:
+    kind: Deployment
+    name: eureka-server
 
 # Labels comuns para ambiente DEV
 commonLabels:

@@ -29,6 +29,8 @@ spec:
             - containerPort: 8761
               name: http
           env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-Xms128m -Xmx300m"
             - name: SPRING_PROFILES_ACTIVE
               valueFrom:
                 configMapKeyRef:
@@ -49,7 +51,7 @@ spec:
             httpGet:
               path: /actuator/health
               port: http
-            initialDelaySeconds: 30
+            initialDelaySeconds: 90
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 30
@@ -72,7 +74,7 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 512Mi
+              memory: 384Mi
             limits:
-              cpu: 500m
-              memory: 1Gi
+              cpu: 1000m
+              memory: 600Mi
