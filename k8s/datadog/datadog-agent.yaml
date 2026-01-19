@@ -22,15 +22,9 @@ spec:
       instrumentation:
         enabled: true
         targets:
-          - name: "java-only"
+          - name: "java"
             ddTraceVersions:
               java: "1"
-        disabledLanguages:
-          - python
-          - js
-          - php
-          - dotnet
-          - ruby
     logCollection:
       enabled: true
       containerCollectAll: true
