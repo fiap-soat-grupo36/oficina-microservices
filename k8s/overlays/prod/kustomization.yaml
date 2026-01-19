@@ -178,6 +178,87 @@ patches:
             configMapKeyRef:
               name: oficina-shared-config
               key: API_GATEWAY_BASE_URL
+  # Adicionar labels do Datadog para tagueamento correto
+  - target:
+      kind: Deployment
+      name: auth-service
+    patch: |-
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+        value: prod
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+        value: auth-service
+  - target:
+      kind: Deployment
+      name: customer-service
+    patch: |-
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+        value: prod
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+        value: customer-service
+  - target:
+      kind: Deployment
+      name: catalog-service
+    patch: |-
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+        value: prod
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+        value: catalog-service
+  - target:
+      kind: Deployment
+      name: inventory-service
+    patch: |-
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+        value: prod
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+        value: inventory-service
+  - target:
+      kind: Deployment
+      name: budget-service
+    patch: |-
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+        value: prod
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+        value: budget-service
+  - target:
+      kind: Deployment
+      name: work-order-service
+    patch: |-
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+        value: prod
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+        value: work-order-service
+  - target:
+      kind: Deployment
+      name: notification-service
+    patch: |-
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+        value: prod
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+        value: notification-service
+  - target:
+      kind: Deployment
+      name: eureka-server
+    patch: |-
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1env
+        value: prod
+      - op: add
+        path: /spec/template/metadata/labels/tags.datadoghq.com~1service
+        value: eureka-server
 
 # Labels comuns para ambiente PROD
 commonLabels:
