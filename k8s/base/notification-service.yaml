@@ -35,6 +35,9 @@ spec:
     metadata:
       labels:
         app: notification-service
+        tags.datadoghq.com/env: "local"
+        tags.datadoghq.com/service: "notification-service"
+        tags.datadoghq.com/version: "develop"
     spec:
       containers:
         - name: notification-service
@@ -88,6 +91,21 @@ spec:
                   key: MAIL_PORT
             - name: MANAGEMENT_HEALTH_MAIL_ENABLED
               value: "false"
+            - name: DD_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-shared-config
+                  key: DD_ENV
+            - name: DD_SERVICE
+              value: "notification-service"
+            - name: DD_VERSION
+              value: "develop"
+            - name: DD_LOGS_INJECTION
+              value: "true"
+            - name: DD_TRACE_SAMPLE_RATE
+              value: "1"
+            - name: DD_PROFILING_ENABLED
+              value: "true"
           startupProbe:
             httpGet:
               path: /actuator/health

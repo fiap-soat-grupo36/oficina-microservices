@@ -35,6 +35,9 @@ spec:
     metadata:
       labels:
         app: budget-service
+        tags.datadoghq.com/env: "local"
+        tags.datadoghq.com/service: "budget-service"
+        tags.datadoghq.com/version: "develop"
     spec:
       containers:
         - name: budget-service
@@ -86,6 +89,21 @@ spec:
                 secretKeyRef:
                   name: jwt-secrets
                   key: JWT_EXPIRATION
+            - name: DD_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: oficina-shared-config
+                  key: DD_ENV
+            - name: DD_SERVICE
+              value: "budget-service"
+            - name: DD_VERSION
+              value: "develop"
+            - name: DD_LOGS_INJECTION
+              value: "true"
+            - name: DD_TRACE_SAMPLE_RATE
+              value: "1"
+            - name: DD_PROFILING_ENABLED
+              value: "true"
           startupProbe:
             httpGet:
               path: /actuator/health
