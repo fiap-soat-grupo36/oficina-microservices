@@ -25,6 +25,12 @@ spec:
           - name: "java-only"
             ddTraceVersions:
               java: "1"
+        disabledLanguages:
+          - python
+          - js
+          - php
+          - dotnet
+          - ruby
     logCollection:
       enabled: true
       containerCollectAll: true
