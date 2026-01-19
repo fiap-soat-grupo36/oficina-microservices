@@ -37,6 +37,8 @@ resource "kubernetes_config_map_v1" "oficina_shared" {
     SERVER_PORT_BUDGET       = "8085"
     SERVER_PORT_WORK_ORDER   = "8086"
     SERVER_PORT_NOTIFICATION = "8087"
+    # Datadog
+    DD_ENV = local.environment
   }
 
   depends_on = [

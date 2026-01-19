@@ -1,5 +1,7 @@
-# Namespace para Datadog Agent
+# Namespace para Datadog Agent (apenas dev - prod usa namespace do infra-kubernetes)
 resource "kubernetes_namespace" "datadog" {
+  count = local.environment == "dev" ? 1 : 0
+
   metadata {
     name = "datadog-agent"
   }
@@ -7,9 +9,11 @@ resource "kubernetes_namespace" "datadog" {
 
 # Secret com credenciais do Datadog
 resource "kubernetes_secret" "datadog" {
+  count = local.environment == "dev" ? 1 : 0
+
   metadata {
     name      = "datadog"
-    namespace = kubernetes_namespace.datadog.metadata[0].name
+    namespace = local.environment == "dev" ? kubernetes_namespace.datadog[0].metadata[0].name : "datadog-agent"
   }
 
   data = {
@@ -26,7 +30,7 @@ data "kubectl_path_documents" "dd_agent" {
 }
 
 resource "kubectl_manifest" "dd_agent_manifest" {
-  for_each  = data.kubectl_path_documents.dd_agent.manifests
+  for_each  = local.environment == "dev" ? data.kubectl_path_documents.dd_agent.manifests : {}
   yaml_body = each.value
 
   # Usar server-side apply para evitar conflitos
