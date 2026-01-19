@@ -15,6 +15,8 @@ resource "kubernetes_cluster_role" "namespace_manager" {
 }
 
 resource "kubernetes_cluster_role_binding" "pipeline_namespace_manager" {
+  count = local.environment == "dev" ? 1 : 0
+
   metadata {
     name = "pipeline-namespace-manager-binding"
   }
