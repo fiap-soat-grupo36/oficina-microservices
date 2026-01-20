@@ -4,7 +4,7 @@
 
 # Service Account para o AWS Load Balancer Controller
 resource "kubernetes_service_account" "aws_load_balancer_controller" {
-  count = terraform.workspace != "default" ? 1 : 0
+  count = terraform.workspace == "dev" ? 1 : 0
 
   metadata {
     name      = "aws-load-balancer-controller"
@@ -338,7 +338,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name  = "serviceAccount.name"
-    value = kubernetes_service_account.aws_load_balancer_controller[0].metadata[0].name
+    value = "aws-load-balancer-controller"
   }
 
   set {
