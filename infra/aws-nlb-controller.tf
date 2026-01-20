@@ -318,7 +318,7 @@ resource "aws_iam_role_policy_attachment" "aws_load_balancer_controller" {
 
 # Helm Release para o AWS Load Balancer Controller
 resource "helm_release" "aws_load_balancer_controller" {
-  count = terraform.workspace != "default" ? 1 : 0
+  count = terraform.workspace == "dev" ? 1 : 0
 
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
