@@ -35,7 +35,7 @@ server:
 
 jwt:
   secret: ${JWT_SECRET:minha-chave-super-secreta-para-jwt-256-bits}
-  expiration-in-ms: ${JWT_EXPIRATION:3600000}
+  expiration-in-ms: ${JWT_EXPIRATION:14400000}
 
 logging:
   level:
