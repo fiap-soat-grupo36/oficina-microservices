@@ -129,7 +129,7 @@ class MovimentacaoEstoqueServiceImplTest {
         MovimentacaoEstoqueResponseDTO dto2 = new MovimentacaoEstoqueResponseDTO();
         dto2.setId(2L);
 
-        when(movimentacaoEstoqueRepository.findWithFilters(null, null, null, null)).thenReturn(movimentacoes);
+        when(movimentacaoEstoqueRepository.findAll()).thenReturn(movimentacoes);
         when(movimentacaoEstoqueMapper.toResponseDTO(mov1)).thenReturn(dto1);
         when(movimentacaoEstoqueMapper.toResponseDTO(mov2)).thenReturn(dto2);
 
@@ -139,7 +139,7 @@ class MovimentacaoEstoqueServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(movimentacaoEstoqueRepository, times(1)).findWithFilters(null, null, null, null);
+        verify(movimentacaoEstoqueRepository, times(1)).findAll();
     }
 
     @Test
@@ -154,7 +154,7 @@ class MovimentacaoEstoqueServiceImplTest {
         MovimentacaoEstoqueResponseDTO dto = new MovimentacaoEstoqueResponseDTO();
         dto.setId(1L);
 
-        when(movimentacaoEstoqueRepository.findWithFilters(produtoCatalogoId, null, null, null))
+        when(movimentacaoEstoqueRepository.findByProdutoCatalogoId(produtoCatalogoId))
                 .thenReturn(Arrays.asList(mov));
         when(movimentacaoEstoqueMapper.toResponseDTO(mov)).thenReturn(dto);
 
@@ -165,7 +165,7 @@ class MovimentacaoEstoqueServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(movimentacaoEstoqueRepository, times(1)).findWithFilters(produtoCatalogoId, null, null, null);
+        verify(movimentacaoEstoqueRepository, times(1)).findByProdutoCatalogoId(produtoCatalogoId);
     }
 
     @Test
@@ -217,7 +217,7 @@ class MovimentacaoEstoqueServiceImplTest {
         MovimentacaoEstoqueResponseDTO dto = new MovimentacaoEstoqueResponseDTO();
         dto.setId(1L);
 
-        when(movimentacaoEstoqueRepository.findWithFilters(null, tipo, null, null))
+        when(movimentacaoEstoqueRepository.findByTipoMovimentacao(tipo))
                 .thenReturn(Arrays.asList(mov));
         when(movimentacaoEstoqueMapper.toResponseDTO(mov)).thenReturn(dto);
 
@@ -228,6 +228,6 @@ class MovimentacaoEstoqueServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(movimentacaoEstoqueRepository, times(1)).findWithFilters(null, tipo, null, null);
+        verify(movimentacaoEstoqueRepository, times(1)).findByTipoMovimentacao(tipo);
     }
 }
