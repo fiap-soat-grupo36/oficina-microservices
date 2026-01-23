@@ -31,7 +31,7 @@ public class MovimentacaoEstoque {
     @Column(name = "preco_unitario", precision = 10, scale = 2)
     private BigDecimal precoUnitario;
 
-    @Column(name = "data_movimentacao")
+    @Column(name = "data_movimentacao", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime dataMovimentacao = LocalDateTime.now();
 
     private String observacao;
