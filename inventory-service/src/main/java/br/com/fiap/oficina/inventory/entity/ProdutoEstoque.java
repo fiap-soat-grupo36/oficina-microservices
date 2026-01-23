@@ -35,7 +35,7 @@ public class ProdutoEstoque {
     @Column(name = "preco_medio_sugerido", precision = 10, scale = 2)
     private BigDecimal precoMedioSugerido = BigDecimal.ZERO;
 
-    @Column(name = "estoque_minimo")
+    @Column(name = "estoque_minimo", nullable = false, columnDefinition = "INTEGER DEFAULT 0")
     private Integer estoqueMinimo = 0;
 
     @Column(name = "updated_at")

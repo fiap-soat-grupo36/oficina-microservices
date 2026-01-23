@@ -12,6 +12,6 @@ public interface ProdutoEstoqueMapper {
     @Mapping(source = "updatedAt", target = "ultimaAtualizacao")
     @Mapping(target = "nomeProduto", ignore = true)
     @Mapping(target = "codigoProduto", ignore = true)
-    @Mapping(target = "baixoEstoque", expression = "java(entity.getQuantidadeDisponivel() < entity.getEstoqueMinimo())")
+    @Mapping(target = "baixoEstoque", expression = "java(entity.getQuantidadeDisponivel() != null && entity.getEstoqueMinimo() != null && entity.getQuantidadeDisponivel() < entity.getEstoqueMinimo())")
     ProdutoEstoqueResponseDTO toResponseDTO(ProdutoEstoque entity);
 }
