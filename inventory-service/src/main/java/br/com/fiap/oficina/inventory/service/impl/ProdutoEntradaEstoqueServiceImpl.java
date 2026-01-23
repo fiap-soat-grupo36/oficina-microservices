@@ -64,12 +64,30 @@ public class ProdutoEntradaEstoqueServiceImpl implements ProdutoEntradaEstoqueSe
             LocalDateTime dataInicio,
             LocalDateTime dataFim) {
 
-        List<MovimentacaoEstoque> movimentacoes = movimentacaoEstoqueRepository.findWithFilters(
-                produtoCatalogoId,
-                TipoMovimentacao.ENTRADA,
-                dataInicio,
-                dataFim
-        );
+        List<MovimentacaoEstoque> movimentacoes;
+
+        // Lógica condicional para entradas
+        boolean temProduto = produtoCatalogoId != null;
+        boolean temDatas = dataInicio != null && dataFim != null;
+
+        if (temProduto && temDatas) {
+            // Produto + Datas + Tipo ENTRADA
+            movimentacoes = movimentacaoEstoqueRepository
+                    .findByProdutoCatalogoIdAndTipoMovimentacaoAndDataMovimentacaoBetween(
+                            produtoCatalogoId, TipoMovimentacao.ENTRADA, dataInicio, dataFim);
+        } else if (temProduto) {
+            // Produto + Tipo ENTRADA
+            movimentacoes = movimentacaoEstoqueRepository
+                    .findByProdutoCatalogoIdAndTipoMovimentacao(produtoCatalogoId, TipoMovimentacao.ENTRADA);
+        } else if (temDatas) {
+            // Datas + Tipo ENTRADA
+            movimentacoes = movimentacaoEstoqueRepository
+                    .findByTipoMovimentacaoAndDataMovimentacaoBetween(TipoMovimentacao.ENTRADA, dataInicio, dataFim);
+        } else {
+            // Só Tipo ENTRADA
+            movimentacoes = movimentacaoEstoqueRepository
+                    .findByTipoMovimentacao(TipoMovimentacao.ENTRADA);
+        }
 
         return movimentacoes.stream()
                 .map(this::mapToResponseDTO)

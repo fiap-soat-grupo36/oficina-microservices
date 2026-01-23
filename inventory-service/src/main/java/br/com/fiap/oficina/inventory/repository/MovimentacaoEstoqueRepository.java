@@ -3,8 +3,6 @@ package br.com.fiap.oficina.inventory.repository;
 import br.com.fiap.oficina.inventory.entity.MovimentacaoEstoque;
 import br.com.fiap.oficina.shared.enums.TipoMovimentacao;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -17,15 +15,18 @@ public interface MovimentacaoEstoqueRepository extends JpaRepository<Movimentaca
 
     List<MovimentacaoEstoque> findByTipoMovimentacao(TipoMovimentacao tipo);
 
-    @Query("SELECT m FROM MovimentacaoEstoque m WHERE " +
-            "(:produtoCatalogoId IS NULL OR m.produtoCatalogoId = :produtoCatalogoId) AND " +
-            "(:tipo IS NULL OR m.tipoMovimentacao = :tipo) AND " +
-            "(:dataInicio IS NULL OR m.dataMovimentacao >= :dataInicio) AND " +
-            "(:dataFim IS NULL OR m.dataMovimentacao <= :dataFim)")
-    List<MovimentacaoEstoque> findWithFilters(
-            @Param("produtoCatalogoId") Long produtoCatalogoId,
-            @Param("tipo") TipoMovimentacao tipo,
-            @Param("dataInicio") LocalDateTime dataInicio,
-            @Param("dataFim") LocalDateTime dataFim
-    );
+    // Métodos derivados - Spring Data gera a query automaticamente
+    List<MovimentacaoEstoque> findByDataMovimentacaoBetween(LocalDateTime dataInicio, LocalDateTime dataFim);
+
+    List<MovimentacaoEstoque> findByTipoMovimentacaoAndDataMovimentacaoBetween(
+            TipoMovimentacao tipo, LocalDateTime dataInicio, LocalDateTime dataFim);
+
+    List<MovimentacaoEstoque> findByProdutoCatalogoIdAndDataMovimentacaoBetween(
+            Long produtoCatalogoId, LocalDateTime dataInicio, LocalDateTime dataFim);
+
+    List<MovimentacaoEstoque> findByProdutoCatalogoIdAndTipoMovimentacao(
+            Long produtoCatalogoId, TipoMovimentacao tipo);
+
+    List<MovimentacaoEstoque> findByProdutoCatalogoIdAndTipoMovimentacaoAndDataMovimentacaoBetween(
+            Long produtoCatalogoId, TipoMovimentacao tipo, LocalDateTime dataInicio, LocalDateTime dataFim);
 }

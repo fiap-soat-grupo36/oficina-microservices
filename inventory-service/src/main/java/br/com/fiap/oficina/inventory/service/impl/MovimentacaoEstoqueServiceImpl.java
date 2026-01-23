@@ -58,12 +58,50 @@ public class MovimentacaoEstoqueServiceImpl implements MovimentacaoEstoqueServic
             LocalDateTime dataInicio,
             LocalDateTime dataFim
     ) {
-        List<MovimentacaoEstoque> movimentacoes = movimentacaoEstoqueRepository
-                .findWithFilters(produtoCatalogoId, tipo, dataInicio, dataFim);
+        List<MovimentacaoEstoque> movimentacoes;
+
+        // Lógica condicional baseada nos parâmetros fornecidos
+        boolean temProduto = produtoCatalogoId != null;
+        boolean temTipo = tipo != null;
+        boolean temDatas = dataInicio != null && dataFim != null;
+
+        if (temProduto && temTipo && temDatas) {
+            // Todos os filtros
+            movimentacoes = movimentacaoEstoqueRepository
+                    .findByProdutoCatalogoIdAndTipoMovimentacaoAndDataMovimentacaoBetween(
+                            produtoCatalogoId, tipo, dataInicio, dataFim);
+        } else if (temProduto && temTipo) {
+            // Produto + Tipo
+            movimentacoes = movimentacaoEstoqueRepository
+                    .findByProdutoCatalogoIdAndTipoMovimentacao(produtoCatalogoId, tipo);
+        } else if (temProduto && temDatas) {
+            // Produto + Datas
+            movimentacoes = movimentacaoEstoqueRepository
+                    .findByProdutoCatalogoIdAndDataMovimentacaoBetween(produtoCatalogoId, dataInicio, dataFim);
+        } else if (temTipo && temDatas) {
+            // Tipo + Datas
+            movimentacoes = movimentacaoEstoqueRepository
+                    .findByTipoMovimentacaoAndDataMovimentacaoBetween(tipo, dataInicio, dataFim);
+        } else if (temProduto) {
+            // Só Produto
+            movimentacoes = movimentacaoEstoqueRepository
+                    .findByProdutoCatalogoId(produtoCatalogoId);
+        } else if (temTipo) {
+            // Só Tipo
+            movimentacoes = movimentacaoEstoqueRepository
+                    .findByTipoMovimentacao(tipo);
+        } else if (temDatas) {
+            // Só Datas
+            movimentacoes = movimentacaoEstoqueRepository
+                    .findByDataMovimentacaoBetween(dataInicio, dataFim);
+        } else {
+            // Sem filtros - todos os registros
+            movimentacoes = movimentacaoEstoqueRepository.findAll();
+        }
 
         return movimentacoes.stream()
                 .map(movimentacaoEstoqueMapper::toResponseDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
