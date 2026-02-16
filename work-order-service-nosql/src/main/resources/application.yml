@@ -1,30 +1,16 @@
 spring:
   application:
-    name: work-order-service
+    name: work-order-service-nosql  # Nome diferente
 
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/oficina-db}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: ${DDL_AUTO:update}
-    show-sql: ${SHOW_SQL:false}
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-    defer-datasource-initialization: true
-
-  sql:
-    init:
-      mode: ${SQL_INIT_MODE:never}
-      data-locations: ${SQL_DATA_LOCATIONS:classpath:data.sql}
+  # ============================================
+  # MONGODB (substituindo datasource/jpa)
+  # ============================================
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb+srv://workorder_user:W0rk0rd3r_2026_@oficina-workorder.mia8qk5.mongodb.net/workorder_db?appName=oficina-workorder}
 
 server:
-  port: ${SERVER_PORT:8086}
+  port: ${SERVER_PORT:8087}  # PORTA DIFERENTE (8086 é do V1)
 
 jwt:
   secret: ${JWT_SECRET:minha-chave-secreta-super-segura-para-jwt-com-256-bits-no-minimo}
@@ -42,6 +28,7 @@ management:
 logging:
   level:
     root: INFO
+    org.springframework.data.mongodb: DEBUG  # NOVO
 
 springdoc:
   api-docs:
@@ -49,5 +36,7 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
   servers:
-    - url: ${API_GATEWAY_BASE_URL:https://d9vqmoflh9.execute-api.us-east-2.amazonaws.com/dev}/work-order
+    - url: http://localhost:8087  # PORTA NOVA
+      description: Local (MongoDB)
+    - url: ${API_GATEWAY_BASE_URL:https://d9vqmoflh9.execute-api.us-east-2.amazonaws.com/dev}/work-order-nosql
       description: API Gateway

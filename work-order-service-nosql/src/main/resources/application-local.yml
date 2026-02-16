@@ -1,18 +1,8 @@
 # Profile para desenvolvimento local
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/oficina-db
-    username: postgres
-    password: postgres
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-
-  sql:
-    init:
-      mode: always
+  data:
+    mongodb:
+      uri: mongodb+srv://workorder_user:W0rk0rd3r_2026_@oficina-workorder.mia8qk5.mongodb.net/workorder_db
 
 eureka:
   client:
@@ -23,10 +13,9 @@ eureka:
 logging:
   level:
     br.com.fiap.oficina: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.data.mongodb.core: DEBUG
 
 springdoc:
   servers:
-    - url: http://localhost:8086
-      description: Local (Minikube)
+    - url: http://localhost:8087
+      description: Local (MongoDB)

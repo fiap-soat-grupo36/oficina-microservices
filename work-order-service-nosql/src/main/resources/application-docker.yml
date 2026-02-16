@@ -1,18 +1,8 @@
 # Profile para Docker Compose
 spring:
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://postgres:5432/oficina-db}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
-
-  jpa:
-    hibernate:
-      ddl-auto: ${DDL_AUTO:create-drop}
-    show-sql: ${SHOW_SQL:false}
-
-  sql:
-    init:
-      mode: ${SQL_INIT_MODE:always}
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://workorder_user:workorder_pass@mongodb:27017/workorder_db}
 
 eureka:
   client:
@@ -27,7 +17,7 @@ eureka:
     initial-instance-info-replication-interval-seconds: 10
   instance:
     prefer-ip-address: true
-    hostname: ${HOSTNAME:work-order-service}
+    hostname: ${HOSTNAME:work-order-service-nosql}
     lease-renewal-interval-in-seconds: 10
     lease-expiration-duration-in-seconds: 30
     instance-id: ${spring.application.name}:${server.port}
