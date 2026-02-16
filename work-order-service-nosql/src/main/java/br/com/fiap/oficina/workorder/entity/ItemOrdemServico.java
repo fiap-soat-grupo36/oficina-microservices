@@ -1,31 +1,23 @@
 package br.com.fiap.oficina.workorder.entity;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
-@Entity
+// REMOVIDO: @Entity, @Table, @Id, @GeneratedValue, @ManyToOne
+// Agora é um POJO puro (será array embutido em OrdemServico)
+
 @Getter
 @Setter
-@Table(name = "item_ordem_servico")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ItemOrdemServico {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    // REMOVIDO: private Long id; (MongoDB não precisa ID para subdocumentos)
+    // REMOVIDO: private OrdemServico ordemServico; (não precisa mais da relação bidirecional)
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ordem_servico_id", nullable = false)
-    private OrdemServico ordemServico;
-
-    @Column(name = "produto_catalogo_id", nullable = false)
     private Long produtoCatalogoId;
-
-    @Column(nullable = false)
     private Integer quantidade;
-
-    @Column(name = "preco_unitario", nullable = false, precision = 10, scale = 2)
     private BigDecimal precoUnitario;
 }
