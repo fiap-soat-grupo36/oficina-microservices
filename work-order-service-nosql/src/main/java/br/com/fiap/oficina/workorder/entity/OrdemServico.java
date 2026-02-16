@@ -1,64 +1,85 @@
 package br.com.fiap.oficina.workorder.entity;
 
 import br.com.fiap.oficina.shared.enums.StatusOrdemServico;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
+@Document(collection = "ordem_servico")
 @Getter
 @Setter
-@Table(name = "ordem_servico")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class OrdemServico {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;  // MongoDB usa String (ObjectId)
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Field("status")
     private StatusOrdemServico status = StatusOrdemServico.RECEBIDA;
 
-    @Column(name = "data_criacao")
+    @Field("data_criacao")
     private LocalDateTime dataCriacao = LocalDateTime.now();
 
-    @Column(name = "data_inicio_execucao")
+    @Field("data_inicio_execucao")
     private LocalDateTime dataInicioExecucao;
 
-    @Column(name = "data_termino_execucao")
+    @Field("data_termino_execucao")
     private LocalDateTime dataTerminoExecucao;
 
-    @Column(name = "data_entrega")
+    @Field("data_entrega")
     private LocalDateTime dataEntrega;
 
-    @Column(length = 1000)
+    @Field("observacoes")
     private String observacoes;
 
-    @Column(name = "veiculo_id")
+    // Referências fracas (IDs)
+    @Field("veiculo_id")
     private Long veiculoId;
 
-    @Column(name = "cliente_id")
+    @Field("cliente_id")
     private Long clienteId;
 
-    @Column(name = "mecanico_id")
+    @Field("mecanico_id")
     private Long mecanicoId;
 
-    @Column(name = "orcamento_id")
+    @Field("orcamento_id")
     private Long orcamentoId;
 
-    @ElementCollection
-    @CollectionTable(name = "ordem_servico_servicos",
-            joinColumns = @JoinColumn(name = "ordem_servico_id"))
-    @Column(name = "servico_id")
+    // =========================================
+    // CACHE LOCAL (NOVO - Sincronizado via eventos)
+    // =========================================
+    @Field("cliente_cache")
+    private ClienteCache clienteCache;
+
+    @Field("veiculo_cache")
+    private VeiculoCache veiculoCache;
+
+    @Field("mecanico_cache")
+    private MecanicoCache mecanicoCache;
+
+    // Arrays embutidos
+    @Field("servicos_ids")
     private List<Long> servicosIds = new ArrayList<>();
 
-    @OneToMany(mappedBy = "ordemServico", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Field("itens_ordem_servico")
     private List<ItemOrdemServico> itensOrdemServico = new ArrayList<>();
 
+    // =========================================
+    // EVENT SOURCING (NOVO - Histórico imutável)
+    // =========================================
+    @Field("historico_status")
+    private List<MudancaStatus> historicoStatus = new ArrayList<>();
+
+    // =========================================
+    // MÉTODOS HELPER (mantidos do original)
+    // =========================================
     public void addServico(Long servicoId) {
         if (servicosIds == null) {
             servicosIds = new ArrayList<>();
@@ -78,7 +99,7 @@ public class OrdemServico {
         if (itensOrdemServico == null) {
             itensOrdemServico = new ArrayList<>();
         }
-        produto.setOrdemServico(this);
+        // REMOVIDO: produto.setOrdemServico(this) - não precisa mais
         itensOrdemServico.add(produto);
     }
 
@@ -86,5 +107,52 @@ public class OrdemServico {
         if (itensOrdemServico != null) {
             itensOrdemServico.removeIf(item -> item.getProdutoCatalogoId().equals(produtoId));
         }
+    }
+
+    // =========================================
+    // CLASSES INTERNAS (CACHE)
+    // =========================================
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class ClienteCache {
+        private Long id;
+        private String nome;
+        private String email;
+        private String telefone;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class VeiculoCache {
+        private Long id;
+        private String placa;
+        private String marca;
+        private String modelo;
+        private Integer ano;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class MecanicoCache {
+        private Long id;
+        private String nome;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class MudancaStatus {
+        private StatusOrdemServico statusAnterior;
+        private StatusOrdemServico statusNovo;
+        private LocalDateTime dataHora;
+        private String usuario;
+        private String observacao;
     }
 }
