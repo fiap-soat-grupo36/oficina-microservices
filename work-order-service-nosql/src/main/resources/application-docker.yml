@@ -1,0 +1,38 @@
+# Profile para Docker Compose
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/oficina-db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:create-drop}
+    show-sql: ${SHOW_SQL:false}
+
+  sql:
+    init:
+      mode: ${SQL_INIT_MODE:always}
+
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: ${EUREKA_URL:http://eureka-server:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 5
+    eureka-server-connect-timeout-seconds: 5
+    eureka-server-read-timeout-seconds: 5
+    initial-instance-info-replication-interval-seconds: 10
+  instance:
+    prefer-ip-address: true
+    hostname: ${HOSTNAME:work-order-service}
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    instance-id: ${spring.application.name}:${server.port}
+
+logging:
+  level:
+    com.netflix.discovery: WARN
+    com.netflix.eureka: WARN

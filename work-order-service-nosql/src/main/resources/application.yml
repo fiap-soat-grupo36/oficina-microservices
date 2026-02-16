@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: work-order-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/oficina-db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    show-sql: ${SHOW_SQL:false}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: ${SQL_INIT_MODE:never}
+      data-locations: ${SQL_DATA_LOCATIONS:classpath:data.sql}
+
+server:
+  port: ${SERVER_PORT:8086}
+
+jwt:
+  secret: ${JWT_SECRET:minha-chave-secreta-super-segura-para-jwt-com-256-bits-no-minimo}
+  expiration-in-ms: ${JWT_EXPIRATION:3600000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    root: INFO
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+  servers:
+    - url: ${API_GATEWAY_BASE_URL:https://d9vqmoflh9.execute-api.us-east-2.amazonaws.com/dev}/work-order
+      description: API Gateway

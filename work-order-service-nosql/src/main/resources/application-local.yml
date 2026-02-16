@@ -1,0 +1,32 @@
+# Profile para desenvolvimento local
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/oficina-db
+    username: postgres
+    password: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  sql:
+    init:
+      mode: always
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+logging:
+  level:
+    br.com.fiap.oficina: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+springdoc:
+  servers:
+    - url: http://localhost:8086
+      description: Local (Minikube)

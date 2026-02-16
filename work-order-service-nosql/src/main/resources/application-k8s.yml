@@ -1,0 +1,43 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/oficina-db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    show-sql: ${SHOW_SQL:false}
+  sql:
+    init:
+      mode: ${SQL_INIT_MODE:never}
+      data-locations: ${SQL_DATA_LOCATIONS:classpath:data.sql}
+
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: ${EUREKA_URL:http://eureka-server:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 5
+    eureka-server-connect-timeout-seconds: 5
+    eureka-server-read-timeout-seconds: 5
+    initial-instance-info-replication-interval-seconds: 10
+  instance:
+    prefer-ip-address: true
+    hostname: ${HOSTNAME:work-order-service}
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    instance-id: ${spring.application.name}:${server.port}
+
+server:
+  port: ${SERVER_PORT:8086}
+
+jwt:
+  secret: ${JWT_SECRET:minha-chave-super-secreta-para-jwt-256-bits}
+  expiration-in-ms: ${JWT_EXPIRATION:3600000}
+
+logging:
+  level:
+    com.netflix.discovery: WARN
+    com.netflix.eureka: WARN
