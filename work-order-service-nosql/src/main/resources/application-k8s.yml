@@ -1,0 +1,27 @@
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}  # Virá do Kubernetes Secret
+
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: ${EUREKA_URL:http://eureka-server:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    hostname: ${HOSTNAME:work-order-service-nosql}
+
+server:
+  port: ${SERVER_PORT:8087}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-in-ms: ${JWT_EXPIRATION:3600000}
+
+logging:
+  level:
+    com.netflix.discovery: WARN
+    com.netflix.eureka: WARN

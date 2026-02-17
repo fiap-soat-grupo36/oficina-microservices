@@ -1,0 +1,21 @@
+# Profile para desenvolvimento local
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://workorder_user:W0rk0rd3r_2026_@oficina-workorder.mia8qk5.mongodb.net/workorder_db
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+logging:
+  level:
+    br.com.fiap.oficina: DEBUG
+    org.springframework.data.mongodb.core: DEBUG
+
+springdoc:
+  servers:
+    - url: http://localhost:8087
+      description: Local (MongoDB)

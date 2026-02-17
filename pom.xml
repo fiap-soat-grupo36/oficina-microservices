@@ -33,6 +33,7 @@
         <module>budget-service</module>
         <module>auth-service</module>
         <module>work-order-service</module>
+        <module>work-order-service-nosql</module> 
         <module>notification-service</module>
     </modules>
 
