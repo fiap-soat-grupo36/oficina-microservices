@@ -1,16 +1,16 @@
 spring:
   application:
-    name: work-order-service-nosql  # Nome diferente
-
-  # ============================================
-  # MONGODB (substituindo datasource/jpa)
-  # ============================================
+    name: work-order-service-nosql
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb+srv://workorder_user:W0rk0rd3r_2026_@oficina-workorder.mia8qk5.mongodb.net/workorder_db?appName=oficina-workorder}
 
 server:
-  port: ${SERVER_PORT:8087}  # PORTA DIFERENTE (8086 é do V1)
+  port: ${SERVER_PORT:8087}
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
 
 jwt:
   secret: ${JWT_SECRET:minha-chave-secreta-super-segura-para-jwt-com-256-bits-no-minimo}
@@ -28,7 +28,6 @@ management:
 logging:
   level:
     root: INFO
-    org.springframework.data.mongodb: DEBUG  # NOVO
 
 springdoc:
   api-docs:
@@ -36,7 +35,7 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
   servers:
-    - url: http://localhost:8087  # PORTA NOVA
+    - url: http://localhost:8087
       description: Local (MongoDB)
     - url: ${API_GATEWAY_BASE_URL:https://d9vqmoflh9.execute-api.us-east-2.amazonaws.com/dev}/work-order-nosql
       description: API Gateway

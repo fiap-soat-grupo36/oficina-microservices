@@ -65,7 +65,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<OrdemServicoResponseDTO> buscarPorId(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id) {
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id) {
         return ResponseEntity.ok(service.buscarPorId(id));
     }
 
@@ -78,7 +78,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<OrdemServicoResponseDTO> atualizar(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id,
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id,
             @RequestBody @Valid OsRequestDTO request) {
         return ResponseEntity.ok(service.atualizar(id, request));
     }
@@ -91,7 +91,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<Void> deletar(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id) {
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id) {
         service.deletar(id);
         return ResponseEntity.noContent().build();
     }
@@ -147,7 +147,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<OrdemServicoResponseDTO> atribuirMecanico(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id,
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id,
             @Parameter(description = "ID do mecânico") @RequestParam Long mecanicoId) {
         return ResponseEntity.ok(service.atribuirMecanico(id, mecanicoId));
     }
@@ -160,7 +160,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<OrdemServicoResponseDTO> diagnosticar(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id,
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id,
             @Parameter(description = "Observações do diagnóstico") @RequestParam(required = false) String observacoes) {
         return ResponseEntity.ok(service.diagnosticar(id, observacoes));
     }
@@ -173,7 +173,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<OrdemServicoResponseDTO> executar(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id,
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id,
             @Parameter(description = "Observações sobre a execução") @RequestParam(required = false) String observacoes) {
         return ResponseEntity.ok(service.executar(id, observacoes));
     }
@@ -186,7 +186,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<OrdemServicoResponseDTO> finalizar(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id,
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id,
             @Parameter(description = "Observações sobre a finalização") @RequestParam(required = false) String observacoes) {
         return ResponseEntity.ok(service.finalizar(id, observacoes));
     }
@@ -199,7 +199,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<OrdemServicoResponseDTO> entregar(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id,
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id,
             @Parameter(description = "Observações sobre a entrega") @RequestParam(required = false) String observacoes) {
         return ResponseEntity.ok(service.entregar(id, observacoes));
     }
@@ -213,7 +213,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<List<OsItemDTO>> adicionarServicos(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id,
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id,
             @Parameter(description = "Lista de IDs dos serviços") @RequestBody List<Long> servicosIds) {
         return ResponseEntity.ok(service.adicionarServicos(id, servicosIds));
     }
@@ -227,7 +227,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<OrdemServicoResponseDTO> removerServicos(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id,
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id,
             @Parameter(description = "Lista de IDs dos serviços") @RequestBody List<Long> servicosIds) {
         return ResponseEntity.ok(service.removerServicos(id, servicosIds));
     }
@@ -241,7 +241,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<List<OsItemDTO>> adicionarProdutos(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id,
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id,
             @Parameter(description = "Lista de produtos com quantidade e preço") @RequestBody List<ItemOrdemServicoDTO> produtos) {
         return ResponseEntity.ok(service.adicionarProdutos(id, produtos));
     }
@@ -255,7 +255,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<OrdemServicoResponseDTO> removerProdutos(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id,
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id,
             @Parameter(description = "Lista de IDs dos produtos") @RequestBody List<Long> produtosIds) {
         return ResponseEntity.ok(service.removerProdutos(id, produtosIds));
     }
@@ -269,7 +269,7 @@ public class OrdemServicoController {
             @ApiResponse(responseCode = "404", description = "Ordem de serviço não encontrada")
     })
     public ResponseEntity<OrcamentoResumoDTO> buscarOrcamento(
-            @Parameter(description = "ID da ordem de serviço") @PathVariable Long id) {
+            @Parameter(description = "ID da ordem de serviço") @PathVariable String id) {
         OrdemServicoResponseDTO os = service.buscarPorId(id);
         if (os.getOrcamento() == null) {
             return ResponseEntity.noContent().build();

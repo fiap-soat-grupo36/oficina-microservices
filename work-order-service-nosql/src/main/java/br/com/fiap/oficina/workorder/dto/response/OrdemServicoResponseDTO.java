@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 public class OrdemServicoResponseDTO {
 
-    private Long id;
+    private String id;
     private StatusOrdemServico status;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataInicioExecucao;

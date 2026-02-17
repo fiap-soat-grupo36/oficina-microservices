@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 public class OrdemServicoResumoDTO {
 
-    private Long id;
+    private String id;
     private StatusOrdemServico status;
     private LocalDateTime dataCriacao;
     private Long veiculoId;

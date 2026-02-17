@@ -16,7 +16,7 @@ public interface OrdemServicoService {
 
     List<OrdemServicoResponseDTO> listarTodos(List<StatusOrdemServico> status);
 
-    OrdemServicoResponseDTO buscarPorId(Long id);
+    OrdemServicoResponseDTO buscarPorId(String id);
 
     List<OrdemServicoResumoDTO> buscarPorCliente(Long clienteId);
 
@@ -26,31 +26,31 @@ public interface OrdemServicoService {
 
     List<OrdemServicoResponseDTO> buscarAtualizadas();
 
-    OrdemServicoResponseDTO atualizar(Long id, OsRequestDTO request);
+    OrdemServicoResponseDTO atualizar(String id, OsRequestDTO request);
 
-    void atualizarStatus(Long orcamentoId, StatusOrdemServico status);
+    void atualizarStatus(String ordemServicoId, StatusOrdemServico status);
 
-    OrdemServicoResponseDTO atribuirMecanico(Long id, Long mecanicoId);
+    OrdemServicoResponseDTO atribuirMecanico(String id, Long mecanicoId);
 
-    OrdemServicoResponseDTO diagnosticar(Long id, String observacoes);
+    OrdemServicoResponseDTO diagnosticar(String id, String observacoes);
 
-    OrdemServicoResponseDTO executar(Long id, String observacoes);
+    OrdemServicoResponseDTO executar(String id, String observacoes);
 
-    OrdemServicoResponseDTO finalizar(Long id, String observacoes);
+    OrdemServicoResponseDTO finalizar(String id, String observacoes);
 
-    OrdemServicoResponseDTO entregar(Long id, String observacoes);
+    OrdemServicoResponseDTO entregar(String id, String observacoes);
 
-    List<OsItemDTO> adicionarServicos(Long id, List<Long> servicosIds);
+    List<OsItemDTO> adicionarServicos(String id, List<Long> servicosIds);
 
-    OrdemServicoResponseDTO removerServicos(Long id, List<Long> servicosIds);
+    OrdemServicoResponseDTO removerServicos(String id, List<Long> servicosIds);
 
-    List<OsItemDTO> adicionarProdutos(Long id, List<ItemOrdemServicoDTO> produtos);
+    List<OsItemDTO> adicionarProdutos(String id, List<ItemOrdemServicoDTO> produtos);
 
-    OrdemServicoResponseDTO removerProdutos(Long id, List<Long> produtosIds);
+    OrdemServicoResponseDTO removerProdutos(String id, List<Long> produtosIds);
 
-    void deletar(Long id);
+    void deletar(String id);
 
-    OrdemServico getOrdemServico(Long id);
+    OrdemServico getOrdemServico(String id);
 
-    void adicionarOrcamento(Long ordemServicoId, Long orcamentoId, StatusOrdemServico status);
+    void adicionarOrcamento(String ordemServicoId, Long orcamentoId, StatusOrdemServico status);
 }
