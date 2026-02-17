@@ -117,6 +117,7 @@ public class OrdemServico {
     @AllArgsConstructor
     @Builder
     public static class ClienteCache {
+        @Field("id")     
         private Long id;
         private String nome;
         private String email;
@@ -128,6 +129,7 @@ public class OrdemServico {
     @AllArgsConstructor
     @Builder
     public static class VeiculoCache {
+        @Field("id")     
         private Long id;
         private String placa;
         private String marca;
@@ -140,6 +142,7 @@ public class OrdemServico {
     @AllArgsConstructor
     @Builder
     public static class MecanicoCache {
+        @Field("id")     
         private Long id;
         private String nome;
     }
